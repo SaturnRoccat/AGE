@@ -32,5 +32,5 @@ target("AgeDataDumper")
     add_files("AgeDataDumper/**.cpp")
     add_includedirs("AgeDataDumper/", {public = false})
     add_headerfiles("AgeDataDumper/**.hpp")
-    add_deps("rapidjson", "fmt")
+    add_packages("rapidjson", "fmt")
     
