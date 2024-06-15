@@ -31,8 +31,9 @@
 #include <rapidjson/ostreamwrapper.h>
 #include <rapidjson/error/en.h>
 #include <rapidjson/stringbuffer.h>
+#include <AgeAPI/internal/Error.hpp>
 #include <format>
-
+#include <optional>
 #ifndef THROW_STRING
 #define THROW_STRING(x)\
 {\
@@ -58,7 +59,7 @@ namespace AgeAPI
     public:
         Identifier() = default;
         Identifier(const std::string& name, const std::string& ns) : mName(name), mNamespace(ns) {}
-        Identifier(const std::string& fullNamespace, ConstructionError& err) {
+        Identifier(const std::string& fullNamespace) {
             auto pos = fullNamespace.find(':');
             if (pos != std::string::npos)
             {
@@ -66,12 +67,29 @@ namespace AgeAPI
 				mName = fullNamespace.substr(pos + 1);
                 return;
 			}
-            THROW_STRING(fullNamespace);
+            throw std::invalid_argument("Invalid namespace format");
+        }
+        Identifier(const char* name, const char* ns) : mName(name), mNamespace(ns) {}
+        Identifier(const char* fullNamespace) {
+            std::string_view ns(fullNamespace);
+            auto pos = ns.find(':');
+            if (pos != std::string::npos)
+            {
+                mNamespace = ns.substr(0, pos);
+                mName = ns.substr(pos + 1);
+                return;
+            }
+            throw std::invalid_argument("Invalid namespace format");
         }
 
-        std::string GetNamespace() const { return mNamespace; }
-        std::string GetName() const { return mName; }
-        std::string GetFullNamespace() const { return std::format("{}:{}", mNamespace, mName); }
+        const std::string& GetNamespace() const { return mNamespace; }
+        const std::string& GetName() const { return mName; }
+        const std::string& GetFullNamespace() const
+        { 
+            if (mFullNamespace.empty())
+                mFullNamespace = std::format("{}:{}", mNamespace, mName);
+            return mFullNamespace; 
+        }
 
         void SetNamespace(const std::string& ns) { mNamespace = ns; }
         void SetName(const std::string& name) { mName = name; }
@@ -81,14 +99,14 @@ namespace AgeAPI
     private:
         std::string mNamespace{"age"};
         std::string mName{"identifier"};
+        mutable std::string mFullNamespace{};
     };
 
     class SemanticVersion
     {
     public:
-        SemanticVersion() = default;
         SemanticVersion(u8 major, u8 minor, u8 patch) : mMajor(major), mMinor(minor), mPatch(patch) {}
-        SemanticVersion(u32 version) : mVersion(version) {}
+        SemanticVersion(u32 version = 0) : mVersion(version) {}
 
         u8 GetMajor() const { return mMajor; }
         u8 GetMinor() const { return mMinor; }
@@ -96,7 +114,7 @@ namespace AgeAPI
         u32 GetVersion() const { return mVersion; }
         std::vector<u8> GetVersionVector() const { return {mMajor, mMinor, mPatch}; }
         std::array<u8, 3> GetVersionArray() const { return mVersionArray; }
-
+        std::string GetString() const { return std::format("{}.{}.{}", mMajor, mMinor, mPatch); }
         void SetMajor(u8 major) { mMajor = major; }
         void SetMinor(u8 minor) { mMinor = minor; }
         void SetPatch(u8 patch) { mPatch = patch; }
@@ -112,14 +130,70 @@ namespace AgeAPI
         {
             struct
             {
-                u8 mPatch;
-                u8 mMinor;
                 u8 mMajor;
+                u8 mMinor;
+                u8 mPatch;
             };
             std::array<u8, 3> mVersionArray;
             u32 mVersion{0};
         };
     };
+
+    template<typename T>
+    class NonOwningPtr
+    {
+    public:
+		NonOwningPtr(T* ptr) : mPtr(ptr) {}
+		T* operator->() { return mPtr; }
+		T& operator*() { return *mPtr; }
+		T* Get() { return mPtr; }
+        const T* Get() const { return mPtr; }
+        operator T*() { return mPtr; }
+
+        void operator delete(void* ptr) { throw std::runtime_error("Cannot delete NonOwningPtr"); } 
+    private:
+        T* mPtr;
+
+
+    };
+
+    // CompactOption is the same size as the type it holds 
+    template<typename T>
+    class CompactOptional
+    {
+    private:
+        union
+        {
+            T mValue;
+            std::array<u8, sizeof(T)> mStorage = std::fill(mStorage.begin(), mStorage.end(), 0xAF);
+        };
+    public:
+
+        CompactOptional() = default;
+		CompactOptional(const T& value) : mValue(value) {}
+		CompactOptional(T&& value) : mValue(std::move(value)) {}
+		CompactOptional(const CompactOptional<T>& other) : mValue(other.mValue) {}
+		CompactOptional(CompactOptional<T>&& other) : mValue(std::move(other.mValue)) {}
+
+		T& operator*() { return mValue; }
+		T* operator->() { return &mValue; }
+		T& value() { return mValue; }
+		const T& Value() const { return mValue; }
+
+		bool HasValue() const { for (u8 byte : mStorage) if (byte != 0xAF) return true; return false; }
+        void OwnValue(T& val) { val = std::move(mValue); }
+		explicit operator bool() const { return HasValue(); }
+
+		void Reset() { mStorage.fill(0xAF); }
+		void Reset(const T& value) { mValue = value; }
+		void Reset(T&& value) { mValue = std::move(value); }
+
+		CompactOptional<T>& operator=(const T& value) { mValue = value; return *this; }
+		CompactOptional<T>& operator=(T&& value) { mValue = std::move(value); return *this; }
+		CompactOptional<T>& operator=(const CompactOptional<T>& other) { mValue = other.mValue; return *this; }
+		CompactOptional<T>& operator=(CompactOptional<T>&& other) { mValue = std::move(other.mValue); return *this; }
+    };
+
 
     enum class Experiments : u8
     {
@@ -136,6 +210,7 @@ namespace AgeAPI
     public:
         ExperimentalSettings() = default;
 		ExperimentalSettings(u8 flags) : mExperimentalFlags(flags) {}
+        ExperimentalSettings(const Experiments flags) : mExperimentalFlags(TO_UNDERLYING(flags)) {}
 
 		bool IsFlagSet(u8 flag) const { return mExperimentalFlags & flag; }
 		void SetFlag(u8 flag) { mExperimentalFlags |= flag; }
@@ -146,44 +221,50 @@ namespace AgeAPI
 
     };
 
-    struct BlockJsonProxy
+    struct JsonProxy
     {
-        rapidjson::Document& mDoc;
-        rapidjson::Value& mDescription;
-        rapidjson::Value& mMenuCategory;
-        rapidjson::Value& mComponents;
-        rapidjson::Value& mStates;
-        rapidjson::Value& mPermutations;
-        rapidjson::Value& mTraits;
+        JsonProxy(rapidjson::Value& writeLoc, rapidjson::Document::AllocatorType& allocator) : mWriteLoc(writeLoc), mAllocator(allocator) {}
+        rapidjson::Value& mWriteLoc;
         rapidjson::Document::AllocatorType& mAllocator;
     };
     struct DependencyProxy
     {
-        rapidjson::Document& mDoc;
         rapidjson::Value& mDependencies;
         rapidjson::Document::AllocatorType& mAllocator;
     };
     struct ModuleProxy
     {
-        rapidjson::Document& mDoc;
         rapidjson::Value& mModules;
         rapidjson::Document::AllocatorType& mAllocator;
     };
     struct MetadataProxy
     {
-		rapidjson::Document& mDoc;
 		rapidjson::Value& mMetadata;
 		rapidjson::Document::AllocatorType& mAllocator;
 	};
+    struct PermutationProxy
+	{
+		rapidjson::Value& mPermutation;
+		rapidjson::Document::AllocatorType& mAllocator;
+	};
+
     class Addon; // Used all over the place
 
+   /* template<typename T>
+    T& ThisToRef(const T* ptr)
+    {
+        return *(std::remove_const<T>::type)(ptr);
+    }
+    template<typename T> requires (!std::is_const<T>::value)
+    T& ThisToRef(T* ptr)
+    {
+        return *ptr;
+    }*/
 }
 
 namespace std
 {
-    std::string to_string(const AgeAPI::Identifier& id) { return id.GetFullNamespace(); }
-    std::string to_string(const AgeAPI::SemanticVersion& version) { return std::format("{}.{}.{}", version.GetMajor(), version.GetMinor(), version.GetPatch()); }
-
+    
     template<>
     struct hash<AgeAPI::Identifier>
     {

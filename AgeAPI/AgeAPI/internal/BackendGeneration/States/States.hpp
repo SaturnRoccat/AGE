@@ -13,7 +13,7 @@ namespace AgeAPI::Backend
 
 		virtual ~AState() = default;
 
-		Identifier GetStateId() const { return mStateId; }
+		const Identifier& GetStateId() const { return mStateId; }
 
 		virtual void WriteState(rapidjson::Value& value, rapidjson::Document::AllocatorType& allocator) const = 0;
 	protected:

@@ -3,6 +3,7 @@
 #include <AgeAPI/internal/Components/BehaviourComponents/Block/BlockComponentBase.hpp>
 #include <AgeAPI/internal/BackendGeneration/States/States.hpp>
 #include <vector>
+#include <AgeAPI/internal/BackendGeneration/Permutations/Permutation.hpp>
 
 namespace AgeAPI::Backend::Bp
 {
@@ -133,16 +134,43 @@ namespace AgeAPI::Backend::Bp
 	public:
 		BlockBehaviour() = default;
 		BlockBehaviour(
-			Identifier& blockIdentifier,
-			SemanticVersion& formatVersion,
+			const Identifier& blockIdentifier,
+			const SemanticVersion& formatVersion,
 			bool isHiddenInCommands = false
 		) : mBlockIdentifier(blockIdentifier), mFormatVersion(formatVersion), mIsHiddenInCommands(isHiddenInCommands) {}
 
-		void AddBlockComponent(std::unique_ptr<Components::BlockComponentBase> component) { mBlockComponents.emplace_back(component); }
-		void AddState(std::unique_ptr<AState> state) { mStates.emplace_back(state); }
+		ErrorString AddBlockComponent(std::unique_ptr<Components::BlockComponentBase> component) 
+		{ 
+			if (component->GetFormatVersion().GetVersion() > mFormatVersion.GetVersion())
+				return ErrorString("Component version is higher than the block behaviour version");
+			mBlockComponents.emplace_back(std::move(component));
+		}
+		void AddState(std::unique_ptr<AState> state) { mStates.emplace_back(std::move(state)); }
+		void AddPermutation(Permutation& permutation) { mPermutations.emplace_back(std::move(permutation)); }
+
+		const auto& GetBlockComponents() const { return mBlockComponents; }
+		const auto& GetStates() const { return mStates; }
+		const auto& GetPermutations() const { return mPermutations; }
+
+		ErrorString BuildBlockBehaviourJson(std::unique_ptr<Addon>& addon, rapidjson::Value& location, rapidjson::Document::AllocatorType& allocator);
+		inline std::expected<rapidjson::Document, ErrorString> BuildBlockBehaviourDocument(std::unique_ptr<Addon>& addon)
+		{
+			auto doc = rapidjson::Document{};
+			doc.SetObject();
+			auto& allocator = doc.GetAllocator();
+			auto err = BuildBlockBehaviourJson(addon, doc, allocator);
+			if (err.ContainsError())
+				return std::unexpected(err);
+			return doc;
+		}
+	private:
+		ErrorString WriteComponents(std::unique_ptr<Addon>& addon, rapidjson::Value& location, rapidjson::Document::AllocatorType& allocator);
+		ErrorString WritePermutations(std::unique_ptr<Addon>& addon, rapidjson::Value& location, rapidjson::Document::AllocatorType& allocator);
+		void WriteStates(rapidjson::Value& location, rapidjson::Document::AllocatorType& allocator);
 	private:
 		std::vector<std::unique_ptr<Components::BlockComponentBase>> mBlockComponents{};
 		std::vector<std::unique_ptr<AState>> mStates{};
+		std::vector<Permutation> mPermutations{};
 		std::string mCategory{}; // This should be an enum but i cant remember the values so its a string for now 
 
 		Identifier mBlockIdentifier{};
@@ -151,3 +179,4 @@ namespace AgeAPI::Backend::Bp
 
 	};
 }
+ 

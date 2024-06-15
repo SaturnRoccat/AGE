@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include <expected>
 
 namespace AgeAPI
 {
@@ -18,6 +19,7 @@ namespace AgeAPI
 	public:
 		ErrorString() = default;
 		ErrorString(const std::string& error) : mError(error) {}
+		ErrorString(const char* error) : mError(error) {}
 		std::string GetAsString() override { return mError; }
 		bool ContainsError() override { return !mError.empty(); }
 	private:

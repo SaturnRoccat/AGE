@@ -8,6 +8,10 @@ namespace AgeAPI::Components
 	{
 	public:
 		BehaviourComponentBase() = default;
-		BehaviourComponentBase(const ExperimentalSettings& settings, const SemanticVersion& version) : ComponentBase(settings, version) {}
+		BehaviourComponentBase(const ExperimentalSettings& settings, const SemanticVersion& version, const Identifier& ident) : ComponentBase(settings, version, ident) {}
+		virtual ~BehaviourComponentBase() = default;
 	};
+
+    template<typename T, typename U>
+	concept BehaviourComponent = std::is_base_of_v<BehaviourComponentBase, U>;
 }

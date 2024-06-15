@@ -1,5 +1,6 @@
 #pragma once
 #include <AgeAPI/internal/Types.hpp>
+#include <AgeAPI/internal/Error.hpp>
 #include <AgeAPI/internal/RapidJsonExtension/TypeTranslations.hpp>
 
 namespace AgeAPI
@@ -75,7 +76,7 @@ namespace AgeAPI
 	class Manifest
 	{
 	private:
-		SemanticVersion mFormatVersion{};
+		int mFormatVersion{};
 		SemanticVersion mMinEngineVersion{};
 		SemanticVersion mAddonVersion{};
 		std::string mName{""};
@@ -87,7 +88,7 @@ namespace AgeAPI
 		Capabilities mCapabilities{};
 	public:
 		Manifest() = default;
-		Manifest(const SemanticVersion& formatVersion, const SemanticVersion& minEngineVersion, const SemanticVersion& addonVersion, const std::string& name, const std::string& description, const std::string& uuid, const std::vector<Module>& modules, const std::vector<Dependency>& dependencies, const Metadata& metadata, const Capabilities& capabilities) : mFormatVersion(formatVersion), mMinEngineVersion(minEngineVersion), mAddonVersion(addonVersion), mName(name), mDescription(description), mUUID(uuid), mModules(modules), mDependencies(dependencies), mMetadata(metadata), mCapabilities(capabilities) {}
+		Manifest(int formatVersion, const SemanticVersion& minEngineVersion, const SemanticVersion& addonVersion, const std::string& name, const std::string& description, const std::string& uuid, const std::vector<Module>& modules, const std::vector<Dependency>& dependencies = {}, const Metadata& metadata = {}, const Capabilities& capabilities = {}) : mFormatVersion(formatVersion), mMinEngineVersion(minEngineVersion), mAddonVersion(addonVersion), mName(name), mDescription(description), mUUID(uuid), mModules(modules), mDependencies(dependencies), mMetadata(metadata), mCapabilities(capabilities) {}
 
 		void AddModule(const Module& module) { mModules.push_back(module); }
 		void AddDependency(const Dependency& dependency) { mDependencies.push_back(dependency); }
@@ -104,7 +105,7 @@ namespace AgeAPI
 		const std::vector<Dependency>& GetDependencies() const { return mDependencies; }
 		const Capabilities& GetCapabilities() const { return mCapabilities; }
 
-		void SetFormatVersion(const SemanticVersion& formatVersion) { mFormatVersion = formatVersion; }
+		void SetFormatVersion(int formatVersion) { mFormatVersion = formatVersion; }
 		void SetMinEngineVersion(const SemanticVersion& minEngineVersion) { mMinEngineVersion = minEngineVersion; }
 		void SetAddonVersion(const SemanticVersion& addonVersion) { mAddonVersion = addonVersion; }
 		void SetName(const std::string& name) { mName = name; }
@@ -116,5 +117,16 @@ namespace AgeAPI
 		void SetCapabilities(const Capabilities& capabilities) { mCapabilities = capabilities; }
 
 		Dependency GetAsDependency() const { return Dependency(mUUID, mAddonVersion); }
+	
+		ErrorString WriteToValue(rapidjson::Value& value, rapidjson::Document::AllocatorType& allocator) const;
+		inline std::expected<rapidjson::Document, ErrorString> WriteToDocument() const
+		{
+			rapidjson::Document doc;
+			auto val = WriteToValue(doc, doc.GetAllocator());
+			if (val.ContainsError())
+				return std::unexpected(val);
+			return doc;
+		}
+		
 	};
 }

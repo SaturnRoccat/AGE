@@ -2,20 +2,32 @@
 #include <AgeAPI/internal/Types.hpp>
 #include <typeinfo>
 #include <iostream>
+#include <functional>
 
 namespace rapidjson
 {
+	template<typename T, typename = void>
+	struct IsContainer : std::false_type {};
+
 	template<typename T>
+	struct IsContainer<T, std::void_t<
+		decltype(std::declval<T>().size()),
+		decltype(std::declval<T>().begin()),
+		decltype(std::declval<T>().end()),
+		typename T::value_type,
+		typename T::size_type>> : std::true_type {};
+	template<typename T, bool = IsContainer<T>::value>
 	struct TypeTranslation
 	{
 		static void WriteToJson(const T& value, rapidjson::Value& jsonValue, rapidjson::Document::AllocatorType& allocator)
 		{
+			assert(false);
 			static_assert(std::is_same<T, T>::value, "Type not supported");
 		}
 	};
 
 	template<>
-	struct TypeTranslation<bool>
+	struct TypeTranslation<bool, false>
 	{
 		static void WriteToJson(const bool& value, rapidjson::Value& jsonValue, rapidjson::Document::AllocatorType& allocator)
 		{
@@ -23,17 +35,20 @@ namespace rapidjson
 		}
 	};
 
-	template<>
-	struct TypeTranslation<int>
+	template<std::integral T>
+	struct TypeTranslation<T, false>
 	{
-		static void WriteToJson(const int& value, rapidjson::Value& jsonValue, rapidjson::Document::AllocatorType& allocator)
+		static void WriteToJson(const T& value, rapidjson::Value& jsonValue, rapidjson::Document::AllocatorType& allocator)
 		{
-			jsonValue.SetInt(value);
+			if constexpr (std::is_signed_v<T>)
+				jsonValue.SetInt64(value);
+			else
+				jsonValue.SetUint64(value);
 		}
 	};
 
 	template<>
-	struct TypeTranslation<std::string>
+	struct TypeTranslation<std::string, true> // So string technically matches out container specialization
 	{
 		static void WriteToJson(const std::string& value, rapidjson::Value& jsonValue, rapidjson::Document::AllocatorType& allocator)
 		{
@@ -42,7 +57,7 @@ namespace rapidjson
 	};
 
 	template<>
-	struct TypeTranslation<AgeAPI::Identifier>
+	struct TypeTranslation<AgeAPI::Identifier, false>
 	{
 		static void WriteToJson(const AgeAPI::Identifier& value, rapidjson::Value& jsonValue, rapidjson::Document::AllocatorType& allocator)
 		{
@@ -51,29 +66,22 @@ namespace rapidjson
 	};
 
 	template<>
-	struct TypeTranslation<AgeAPI::SemanticVersion>
+	struct TypeTranslation<AgeAPI::SemanticVersion, false>
 	{
 		static void WriteToJson(const AgeAPI::SemanticVersion value, rapidjson::Value& jsonValue, rapidjson::Document::AllocatorType& allocator)
 		{
 			jsonValue.SetString(std::format("{}.{}.{}", value.GetMajor(), value.GetMinor(), value.GetPatch()), allocator);
 		}
 	};
-	template<typename T>
-	concept IsContainer = requires(T t)
-	{
-		{ t.size() } -> std::convertible_to<std::size_t>;
-		{ t.begin() } -> std::input_or_output_iterator;
-		{ t.end() } -> std::input_or_output_iterator;
-		{ T::value_type };
-		{ T::size_type };
-	};
+	
 
-	template<IsContainer T>
-	struct TypeTranslation<T>
+	template<typename T>
+	struct TypeTranslation<T, true>
 	{
 		static void WriteToJson(const T& value, rapidjson::Value& jsonValue, rapidjson::Document::AllocatorType& allocator)
 		{
 			jsonValue.SetArray();
+			jsonValue.Reserve(value.size(), allocator);
 			for (const auto& element : value)
 			{
 				rapidjson::Value elementValue;
@@ -99,10 +107,21 @@ namespace rapidjson
 	{
 		static void WriteToJsonValue(const std::string& key, const T& value, rapidjson::Value& jsonValue, rapidjson::Document::AllocatorType& allocator)
 		{
-			TypeTranslation<T>::WriteToJson(value, jsonValue, allocator);
+			rapidjson::Value jv;
+			TypeTranslation<T>::WriteToJson(value, jv, allocator);
 			rapidjson::Value keyName;
 			TypeTranslation<std::string>::WriteToJson(key, keyName, allocator);
-			jsonValue.AddMember(keyName, jsonValue, allocator);
+			jsonValue.AddMember(keyName, jv, allocator);
+		}
+
+		static void WriteToJsonValue(const std::string& key, const T& value, rapidjson::Value& jsonValue, rapidjson::Document::AllocatorType& allocator, 
+			std::function<void(const T&, rapidjson::Value&, rapidjson::Document::AllocatorType&)> customWriter)
+		{
+			rapidjson::Value jv;
+			customWriter(value, jv, allocator);
+			rapidjson::Value keyName;
+			TypeTranslation<std::string>::WriteToJson(key, keyName, allocator);
+			jsonValue.AddMember(keyName, jv, allocator);
 		}
 	};
 
