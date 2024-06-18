@@ -2,3 +2,4 @@
 .xmake/
 vsxmake*/
 build/
+.vs/slnx.sqlite
