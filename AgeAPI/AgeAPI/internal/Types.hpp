@@ -34,13 +34,7 @@
 #include <AgeAPI/internal/Error.hpp>
 #include <format>
 #include <optional>
-#ifndef THROW_STRING
-#define THROW_STRING(x)\
-{\
-	err = ErrorString(std::format("Error on line {}, File {}, Error {}", __LINE__, __FILE__, x));\
-	return;\
-}
-#endif
+
 
 namespace AgeAPI
 {
@@ -58,54 +52,38 @@ namespace AgeAPI
     {
     public:
         Identifier() = default;
-        Identifier(const std::string& name, const std::string& ns) : mName(name), mNamespace(ns) {}
-        Identifier(const std::string& fullNamespace) {
-            auto pos = fullNamespace.find(':');
-            if (pos != std::string::npos)
-            {
-				mNamespace = fullNamespace.substr(0, pos);
-				mName = fullNamespace.substr(pos + 1);
-                return;
-			}
-            throw std::invalid_argument("Invalid namespace format");
-        }
-        Identifier(const char* name, const char* ns) : mName(name), mNamespace(ns) {}
-        Identifier(const char* fullNamespace) {
-            std::string_view ns(fullNamespace);
-            auto pos = ns.find(':');
-            if (pos != std::string::npos)
-            {
-                mNamespace = ns.substr(0, pos);
-                mName = ns.substr(pos + 1);
-                return;
-            }
-            throw std::invalid_argument("Invalid namespace format");
-        }
+        Identifier(const std::string& fullNamespace) : mFullNamespace(fullNamespace) { mColonPos = mFullNamespace.find(':'); }
+        Identifier(const std::string& name, const std::string& namespace_) : mFullNamespace(namespace_ + ":" + name) { mColonPos = mFullNamespace.find(':'); }
+        Identifier(const char* fullNamespace) : mFullNamespace(fullNamespace) { mColonPos = mFullNamespace.find(':'); }
+        Identifier(const char* name, const char* namespace_) : mFullNamespace(std::format("{}:{}", name, namespace_)) { mColonPos = mFullNamespace.find(':'); }
+        Identifier(const Identifier& other) : mFullNamespace(other.mFullNamespace), mColonPos(other.mColonPos) {}
 
-        const std::string& GetNamespace() const { return mNamespace; }
-        const std::string& GetName() const { return mName; }
-        const std::string& GetFullNamespace() const
-        { 
-            if (mFullNamespace.empty())
-                mFullNamespace = std::format("{}:{}", mNamespace, mName);
-            return mFullNamespace; 
-        }
+        const std::string_view GetName() const { return mFullNamespace.substr(mColonPos + 1); }
+        const std::string_view GetNamespace() const { return mFullNamespace.substr(0, mColonPos); }
+        const std::string& GetFullNamespace() const { return mFullNamespace; }
 
-        void SetNamespace(const std::string& ns) { mNamespace = ns; }
-        void SetName(const std::string& name) { mName = name; }
+        void SetName(const std::string& name) { mFullNamespace = std::format("{}:{}", GetNamespace(), name); }
+        void SetNamespace(const std::string& namespace_) { mFullNamespace = std::format("{}:{}", namespace_, GetName()); }
+        void SetFullNamespace(const std::string& fullNamespace)
+		{
+			mFullNamespace = fullNamespace;
+			mColonPos = mFullNamespace.find(':');
+		}
 
-        bool operator==(const Identifier& other) const{return mNamespace == other.mNamespace && mName == other.mName;}
-        bool operator!=(const Identifier& other) const{return !(*this == other);}
+        bool operator==(const Identifier& other) const { return mFullNamespace == other.mFullNamespace; }
+        bool operator!=(const Identifier& other) const { return mFullNamespace != other.mFullNamespace; }
+
+
     private:
-        std::string mNamespace{"age"};
-        std::string mName{"identifier"};
-        mutable std::string mFullNamespace{};
+        std::string mFullNamespace{};
+        u32 mColonPos{0};
     };
 
     class SemanticVersion
     {
     public:
         SemanticVersion(u8 major, u8 minor, u8 patch) : mMajor(major), mMinor(minor), mPatch(patch) {}
+        SemanticVersion(std::array<u8, 3> version) : mVersionArray(version) {}
         SemanticVersion(u32 version = 0) : mVersion(version) {}
 
         u8 GetMajor() const { return mMajor; }
@@ -202,14 +180,18 @@ namespace AgeAPI
         UpcomingCreatorFeatures = 1 << 2,
         BetaAPI = 1 << 3,
         ExperimentalCameras = 1 << 4,
-        ALL = 0xFF
+        ExperimentsALL = 0xFF
     };
-
     class ExperimentalSettings
     {
     public:
         ExperimentalSettings() = default;
 		ExperimentalSettings(u8 flags) : mExperimentalFlags(flags) {}
+        ExperimentalSettings(const std::array<Experiments, 5> flags)
+		{
+			for (Experiments flag : flags)
+                mExperimentalFlags |= TO_UNDERLYING(flag);
+        }
         ExperimentalSettings(const Experiments flags) : mExperimentalFlags(TO_UNDERLYING(flags)) {}
 
 		bool IsFlagSet(u8 flag) const { return mExperimentalFlags & flag; }
@@ -250,16 +232,152 @@ namespace AgeAPI
 
     class Addon; // Used all over the place
 
-   /* template<typename T>
-    T& ThisToRef(const T* ptr)
+
+    static std::vector<std::string_view> ExplodeString(std::string_view string, std::string_view delim)
     {
-        return *(std::remove_const<T>::type)(ptr);
+        std::vector<std::string_view> result;
+		size_t pos = 0;
+		while ((pos = string.find(delim)) != std::string::npos)
+		{
+			result.push_back(string.substr(0, pos));
+			string.remove_prefix(pos + delim.length());
+		}
+		result.push_back(string);
+		return result;
     }
-    template<typename T> requires (!std::is_const<T>::value)
-    T& ThisToRef(T* ptr)
+
+
+
+    template<typename T> 
+    class Vec2T
     {
-        return *ptr;
-    }*/
+    public:
+        T x, y;
+    public:
+        Vec2T() : x(0), y(0) {}
+		Vec2T(T x, T y) : x(x), y(y) {}
+		Vec2T(const Vec2T<T>& other) : x(other.x), y(other.y) {}
+		Vec2T(Vec2T<T>&& other) noexcept : x(std::move(other.x)), y(std::move(other.y)) {}
+
+		Vec2T<T>& operator=(const Vec2T<T>& other) { x = other.x; y = other.y; return *this; }
+		Vec2T<T>& operator=(Vec2T<T>&& other) noexcept { x = std::move(other.x); y = std::move(other.y); return *this; }
+
+		Vec2T<T> operator+(const Vec2T<T>& other) const { return Vec2T<T>(x + other.x, y + other.y); }
+		Vec2T<T> operator-(const Vec2T<T>& other) const { return Vec2T<T>(x - other.x, y - other.y); }
+		Vec2T<T> operator*(const Vec2T<T>& other) const { return Vec2T<T>(x * other.x, y * other.y); }
+		Vec2T<T> operator/(const Vec2T<T>& other) const { return Vec2T<T>(x / other.x, y / other.y); }
+
+		Vec2T<T> operator+(T scalar) const { return Vec2T<T>(x + scalar, y + scalar); }
+		Vec2T<T> operator-(T scalar) const { return Vec2T<T>(x - scalar, y - scalar); }
+		Vec2T<T> operator*(T scalar) const { return Vec2T<T>(x * scalar, y * scalar); }
+		Vec2T<T> operator/(T scalar) const { return Vec2T<T>(x / scalar, y / scalar); }
+
+		Vec2T<T>& operator+=(const Vec2T<T>& other) { x += other.x; y += other.y; return *this; }
+		Vec2T<T>& operator-=(const Vec2T<T>& other) { x -= other.x; y -= other.y; return *this; }
+        Vec2T<T>& operator*=(const Vec2T<T>& other) { x *= other.x; y *= other.y; return *this; }
+        Vec2T<T>& operator/=(const Vec2T<T>& other) { x /= other.x; y /= other.y; return *this; }
+
+        Vec2T<T>& operator+=(T scalar) { x += scalar; y += scalar; return *this; }
+        Vec2T<T>& operator-=(T scalar) { x -= scalar; y -= scalar; return *this; }
+        Vec2T<T>& operator*=(T scalar) { x *= scalar; y *= scalar; return *this; }
+        Vec2T<T>& operator/=(T scalar) { x /= scalar; y /= scalar; return *this; }
+
+        bool operator==(const Vec2T<T>& other) const { return x == other.x && y == other.y; }
+        bool operator!=(const Vec2T<T>& other) const { return x != other.x || y != other.y; }
+        bool operator<(const Vec2T<T>& other) const { return x < other.x && y < other.y; }
+        bool operator>(const Vec2T<T>& other) const { return x > other.x && y > other.y; }
+        bool operator<=(const Vec2T<T>& other) const { return x <= other.x && y <= other.y; }
+        bool operator>=(const Vec2T<T>& other) const { return x >= other.x && y >= other.y; }
+
+        T Dot(const Vec2T<T>& other) const { return x * other.x + y * other.y; }
+        T Cross(const Vec2T<T>& other) const { return x * other.y - y * other.x; }
+        T Magnitude() const { return std::sqrt(x * x + y * y); }
+        T MagnitudeSquared() const { return x * x + y * y; }
+    };
+
+    template<typename T>
+    class Vec3T
+    {
+    public:
+        T x, y, z;
+    public:        Vec3T() : x(0), y(0), z(0) {}
+        Vec3T(T x, T y, T z) : x(x), y(y), z(z) {}
+        Vec3T(const Vec3T<T>& other) : x(other.x), y(other.y), z(other.z) {}
+        Vec3T(Vec3T<T>&& other) noexcept : x(std::move(other.x)), y(std::move(other.y)), z(std::move(other.z)) {}
+        Vec3T<T>& operator=(const Vec3T<T>& other) { x = other.x; y = other.y; z = other.z; return *this; }
+        Vec3T<T>& operator=(Vec3T<T>&& other) noexcept { x = std::move(other.x); y = std::move(other.y); z = std::move(other.z); return *this; }
+        Vec3T<T> operator+(const Vec3T<T>& other) const { return Vec3T<T>(x + other.x, y + other.y, z + other.z); }
+        Vec3T<T> operator-(const Vec3T<T>& other) const { return Vec3T<T>(x - other.x, y - other.y, z - other.z); }
+        Vec3T<T> operator*(const Vec3T<T>& other) const { return Vec3T<T>(x * other.x, y * other.y, z * other.z); }
+        Vec3T<T> operator/(const Vec3T<T>& other) const { return Vec3T<T>(x / other.x, y / other.y, z / other.z); }
+        Vec3T<T> operator+(T scalar) const { return Vec3T<T>(x + scalar, y + scalar, z + scalar); }
+        Vec3T<T> operator-(T scalar) const { return Vec3T<T>(x - scalar, y - scalar, z - scalar); }
+        Vec3T<T> operator*(T scalar) const { return Vec3T<T>(x * scalar, y * scalar, z * scalar); }
+        Vec3T<T> operator/(T scalar) const { return Vec3T<T>(x / scalar, y / scalar, z / scalar); }
+        Vec3T<T>& operator+=(const Vec3T<T>& other) { x += other.x; y += other.y; z += other.z; return *this; }
+        Vec3T<T>& operator-=(const Vec3T<T>& other) { x -= other.x; y -= other.y; z -= other.z; return *this; }
+        Vec3T<T>& operator*=(const Vec3T<T>& other) { x *= other.x; y *= other.y; z *= other.z; return *this; }
+        Vec3T<T>& operator/=(const Vec3T<T>& other) { x /= other.x; y /= other.y; z /= other.z; return *this; }
+        Vec3T<T>& operator+=(T scalar) { x += scalar; y += scalar; z += scalar; return *this; }
+        Vec3T<T>& operator-=(T scalar) { x -= scalar; y -= scalar; z -= scalar; return *this; }
+        Vec3T<T>& operator*=(T scalar) { x *= scalar; y *= scalar; z *= scalar; return *this; }
+        Vec3T<T>& operator/=(T scalar) { x /= scalar; y /= scalar; z /= scalar; return *this; }
+        bool operator==(const Vec3T<T>& other) const { return x == other.x && y == other.y && z == other.z; }
+        bool operator!=(const Vec3T<T>& other) const { return x != other.x || y != other.y || z != other.z; }
+        bool operator<(const Vec3T<T>& other) const { return x < other.x && y < other.y && z < other.z; }
+        bool operator>(const Vec3T<T>& other) const { return x > other.x && y > other.y && z > other.z; }
+        bool operator<=(const Vec3T<T>& other) const { return x <= other.x && y <= other.y && z <= other.z; }
+        bool operator>=(const Vec3T<T>& other) const { return x >= other.x && y >= other.y && z >= other.z; }
+        T Dot(const Vec3T<T>& other) const { return x * other.x + y * other.y + z * other.z; }
+        T Magnitude() const { return std::sqrt(x * x + y * y + z * z); }
+        T MagnitudeSquared() const { return x * x + y * y + z * z; }
+        Vec3T<T> Cross(const Vec3T<T>& other) const { return Vec3T<T>(y * other.z - z * other.y, z * other.x - x * other.z, x * other.y - y * other.x); }
+
+
+    };
+
+    template<typename T>
+    class BoundingBox
+    {
+    public:
+        T min, max;
+    public:
+
+        BoundingBox() : min(0), max(0) {}
+		BoundingBox(T min, T max) : min(min), max(max) {}
+		BoundingBox(const BoundingBox<T>& other) : min(other.min), max(other.max) {}
+		BoundingBox(BoundingBox<T>&& other) noexcept : min(std::move(other.min)), max(std::move(other.max)) {}
+		BoundingBox<T>& operator=(const BoundingBox<T>& other) { min = other.min; max = other.max; return *this; }
+		BoundingBox<T>& operator=(BoundingBox<T>&& other) noexcept { min = std::move(other.min); max = std::move(other.max); return *this; }
+		BoundingBox<T> operator+(const BoundingBox<T>& other) const { return BoundingBox<T>(min + other.min, max + other.max); }
+		BoundingBox<T> operator-(const BoundingBox<T>& other) const { return BoundingBox<T>(min - other.min, max - other.max); }
+		BoundingBox<T> operator*(const BoundingBox<T>& other) const { return BoundingBox<T>(min * other.min, max * other.max); }
+		BoundingBox<T> operator/(const BoundingBox<T>& other) const { return BoundingBox<T>(min / other.min, max / other.max); }
+		BoundingBox<T> operator+(T scalar) const { return BoundingBox<T>(min + scalar, max + scalar); }
+		BoundingBox<T> operator-(T scalar) const { return BoundingBox<T>(min - scalar, max - scalar); }
+		BoundingBox<T> operator*(T scalar) const { return BoundingBox<T>(min * scalar, max * scalar); }
+		BoundingBox<T> operator/(T scalar) const { return BoundingBox<T>(min / scalar, max / scalar); }
+		BoundingBox<T>& operator+=(const BoundingBox<T>& other) { min += other.min; max += other.max; return *this; }
+		BoundingBox<T>& operator-=(const BoundingBox<T>& other) { min -= other.min; max -= other.max; return *this; }
+		BoundingBox<T>& operator*=(const BoundingBox<T>& other) { min *= other.min; max *= other.max; return *this; }
+		BoundingBox<T>& operator/=(const BoundingBox<T>& other) { min /= other.min; max /= other.max; return *this; }
+        BoundingBox<T>& operator+=(T scalar) { min += scalar; max += scalar; return *this; }
+        BoundingBox<T>& operator-=(T scalar) { min -= scalar; max -= scalar; return *this; }
+        BoundingBox<T>& operator*=(T scalar) { min *= scalar; max *= scalar; return *this; }
+        BoundingBox<T>& operator/=(T scalar) { min /= scalar; max /= scalar; return *this; }
+        bool operator==(const BoundingBox<T>& other) const { return min == other.min && max == other.max; }
+        bool operator!=(const BoundingBox<T>& other) const { return min != other.min || max != other.max; }
+
+        bool Contains(const T& point) const { 
+            return point >= min && point <= max; 
+        }
+
+    };
+
+    using IVec2 = Vec2T<i32>;
+
+    template<typename T>
+    using AutoFreeRaw = std::unique_ptr<T, decltype(&free)>;
 }
 
 namespace std

@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include <vector>
 
 
 namespace AgeUtils
@@ -11,4 +12,8 @@ namespace AgeUtils
 	* @return True if strings are equal, false otherwise
 	*/
 	bool StringCompare(std::string_view str1, std::string_view str2);
+
+	/*
+	*/
+	std::vector<std::string_view> ExplodeString(std::string_view str, std::string_view delimiter);
 }

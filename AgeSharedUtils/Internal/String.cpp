@@ -39,4 +39,17 @@ namespace AgeUtils
 		return true;
 
     }
+	std::vector<std::string_view> ExplodeString(std::string_view str, std::string_view delimiter)
+	{
+		std::vector<std::string_view> result;
+		size_t pos = 0;
+		size_t nextPos = 0;
+		while ((nextPos = str.find(delimiter, pos)) != std::string::npos)
+		{
+			result.push_back(str.substr(pos, nextPos - pos));
+			pos = nextPos + delimiter.size();
+		}
+		result.push_back(str.substr(pos));
+		return result;
+	}
 }
