@@ -12,11 +12,17 @@ namespace AgeAPI::Components
 	{
 	public:
 		BlockComponentBase() = default;
-		BlockComponentBase(const ExperimentalSettings& settings, const SemanticVersion& version, const Identifier& ident) : BehaviourComponentBase(settings, version, ident) {}
+		BlockComponentBase(
+			const ExperimentalSettings& settings,
+			const SemanticVersion& version,
+			const Identifier& identifier,
+			bool canBeDoublePushed = false,
+			bool isTransient = false)
+			: BehaviourComponentBase(settings, version, identifier, canBeDoublePushed, isTransient) {}
 		virtual ~BlockComponentBase() = default;
 		
 		// This may not modify the component
-		virtual ErrorString WriteToJson(std::unique_ptr<Addon>& addon, JsonProxy& proxy, NonOwningPtr<Backend::Bp::BlockBehaviour> blk) const = 0;
+		virtual ErrorString WriteToJson(std::unique_ptr<Addon>& addon, JsonProxy proxy, NonOwningPtr<Backend::Bp::BlockBehaviour> blk) const = 0;
 
         virtual void OnComponentAdded(std::unique_ptr<Addon>& addon, NonOwningPtr<Backend::Bp::BlockBehaviour> blk) {};
 

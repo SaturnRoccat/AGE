@@ -8,7 +8,12 @@ namespace AgeAPI::Components
 	{
 	public:
 		BehaviourComponentBase() = default;
-		BehaviourComponentBase(const ExperimentalSettings& settings, const SemanticVersion& version, const Identifier& ident) : ComponentBase(settings, version, ident) {}
+		BehaviourComponentBase(
+			const ExperimentalSettings& settings,
+			const SemanticVersion& version,
+			const Identifier& ident,
+			bool canBeDoublePushed = false,
+			bool isTransient = false) : ComponentBase(settings, version, ident, canBeDoublePushed, isTransient) {}
 		virtual ~BehaviourComponentBase() = default;
 	};
 

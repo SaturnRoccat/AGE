@@ -8,11 +8,13 @@ namespace AgeAPI::Components
 	{
 	public:
 		ComponentBase() = default;
-		ComponentBase(const ExperimentalSettings& settings, const SemanticVersion& version, const Identifier& componentID)
-			: mExperimentalSettings(settings), mFormatVersion(version), mComponentID(componentID) {}
+		ComponentBase(const ExperimentalSettings& settings, const SemanticVersion& version, const Identifier& componentID, bool canBeDoublePushed = false, bool isTransient = false) : 
+			mExperimentalSettings(settings), mFormatVersion(version), mComponentID(componentID), mCanBeDoublePushed(canBeDoublePushed), mIsTransient(isTransient) {}
 
 
 
+		bool CanBeDoublePushed() const { return mCanBeDoublePushed; }
+		bool IsTransient() const { return mIsTransient; }
 		const ExperimentalSettings& GetExperimentalSettings() const { return mExperimentalSettings; }
 		const SemanticVersion& GetFormatVersion() const { return mFormatVersion; }
 		const Identifier& GetComponentID() const { return mComponentID; }
@@ -20,11 +22,13 @@ namespace AgeAPI::Components
 		void SetExperimentalSettings(const ExperimentalSettings& settings) { mExperimentalSettings = settings; }
 		void SetFormatVersion(const SemanticVersion& version) { mFormatVersion = version; }
         void SetIdentifier(const Identifier& id) { mComponentID = id; }
+		void SetCanBeDoublePushed(bool canBeDoublePushed) { mCanBeDoublePushed = canBeDoublePushed; }
+		void SetIsTransient(bool isTransient) { mIsTransient = isTransient; }
 
 	protected:
 		ExperimentalSettings mExperimentalSettings;
-		bool mCanBeDoublePushed = false; // This allows components to be pushed twice meaning if you did 
-		//something like addcomponent twice it would not throw an error and just merge the two components
+		bool mCanBeDoublePushed = false;	// This allows components to be pushed twice meaning if you did 
+		bool mIsTransient = false;			// This means that the component is not saved to the file
 		SemanticVersion mFormatVersion;
 		Identifier mComponentID;
 	};
