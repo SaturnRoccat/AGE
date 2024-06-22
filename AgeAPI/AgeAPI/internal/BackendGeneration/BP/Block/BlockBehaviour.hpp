@@ -133,6 +133,8 @@ namespace AgeAPI::Backend::Bp
 	{
 	public:
 		BlockBehaviour() = default;
+		BlockBehaviour(const BlockBehaviour&) = delete;
+		BlockBehaviour(BlockBehaviour&&) = default;
 		BlockBehaviour(
 			const Identifier& blockIdentifier,
 			const SemanticVersion& formatVersion,
@@ -146,7 +148,7 @@ namespace AgeAPI::Backend::Bp
 			mBlockComponents.emplace_back(std::move(component));
 		}
 		void AddState(std::unique_ptr<AState> state) { mStates.emplace_back(std::move(state)); }
-		void AddPermutation(Permutation& permutation) { mPermutations.emplace_back(std::move(permutation)); }
+		void AddPermutation(Permutation&& permutation) { mPermutations.emplace_back(std::move(permutation)); }
 
 		const auto& GetBlockComponents() const { return mBlockComponents; }
 		const auto& GetStates() const { return mStates; }

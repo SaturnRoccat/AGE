@@ -29,7 +29,8 @@ namespace AgeAPI::Backend::Bp
             auto err = component->WriteToJson(addon, proxy, this);
             if (err.ContainsError())
 				return err;
-            components.AddMember(key, value, allocator);
+            if (!component->IsTransient())
+                components.AddMember(key, value, allocator);
 		}
 		location.AddMember("components", components, allocator);
         return "";
