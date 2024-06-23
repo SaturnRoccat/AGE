@@ -108,14 +108,14 @@ namespace AgeAPI::Backend::Rp
 		void DrawLineUnsafe(IVec2 begin, IVec2 end, Color color, int thickness = 1)
 		{
 			handleLazyWrite();
-			BresenHamLine<IVec2>(begin, end, [this, &color, thickness](IVec2 pos) {
+			BresenHamLine<IVec2, int>(begin, end, [this, &color](IVec2 pos, int thickness) {
 				if (thickness == 1)
 					UnsafeSet(pos, color);
 				else
 					for (int y = -thickness / 2; y < thickness / 2; y++)
 						for (int x = -thickness / 2; x < thickness / 2; x++)
 							UnsafeSet(pos + IVec2{ x, y }, color);
-				});
+				}, thickness);
 		}
 		void DrawCircleOutline(IVec2 center, i32 radius, Color col, i32 thickness = 1)
 		{
