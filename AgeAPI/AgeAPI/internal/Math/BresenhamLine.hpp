@@ -5,7 +5,7 @@
 namespace AgeAPI
 {
 
-	template<IntegralVec PositionType, typename ...Args>
+	template<IntegralVec2 PositionType, typename ...Args>
 	void BresenHamLine(PositionType begin, PositionType end, std::function<void(const PositionType&)> callback, Args&&... args)
 	{
 		using ValT = decltype(begin.x);

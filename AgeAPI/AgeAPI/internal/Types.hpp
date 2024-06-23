@@ -335,7 +335,7 @@ namespace AgeAPI
     };
 
     template<typename T>
-    concept IntegralVec = requires(T a)
+    concept IntegralVec2 = requires(T a)
     {
         std::is_integral_v<typename T::Type>;
         std::is_integral_v<decltype(a.x)>;

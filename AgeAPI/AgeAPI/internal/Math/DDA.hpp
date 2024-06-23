@@ -4,7 +4,7 @@
 
 namespace AgeAPI
 {
-	template<IntegralVec PositionType, typename ...Args>
+	template<IntegralVec2 PositionType, typename ...Args>
 	void DDA(const PositionType& begin, const PositionType& end, std::function<void(const PositionType&)> callback, Args&&... args)
 	{
 		using PositionTypeStore = decltype(begin.x);
