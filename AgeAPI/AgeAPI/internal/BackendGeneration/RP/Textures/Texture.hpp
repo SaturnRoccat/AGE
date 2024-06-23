@@ -155,7 +155,36 @@ namespace AgeAPI::Backend::Rp
 					if (x * x + y * y < rad * rad)
 						UnsafeSet(center + IVec2{ x, y }, col);
 		}
-
+		void DrawRectangleOutline(IVec2 pos, IVec2 size, Color col, i32 thickness = 1)
+		{
+			handleLazyWrite();
+			for (i32 x = 0; x < size.x; x++)
+				for (i32 y = 0; y < size.y; y++)
+					if (x < thickness || y < thickness || x >= size.x - thickness || y >= size.y - thickness)
+						SafeSet(pos + IVec2{ x, y }, col);
+		}
+		void DrawRectangleOutlineUnsafe(IVec2 pos, IVec2 size, Color col, i32 thickness = 1)
+		{
+			handleLazyWrite();
+			for (i32 x = 0; x < size.x; x++)
+				for (i32 y = 0; y < size.y; y++)
+					if (x < thickness || y < thickness || x >= size.x - thickness || y >= size.y - thickness)
+						UnsafeSet(pos + IVec2{ x, y }, col);
+		}
+		void DrawRectangle(IVec2 pos, IVec2 size, Color col)
+		{
+			handleLazyWrite();
+			for (i32 x = 0; x < size.x; x++)
+				for (i32 y = 0; y < size.y; y++)
+					SafeSet(pos + IVec2{ x, y }, col);
+		}
+		void DrawRectangleUnsafe(IVec2 pos, IVec2 size, Color col)
+		{
+			handleLazyWrite();
+			for (i32 x = 0; x < size.x; x++)
+				for (i32 y = 0; y < size.y; y++)
+					UnsafeSet(pos + IVec2{ x, y }, col);
+		}
 
 		IVec2 GetSize() const { return mSize; }
 		i32 GetWidth() const { return mSize.x; }

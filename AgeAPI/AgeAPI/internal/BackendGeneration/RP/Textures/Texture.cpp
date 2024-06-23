@@ -78,6 +78,8 @@ namespace AgeAPI::Backend::Rp
 		png_write_end(png, nullptr);
 
 		png_destroy_write_struct(&png, &info);
+		// Write the file
+		
 		fclose(file);
 	}
 	void TextureLayer::Resize(IVec2 newSize)
