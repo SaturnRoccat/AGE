@@ -288,6 +288,7 @@ namespace AgeAPI
     class Vec2T
     {
     public:
+        using Type = T;
         T x, y;
     public:
         Vec2T() : x(0), y(0) {}
@@ -329,7 +330,20 @@ namespace AgeAPI
         T Cross(const Vec2T<T>& other) const { return x * other.y - y * other.x; }
         T Magnitude() const { return std::sqrt(x * x + y * y); }
         T MagnitudeSquared() const { return x * x + y * y; }
+        auto Abs() const { return Vec2T<T>(std::abs(x), std::abs(y)); }
+        auto Sign() const { return Vec2T<T>(x < 0 ? -1 : 1, y < 0 ? -1 : 1); }
     };
+
+    template<typename T>
+    concept IntegralVec = requires(T a)
+    {
+        std::is_integral_v<typename T::Type>;
+        std::is_integral_v<decltype(a.x)>;
+        std::is_integral_v<decltype(a.y)>;
+        // Make sure has an abs function
+		{ a.Abs() } -> std::same_as<T>;
+
+	};
 
     template<typename T>
     class Vec3T
@@ -367,6 +381,7 @@ namespace AgeAPI
         T Dot(const Vec3T<T>& other) const { return x * other.x + y * other.y + z * other.z; }
         T Magnitude() const { return std::sqrt(x * x + y * y + z * z); }
         T MagnitudeSquared() const { return x * x + y * y + z * z; }
+        auto Abs() const { return Vec3T<T>(std::abs(x), std::abs(y), std::abs(z)); }
         Vec3T<T> Cross(const Vec3T<T>& other) const { return Vec3T<T>(y * other.z - z * other.y, z * other.x - x * other.z, x * other.y - y * other.x); }
 
 

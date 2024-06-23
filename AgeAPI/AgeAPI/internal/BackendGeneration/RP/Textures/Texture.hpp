@@ -1,6 +1,7 @@
 #pragma once
 #include <png.h>
 #include <AgeAPI/internal/Types.hpp>
+#include <AgeAPI/internal/Math/BresenhamLine.hpp>
 #include <algorithm>
 
 namespace AgeAPI::Backend::Rp
@@ -33,11 +34,15 @@ namespace AgeAPI::Backend::Rp
 		TextureLayer(
 			IVec2 size,
 			u8 bitDepth = 8,
+			Color fillColor = { 0.f, 0.f, 0.f, 0.f },
 			u8 colorType = PNG_COLOR_TYPE_RGBA,
 			u8 interlacing = PNG_INTERLACE_NONE,
 			u8 filterType = PNG_FILTER_TYPE_BASE,
 			u8 compressionType = PNG_COMPRESSION_TYPE_BASE
-		) : mSize(size), mBitDepth(bitDepth), mColorType(colorType), mInterlacing(interlacing), mFilterType(filterType), mCompressionType(compressionType), mData(size.x * size.y) {}
+		) : mSize(size), mBitDepth(bitDepth), mColorType(colorType), mInterlacing(interlacing), mFilterType(filterType), mCompressionType(compressionType), mData(size.x* size.y)
+		{
+			Fill(fillColor);
+		}
 
 		TextureLayer() = default;
 
@@ -88,6 +93,68 @@ namespace AgeAPI::Backend::Rp
 			for (i32 i = 0; i < mData.size(); i++)
 				mData[i]*= other[i] * factor;
 		}
+		void DrawLine(IVec2 begin, IVec2 end, Color color, int thickness = 1)
+		{
+			handleLazyWrite();
+			BresenHamLine<IVec2>(begin, end, [this, &color, thickness](IVec2 pos) {
+				if (thickness == 1)
+					SafeSet(pos, color);
+				else
+					for (int y = -thickness / 2; y < thickness / 2; y++)
+						for (int x = -thickness / 2; x < thickness / 2; x++)
+							SafeSet(pos + IVec2{ x, y }, color);
+			});
+		}
+		void DrawLineUnsafe(IVec2 begin, IVec2 end, Color color, int thickness = 1)
+		{
+			handleLazyWrite();
+			BresenHamLine<IVec2>(begin, end, [this, &color, thickness](IVec2 pos) {
+				if (thickness == 1)
+					UnsafeSet(pos, color);
+				else
+					for (int y = -thickness / 2; y < thickness / 2; y++)
+						for (int x = -thickness / 2; x < thickness / 2; x++)
+							UnsafeSet(pos + IVec2{ x, y }, color);
+				});
+		}
+		void DrawCircleOutline(IVec2 center, i32 radius, Color col, i32 thickness = 1)
+		{
+			handleLazyWrite();
+			for (i32 x = -radius; x < radius; x++)
+				for (i32 y = -radius; y < radius; y++)
+				{
+					int distSq = x * x + y * y;
+					if (distSq < radius * radius && distSq >= (radius - thickness) * (radius - thickness))
+						SafeSet(center + IVec2{ x, y }, col);
+				}
+		}
+		void DrawCircleOutlineUnsafe(IVec2 center, i32 radius, Color col, i32 thickness = 1)
+		{
+			handleLazyWrite();
+			for (i32 x = -radius; x < radius; x++)
+				for (i32 y = -radius; y < radius; y++)
+				{
+					int distSq = x * x + y * y;
+					if (distSq < radius * radius && distSq >= (radius - thickness) * (radius - thickness))
+						UnsafeSet(center + IVec2{ x, y }, col);
+				}
+		}
+		void DrawCircle(IVec2 center, i32 rad, Color col)
+		{
+			handleLazyWrite();
+			for (i32 x = -rad; x < rad; x++)
+				for (i32 y = -rad; y < rad; y++)
+					if (x * x + y * y < rad * rad)
+						SafeSet(center + IVec2{ x, y }, col);
+		}
+		void DrawCircleUnsafe(IVec2 center, i32 rad, Color col)
+		{
+			handleLazyWrite();
+			for (i32 x = -rad; x < rad; x++)
+				for (i32 y = -rad; y < rad; y++)
+					if (x * x + y * y < rad * rad)
+						UnsafeSet(center + IVec2{ x, y }, col);
+		}
 
 
 		IVec2 GetSize() const { return mSize; }
@@ -109,13 +176,14 @@ namespace AgeAPI::Backend::Rp
 		void SetCompressionType(u8 compressionType) { mCompressionType = compressionType; }
 		void SafeSet(IVec2 pos, Color color) 
 		{
-			BoundingBox<IVec2> b = BoundingBox<IVec2>{ {0, 0}, mSize };
+			BoundingBox<IVec2> b = BoundingBox<IVec2>{ {0, 0}, mSize - 1 };
 			if (!b.Contains(pos)) [[unlikely]]
 				return;
 
 			auto& col = At(pos);
 			col = color;
 		}
+		void UnsafeSet(IVec2 pos, Color color) { At(pos) = color; }
 	private:
 		void readToMemory(const std::string& path);
 		void handleLazyWrite() {
@@ -212,7 +280,7 @@ namespace AgeAPI::Backend::Rp
 	{
 	private:
 		constexpr static u8 mFilterType = PNG_FILTER_TYPE_BASE;
-		constexpr static u8 mCompressionType = PNG_COMPRESSION_TYPE_BASE;
+		constexpr static u8 mCompressionType = PNG_COMPRESSION_TYPE_DEFAULT;
 		constexpr static u8 mInterlacing = PNG_INTERLACE_NONE;
 
 		std::vector<TextureLayer> mLayers{ 4 };

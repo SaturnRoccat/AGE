@@ -83,7 +83,7 @@ namespace AgeAPI::Backend::Rp
 	void TextureLayer::Resize(IVec2 newSize)
 	{
 		handleLazyWrite();
-		TextureLayer newSelf(newSize, mBitDepth, mColorType, mInterlacing, mFilterType, mCompressionType);
+		TextureLayer newSelf(newSize, mBitDepth, {0.f, 0.f, 0.f, 0.f}, mColorType, mInterlacing, mFilterType, mCompressionType);
 		auto newY = std::min(mSize.y, newSize.y);
 		auto newX = std::min(mSize.x, newSize.x);
 		for (int y = 0; y < newY; y++)
