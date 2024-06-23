@@ -85,7 +85,7 @@ namespace AgeAPI
         SemanticVersion(u8 major, u8 minor, u8 patch) : mMajor(major), mMinor(minor), mPatch(patch) {}
         SemanticVersion(std::array<u8, 3> version) : mVersionArray(version) {}
         SemanticVersion(u32 version = 0) : mVersion(version) {}
-
+        ~SemanticVersion() = default;
         u8 GetMajor() const { return mMajor; }
         u8 GetMinor() const { return mMinor; }
         u8 GetPatch() const { return mPatch; }
@@ -122,11 +122,47 @@ namespace AgeAPI
     {
     public:
 		NonOwningPtr(T* ptr) : mPtr(ptr) {}
-		T* operator->() { return mPtr; }
-		T& operator*() { return *mPtr; }
-		T* Get() { return mPtr; }
-        const T* Get() const { return mPtr; }
-        operator T*() { return mPtr; }
+		T* operator->() 
+        { 
+            #ifndef NDEBUG
+            if (!mPtr)
+				throw std::runtime_error("NonOwningPtr Destroyed While Still Being Required");
+            #endif
+            return mPtr;
+        }
+		T& operator*() 
+        { 
+            #ifndef NDEBUG
+            if (!mPtr)
+                throw std::runtime_error("NonOwningPtr Destroyed While Still Being Required");
+            #endif
+            return *mPtr;
+        }
+		T* Get() 
+        {
+            #ifndef NDEBUG
+            if (!mPtr)
+				throw std::runtime_error("NonOwningPtr Destroyed While Still Being Required");
+            #endif
+
+            return mPtr;
+        }
+        const T* Get() const 
+        {
+            #ifndef NDEBUG
+            if (!mPtr)
+                throw std::runtime_error("NonOwningPtr Destroyed While Still Being Required");
+            #endif
+            return mPtr;
+        }
+        operator T*() 
+        {
+            #ifndef NDEBUG
+            if (!mPtr)
+				throw std::runtime_error("NonOwningPtr Destroyed While Still Being Required");
+            #endif
+            return mPtr; 
+        }
 
         void operator delete(void* ptr) { throw std::runtime_error("Cannot delete NonOwningPtr"); } 
     private:
