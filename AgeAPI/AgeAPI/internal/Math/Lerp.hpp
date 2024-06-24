@@ -14,4 +14,9 @@ namespace AgeAPI
     {
         return a + (b - a) * t;
     }
+
+    float AngleToRadians(float angle)
+    {
+		return angle * 0.0174532925f;
+	}
 }

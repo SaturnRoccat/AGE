@@ -164,7 +164,7 @@ namespace AgeAPI
             return mPtr; 
         }
 
-        void operator delete(void* ptr) { throw std::runtime_error("Cannot delete NonOwningPtr"); } 
+        void operator delete(void* ptr) = delete;
     private:
         T* mPtr;
 
@@ -337,6 +337,7 @@ namespace AgeAPI
             (T)x + (T)(((float)other.x - (float)x) * t),
             (T)y + (T)(((float)other.y - (float)y) * t));
         }
+        T Length() const { return std::sqrt(x * x + y * y); }
     };
 
     template<typename T>
@@ -445,13 +446,34 @@ namespace AgeAPI
 			(T)z + (T)(((float)other.z - (float)z) * t),
 			(T)w + (T)(((float)other.w - (float)w) * t));
         }
-
+        T Length() const { return std::sqrt(x * x + y * y + z * z + w * w); }
 
         
 
 
+    };/*
+    using Color = Vec4T<float>;*/
+    class Color : public Vec4T<float>
+    {
+    public:
+        using Vec = Vec4T<float>;
+    public:
+        Color() : Vec4T<float>(0, 0, 0, 0) {}
+        Color(float r, float g, float b, float a) : Vec4T<float>(r, g, b, a) {}
+        Color(const Color& other) : Vec4T<float>(other) {}
+        Color(const Vec& other) : Vec4T<float>(other) {}
+        Color(Vec&& other) noexcept : Vec4T<float>(std::move(other)) {}
+
+        Color GrayScale() const
+        {
+            float redSmoosh = x * 0.3f;
+            float greenSmoosh = y * 0.59f;
+            float blueSmoosh = z * 0.11f;
+            float gray = redSmoosh + greenSmoosh + blueSmoosh;
+            return Color(gray, gray, gray, w);
+        }
+
     };
-    using Color = Vec4T<float>;
 
     template<typename T>
     class BoundingBox
