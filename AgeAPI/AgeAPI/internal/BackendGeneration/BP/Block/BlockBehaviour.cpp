@@ -4,7 +4,7 @@
 
 namespace AgeAPI::Backend::Bp
 {
-    ErrorString BlockBehaviour::BuildBlockBehaviourJson(std::unique_ptr<Addon>& addon, rapidjson::Value& location, rapidjson::Document::AllocatorType& allocator)
+    ErrorString BlockBehaviour::BuildBlockBehaviourJson(NonOwningPtr<Addon> addon, rapidjson::Value& location, rapidjson::Document::AllocatorType& allocator)
     {
         rapidjson::ValueWriteWithKey<std::string>::WriteToJsonValue("format_version", this->mFormatVersion.GetString(), location, allocator);
         rapidjson::Value minecraftBlock(rapidjson::kObjectType);
@@ -18,7 +18,7 @@ namespace AgeAPI::Backend::Bp
         return "";
     }
 
-    ErrorString BlockBehaviour::WriteComponents(std::unique_ptr<Addon>& addon, rapidjson::Value& location, rapidjson::Document::AllocatorType& allocator) 
+    ErrorString BlockBehaviour::WriteComponents(NonOwningPtr<Addon> addon, rapidjson::Value& location, rapidjson::Document::AllocatorType& allocator) 
     {
         rapidjson::Value components(rapidjson::kObjectType);
         for (const auto& [key, component] : this->mBlockComponents)
@@ -35,7 +35,7 @@ namespace AgeAPI::Backend::Bp
 		location.AddMember("components", components, allocator);
         return "";
     }
-    ErrorString BlockBehaviour::WritePermutations(std::unique_ptr<Addon>& addon, rapidjson::Value& location, rapidjson::Document::AllocatorType& allocator)
+    ErrorString BlockBehaviour::WritePermutations(NonOwningPtr<Addon> addon, rapidjson::Value& location, rapidjson::Document::AllocatorType& allocator)
     {
         if (this->mPermutations.empty())
 			return "";

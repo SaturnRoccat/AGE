@@ -163,7 +163,7 @@ namespace AgeAPI::Backend::Bp
 		const auto& GetStates() const { return mStates; }
 		const auto& GetPermutations() const { return mPermutations; }
 
-		ErrorString BuildBlockBehaviourJson(std::unique_ptr<Addon>& addon, rapidjson::Value& location, rapidjson::Document::AllocatorType& allocator);
+		ErrorString BuildBlockBehaviourJson(NonOwningPtr<Addon> addon, rapidjson::Value& location, rapidjson::Document::AllocatorType& allocator);
 		inline std::expected<rapidjson::Document, ErrorString> BuildBlockBehaviourDocument(std::unique_ptr<Addon>& addon)
 		{
 			auto doc = rapidjson::Document{};
@@ -175,8 +175,8 @@ namespace AgeAPI::Backend::Bp
 			return doc;
 		}
 	private:
-		ErrorString WriteComponents(std::unique_ptr<Addon>& addon, rapidjson::Value& location, rapidjson::Document::AllocatorType& allocator);
-		ErrorString WritePermutations(std::unique_ptr<Addon>& addon, rapidjson::Value& location, rapidjson::Document::AllocatorType& allocator);
+		ErrorString WriteComponents(NonOwningPtr<Addon> addon, rapidjson::Value& location, rapidjson::Document::AllocatorType& allocator);
+		ErrorString WritePermutations(NonOwningPtr<Addon> addon, rapidjson::Value& location, rapidjson::Document::AllocatorType& allocator);
 		void WriteStates(rapidjson::Value& location, rapidjson::Document::AllocatorType& allocator);
 	private:
 		std::unordered_map<std::string, std::unique_ptr<Components::BlockComponentBase>> mBlockComponents{};
