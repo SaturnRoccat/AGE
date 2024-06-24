@@ -43,19 +43,20 @@ namespace AgeAPI::Backend::Rp
 		{
 			Fill(fillColor);
 		}
+		TextureLayer(const TextureLayer& bottom, const TextureLayer& Top, float alpha);
 
 		TextureLayer() = default;
 
 		void Write(const std::string& path);
 
-		Color& operator[](IVec2 pos) { return mData[pos.x + pos.y * mSize.x]; }
-		Color& operator[](i32 index) { return mData[index]; }
+		Color& operator[](IVec2 pos) { handleLazyWrite(); return mData[pos.x + pos.y * mSize.x]; }
+		Color& operator[](i32 index) { handleLazyWrite(); return mData[index]; }
 
 		const Color& operator[](IVec2 pos) const { return mData[pos.x + pos.y * mSize.x]; }
 		const Color& operator[](i32 index) const { return mData[index]; }
 
-		Color& At(IVec2 pos) { return mData[pos.x + pos.y * mSize.x]; }
-		Color& At(i32 index) { return mData[index]; }
+		Color& At(IVec2 pos) { handleLazyWrite(); return mData[pos.x + pos.y * mSize.x]; }
+		Color& At(i32 index) { handleLazyWrite(); return mData[index]; }
 
 		const Color& At(IVec2 pos) const { return mData[pos.x + pos.y * mSize.x]; }
 		const Color& At(i32 index) const { return mData[index]; }
@@ -185,6 +186,118 @@ namespace AgeAPI::Backend::Rp
 				for (i32 y = 0; y < size.y; y++)
 					UnsafeSet(pos + IVec2{ x, y }, col);
 		}
+		void DrawTriangleOutline(IVec2 p1, IVec2 p2, IVec2 p3, Color col, i32 thickness = 1)
+		{
+			handleLazyWrite();
+			DrawLine(p1, p2, col, thickness);
+			DrawLine(p2, p3, col, thickness);
+			DrawLine(p3, p1, col, thickness);
+		}
+		void DrawTriangleOutlineUnsafe(IVec2 p1, IVec2 p2, IVec2 p3, Color col, i32 thickness = 1)
+		{
+			handleLazyWrite();
+			DrawLineUnsafe(p1, p2, col, thickness);
+			DrawLineUnsafe(p2, p3, col, thickness);
+			DrawLineUnsafe(p3, p1, col, thickness);
+		}
+		void DrawTriangle(IVec2 p1, IVec2 p2, IVec2 p3, Color col)
+		{
+			handleLazyWrite();
+			auto min = [](i32 a, i32 b) { return a < b ? a : b; };
+			auto max = [](i32 a, i32 b) { return a > b ? a : b; };
+			auto IsPointInTriangle = [](IVec2 p, IVec2 a, IVec2 b, IVec2 c) -> bool {
+				auto sign = [](IVec2 p1, IVec2 p2, IVec2 p3) -> i32 {
+					return (p1.x - p3.x) * (p2.y - p3.y) - (p2.x - p3.x) * (p1.y - p3.y);
+				};
+				bool b1, b2, b3;
+				b1 = sign(p, a, b) < 0.0f;
+				b2 = sign(p, b, c) < 0.0f;
+				b3 = sign(p, c, a) < 0.0f;
+				return ((b1 == b2) && (b2 == b3));
+			};
+			auto edge = [&](IVec2 a, IVec2 b) {
+				BresenHamLine<IVec2>(a, b, [this, &col](IVec2 pos) {
+										SafeSet(pos, col);
+														});
+			};
+			auto fill = [&](IVec2 a, IVec2 b, IVec2 c) {
+				i32 minX = min(a.x, min(b.x, c.x));
+				i32 minY = min(a.y, min(b.y, c.y));
+				i32 maxX = max(a.x, max(b.x, c.x));
+				i32 maxY = max(a.y, max(b.y, c.y));
+				for (i32 x = minX; x <= maxX; x++)
+					for (i32 y = minY; y <= maxY; y++)
+					{
+						IVec2 p{ x, y };
+						if (p.x < 0 || p.y < 0 || p.x >= mSize.x || p.y >= mSize.y)
+							continue;
+						if (IsPointInTriangle(p, a, b, c))
+							SafeSet(p, col);
+					}
+			};
+			edge(p1, p2);
+			edge(p2, p3);
+			edge(p3, p1);
+			fill(p1, p2, p3);
+		}
+		void DrawTriangleUnsafe(IVec2 p1, IVec2 p2, IVec2 p3, Color col)
+		{
+			handleLazyWrite();
+			auto min = [](i32 a, i32 b) { return a < b ? a : b; };
+			auto max = [](i32 a, i32 b) { return a > b ? a : b; };
+			auto IsPointInTriangle = [](IVec2 p, IVec2 a, IVec2 b, IVec2 c) -> bool {
+				auto sign = [](IVec2 p1, IVec2 p2, IVec2 p3) -> i32 {
+					return (p1.x - p3.x) * (p2.y - p3.y) - (p2.x - p3.x) * (p1.y - p3.y);
+					};
+				bool b1, b2, b3;
+				b1 = sign(p, a, b) < 0.0f;
+				b2 = sign(p, b, c) < 0.0f;
+				b3 = sign(p, c, a) < 0.0f;
+				return ((b1 == b2) && (b2 == b3));
+				};
+			auto edge = [&](IVec2 a, IVec2 b) {
+				BresenHamLine<IVec2>(a, b, [this, &col](IVec2 pos) {
+					UnsafeSet(pos, col);
+					});
+				};
+			auto fill = [&](IVec2 a, IVec2 b, IVec2 c) {
+				i32 minX = min(a.x, min(b.x, c.x));
+				i32 minY = min(a.y, min(b.y, c.y));
+				i32 maxX = max(a.x, max(b.x, c.x));
+				i32 maxY = max(a.y, max(b.y, c.y));
+				for (i32 x = minX; x <= maxX; x++)
+					for (i32 y = minY; y <= maxY; y++)
+					{
+						IVec2 p{ x, y };
+						if (p.x < 0 || p.y < 0 || p.x >= mSize.x || p.y >= mSize.y)
+							continue;
+						if (IsPointInTriangle(p, a, b, c))
+							UnsafeSet(p, col);
+					}
+				};
+			edge(p1, p2);
+			edge(p2, p3);
+			edge(p3, p1);
+			fill(p1, p2, p3);
+		}
+		void DrawPolygonOutline(const std::vector<IVec2>& points, Color col, i32 thickness = 1)
+		{
+			handleLazyWrite();
+			for (i32 i = 0; i < points.size(); i++)
+				DrawLine(points[i], points[(i + 1) % points.size()], col, thickness);
+		}
+		void DrawPolygonOutlineUnsafe(const std::vector<IVec2>& points, Color col, i32 thickness = 1)
+		{
+			handleLazyWrite();
+			for (i32 i = 0; i < points.size(); i++)
+				DrawLineUnsafe(points[i], points[(i + 1) % points.size()], col, thickness);
+		}
+		// TODO: Add bezier curve drawing
+		// TODO: Add polygon filling
+
+		void Merge(const TextureLayer& other, float alpha = 0.5f);
+		// TODO: Add handling for different sized layers
+
 
 		IVec2 GetSize() const { return mSize; }
 		i32 GetWidth() const { return mSize.x; }
@@ -312,14 +425,78 @@ namespace AgeAPI::Backend::Rp
 		constexpr static u8 mFilterType = PNG_FILTER_TYPE_BASE;
 		constexpr static u8 mCompressionType = PNG_COMPRESSION_TYPE_DEFAULT;
 		constexpr static u8 mInterlacing = PNG_INTERLACE_NONE;
+		struct TextureInternalLayer
+		{
+			TextureInternalLayer() = default;
+			TextureInternalLayer(TextureLayer&& layer, float alpha = 1.f) : TL(std::move(layer)), alpha(alpha) {}
+			TextureInternalLayer(const TextureLayer& layer, float alpha = 1.f) : TL(layer), alpha(alpha) {}
+			TextureLayer TL;
+			float alpha = 1.f;
 
-		std::vector<TextureLayer> mLayers{ 4 };
-		IVec2 mSize;
-		u8 mBitDepth;
-		u8 mColorType;
 
+		};
+		std::vector<TextureInternalLayer> mLayers{4};
+		IVec2 mSize{};
+		u8 mBitDepth{};
+		u8 mColorType{};
+		u8 mSelectedLayer{0};
+	private:
+	public:
+		Texture(
+			IVec2 size,
+			u8 bitDepth = 8,
+			u8 colorType = PNG_COLOR_TYPE_RGBA,
+			Color fillColor = { 0.f, 0.f, 0.f, 0.f }
+		) : mSize(size), mBitDepth(bitDepth), mColorType(colorType)
+		{
+			mLayers.push_back(TextureInternalLayer(TextureLayer(size, bitDepth, fillColor, colorType, mInterlacing, mFilterType, mCompressionType)));
+		}
+		Texture() = default;
+		Texture(TextureLayer&& layer) : mLayers(1, TextureInternalLayer(std::move(layer)))
+		{
+			mSize = mLayers[0].TL.GetSize();
+			mBitDepth = mLayers[0].TL.GetBitDepth();
+			mColorType = mLayers[0].TL.GetColorType();
+		}
+		Texture(const std::string& path, bool lazyLoad = true) : mLayers(1, TextureLayer(path, lazyLoad))
+		{
+			mSize = mLayers[0].TL.GetSize();
+			mBitDepth = mLayers[0].TL.GetBitDepth();
+			mColorType = mLayers[0].TL.GetColorType();
+		}
+		TextureLayer& operator[](i32 index) { return mLayers[index].TL; }
+		const TextureLayer& operator[](i32 index) const { return mLayers[index].TL; }
 
+		TextureLayer Flatten();
 
+		void FinalizeAndWrite(const std::string& path);
+
+		void AddLayer(const TextureLayer& layer) { mLayers.push_back(TextureInternalLayer(layer)); }
+		void AddLayer(TextureLayer&& layer) { mLayers.push_back(std::move(layer)); }
+		void AddLayer() { mLayers.push_back(TextureLayer(mSize, mBitDepth, { 0.f, 0.f, 0.f, 0.f }, mColorType, mInterlacing, mFilterType, mCompressionType)); }
+		void RemoveLayer(i32 index) { mLayers.erase(mLayers.begin() + index); }
+		void SetLayer(i32 index) { mSelectedLayer = index; }
+		TextureLayer& GetLayer(i32 index) { return mLayers[index].TL; }
+		TextureLayer& GetActiveLayer() { return mLayers[mSelectedLayer].TL; }
+		const TextureLayer& GetLayer(i32 index) const { return mLayers[index].TL; }
+		const TextureLayer& GetActiveLayer() const { return mLayers[mSelectedLayer].TL; }
+		i32 GetLayerCount() const { return mLayers.size(); }
+		IVec2 GetSize() const { return mSize; }
+		i32 GetWidth() const { return mSize.x; }
+		i32 GetHeight() const { return mSize.y; }
+		u8 GetBitDepth() const { return mBitDepth; }
+		u8 GetColorType() const { return mColorType; }
+		void DisableLayer(i32 index) { mLayers[index].alpha = 0.f; }
+		void EnableLayer(i32 index) { mLayers[index].alpha = 1.f; }
+		void SetLayerAlpha(i32 index, float alpha) { mLayers[index].alpha = alpha; }
+		void SetSelectedLayerAlpha(float alpha) { mLayers[mSelectedLayer].alpha = alpha; }
+		float GetLayerAlpha(i32 index) const { return mLayers[index].alpha; }
+		float GetSelectedLayerAlpha() const { return mLayers[mSelectedLayer].alpha; }
+		void SelectLayer(i32 index) { mSelectedLayer = index; }
+		auto& GetSelectedLayer() { return mLayers[mSelectedLayer]; }
+		constexpr static u8 GetFilterType() { return mFilterType; }
+		constexpr static u8 GetCompressionType() { return mCompressionType; }
+		constexpr static u8 GetInterlacing() { return mInterlacing; }
 	};
 
 }

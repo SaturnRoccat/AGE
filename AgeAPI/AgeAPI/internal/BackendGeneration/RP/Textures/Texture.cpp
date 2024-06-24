@@ -14,6 +14,46 @@ namespace AgeAPI::Backend::Rp
 			readToMemory(path);
 
 	}
+	TextureLayer::TextureLayer(const TextureLayer& bottom, const TextureLayer& Top, float alpha)
+	{
+		// TODO: Add error as value
+		if (bottom.mSize != Top.mSize)
+			throw std::runtime_error("Texture sizes do not match");
+		if (bottom.mBitDepth != Top.mBitDepth)
+			throw std::runtime_error("Texture bit depths do not match");
+		if (bottom.mColorType != Top.mColorType)
+			throw std::runtime_error("Texture color types do not match");
+
+		mSize = bottom.mSize;
+		mBitDepth = bottom.mBitDepth;
+		mColorType = bottom.mColorType;
+		mInterlacing = bottom.mInterlacing;
+		mFilterType = bottom.mFilterType;
+		mCompressionType = bottom.mCompressionType;
+
+		mData.resize(mSize.x * mSize.y); 
+
+		for (int y = 0; y < mSize.y; y++)
+			for (int x = 0; x < mSize.x; x++)
+			{
+				auto bottomColor = bottom[{x, y}];
+				auto topColor = Top[{x, y}];
+				Color newColor;
+				if (topColor.a == 0.f)
+					newColor = bottomColor;
+				else if (topColor.a == 1.f)
+					newColor = topColor;
+				else
+				{
+					newColor.r = topColor.r * alpha + bottomColor.r * (1.f - alpha);
+					newColor.g = topColor.g * alpha + bottomColor.g * (1.f - alpha);
+					newColor.b = topColor.b * alpha + bottomColor.b * (1.f - alpha);
+					newColor.a = topColor.a * alpha + bottomColor.a * (1.f - alpha);
+				}
+				(*this)[{x, y}] = newColor;
+
+			}
+	}
 	void TextureLayer::Write(const std::string& path)
 	{
 		if (mIsLazyLoaded) // If lazy loaded we can just copy the file with no read to memory
@@ -78,9 +118,31 @@ namespace AgeAPI::Backend::Rp
 		png_write_end(png, nullptr);
 
 		png_destroy_write_struct(&png, &info);
-		// Write the file
-		
 		fclose(file);
+	}
+	void TextureLayer::Merge(const TextureLayer& other, float alpha)
+	{
+		handleLazyWrite();
+
+		for (int y = 0; y < mSize.y; y++)
+			for (int x = 0; x < mSize.x; x++)
+			{
+				auto bottomColor = At({ x, y });
+				auto topColor = other[{x, y}];
+				Color newColor;
+				if (topColor.a == 0.f)
+					newColor = bottomColor;
+				else if (topColor.a == 1.f && alpha == 1.f)
+					newColor = topColor;
+				else
+				{
+					newColor.r = topColor.r * alpha + bottomColor.r * (1.f - alpha);
+					newColor.g = topColor.g * alpha + bottomColor.g * (1.f - alpha);
+					newColor.b = topColor.b * alpha + bottomColor.b * (1.f - alpha);
+					newColor.a = topColor.a * alpha + bottomColor.a * (1.f - alpha);
+				}
+				(*this)[{x, y}] = newColor;
+			}
 	}
 	void TextureLayer::Resize(IVec2 newSize)
 	{
@@ -165,5 +227,32 @@ namespace AgeAPI::Backend::Rp
 		png_destroy_read_struct(&png, &info, nullptr);
 
 
+	}
+	TextureLayer Texture::Flatten()
+	{
+		if (this->mLayers.size() == 1)
+			return mLayers[0].TL;
+
+		u32 selectedLayerCache = mSelectedLayer;
+		SelectLayer(0);
+
+		u32 readerIndex = 1;
+		TextureLayer flattenedLayer(GetSelectedLayer().TL, mLayers[readerIndex].TL, GetSelectedLayerAlpha());
+
+		readerIndex++;
+		while (readerIndex < mLayers.size())
+		{
+			SelectLayer(readerIndex);
+			auto& selectedLayer = GetSelectedLayer();
+			flattenedLayer.Merge(selectedLayer.TL, selectedLayer.alpha);
+			readerIndex++;
+		}
+		mSelectedLayer = selectedLayerCache;
+		return flattenedLayer;
+	}
+	void Texture::FinalizeAndWrite(const std::string& path)
+	{
+		auto texture = Flatten();
+		texture.Write(path);
 	}
 }
