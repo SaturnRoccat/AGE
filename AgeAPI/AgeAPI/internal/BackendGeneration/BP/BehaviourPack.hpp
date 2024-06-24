@@ -9,8 +9,9 @@ namespace AgeAPI::Backend::Bp
 	private:
 		Manifest mManifest{};
 		std::vector<BlockBehaviour> mBlockBehaviours{};
+		NonOwningPtr<Addon> mAddon{};
 	public:
-		BehaviourPack() {};
+		BehaviourPack(NonOwningPtr<Addon> addon) : mAddon(addon) {};
 
 		void WriteManifest(Manifest&& manifest) { mManifest = std::move(manifest); }
 		const Manifest& GetManifest() const { return mManifest; }

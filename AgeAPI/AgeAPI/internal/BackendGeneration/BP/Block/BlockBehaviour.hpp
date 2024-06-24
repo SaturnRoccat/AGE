@@ -139,10 +139,11 @@ namespace AgeAPI::Backend::Bp
 		BlockBehaviour(
 			const Identifier& blockIdentifier,
 			const SemanticVersion& formatVersion,
+			NonOwningPtr<Addon> addon,
 			bool isHiddenInCommands = false
-		) : mBlockIdentifier(blockIdentifier), mFormatVersion(formatVersion), mIsHiddenInCommands(isHiddenInCommands) {}
+		) : mBlockIdentifier(blockIdentifier), mFormatVersion(formatVersion), mIsHiddenInCommands(isHiddenInCommands), mAddon(addon) {}
 
-		ErrorString AddBlockComponent(std::unique_ptr<Addon>& addon, std::unique_ptr<Components::BlockComponentBase>& component) 
+		ErrorString AddBlockComponent(NonOwningPtr<Addon> addon, std::unique_ptr<Components::BlockComponentBase>& component) 
 		{ 
 			if (component->GetFormatVersion().GetVersion() > mFormatVersion.GetVersion())
 				return ErrorString("Component version is higher than the block behaviour version");
@@ -151,8 +152,8 @@ namespace AgeAPI::Backend::Bp
 				return ErrorString("Component already exists");
 			else if (component->CanBeDoublePushed() && it != mBlockComponents.end())
 				return it->second->MergeDoublePush(addon, this, component);
-			else
-				mBlockComponents[component->GetComponentID().GetFullNamespace()] = std::move(component);
+			component->OnComponentAdded(addon, this);
+			mBlockComponents[component->GetComponentID().GetFullNamespace()] = std::move(component);
 			return "";
 		}
 		void AddState(std::unique_ptr<AState> state) { mStates.emplace_back(std::move(state)); }
@@ -186,6 +187,7 @@ namespace AgeAPI::Backend::Bp
 		Identifier mBlockIdentifier{};
 		SemanticVersion mFormatVersion{};
 		bool mIsHiddenInCommands = false;
+		NonOwningPtr<Addon> mAddon{};
 
 	};
 }

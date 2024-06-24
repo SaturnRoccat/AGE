@@ -122,6 +122,9 @@ namespace AgeAPI
     {
     public:
 		NonOwningPtr(T* ptr) : mPtr(ptr) {}
+        NonOwningPtr(const NonOwningPtr<T>& other) : mPtr(other.mPtr) {}
+        NonOwningPtr(NonOwningPtr<T>&& other) noexcept : mPtr(std::move(other.mPtr)) {}
+        NonOwningPtr() = default;
 		T* operator->() 
         { 
             #ifndef NDEBUG
@@ -166,7 +169,7 @@ namespace AgeAPI
 
         void operator delete(void* ptr) = delete;
     private:
-        T* mPtr;
+        T* mPtr{nullptr};
 
 
     };

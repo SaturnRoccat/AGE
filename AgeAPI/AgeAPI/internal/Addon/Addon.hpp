@@ -11,7 +11,7 @@ namespace AgeAPI
 	public:
 		Addon() {};
 	private:
-		Backend::Bp::BehaviourPack mBp;
+		Backend::Bp::BehaviourPack mBp{this};
 
 	};
 }
