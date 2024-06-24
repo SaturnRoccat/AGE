@@ -52,7 +52,7 @@ namespace AgeAPI::Backend::Rp
 
 			}
 	}
-	void TextureLayer::Write(const std::string& path)
+	TextureLayer& TextureLayer::Write(const std::string& path)
 	{
 		if (mIsLazyLoaded) // If lazy loaded we can just copy the file with no read to memory
 		{
@@ -67,7 +67,7 @@ namespace AgeAPI::Backend::Rp
 			{
 				throw std::runtime_error("Failed to copy file: " + std::string(e.what()));
 			}
-			return;
+			return *this;
 		}
 
 		std::vector<std::unique_ptr<u8[]>> fileData;
@@ -117,8 +117,9 @@ namespace AgeAPI::Backend::Rp
 
 		png_destroy_write_struct(&png, &info);
 		fclose(file);
+		return *this;
 	}
-	void TextureLayer::Merge(const TextureLayer& other, float alpha)
+	TextureLayer& TextureLayer::Merge(const TextureLayer& other, float alpha)
 	{
 		handleLazyWrite();
 
@@ -141,8 +142,9 @@ namespace AgeAPI::Backend::Rp
 				}
 				(*this)[{x, y}] = newColor;
 			}
+		return *this;
 	}
-	void TextureLayer::Resize(IVec2 newSize)
+	TextureLayer& TextureLayer::Resize(IVec2 newSize)
 	{
 		handleLazyWrite();
 		TextureLayer newSelf(newSize, mBitDepth, {0.f, 0.f, 0.f, 0.f}, mColorType, mInterlacing, mFilterType, mCompressionType);
@@ -152,6 +154,7 @@ namespace AgeAPI::Backend::Rp
 			for (int x = 0; x < newX; x++)
 				newSelf[{x, y}] = (*this)[{x, y}];
 		*this = std::move(newSelf);
+		return *this;
 	}
 	void TextureLayer::readToMemory(const std::string& path)
 	{

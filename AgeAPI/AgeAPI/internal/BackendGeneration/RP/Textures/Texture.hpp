@@ -47,7 +47,7 @@ namespace AgeAPI::Backend::Rp
 
 		TextureLayer() = default;
 
-		void Write(const std::string& path);
+		TextureLayer& Write(const std::string& path);
 
 		Color& operator[](IVec2 pos) { handleLazyWrite(); return mData[pos.x + pos.y * mSize.x]; }
 		Color& operator[](i32 index) { handleLazyWrite(); return mData[index]; }
@@ -61,40 +61,66 @@ namespace AgeAPI::Backend::Rp
 		const Color& At(IVec2 pos) const { return mData[pos.x + pos.y * mSize.x]; }
 		const Color& At(i32 index) const { return mData[index]; }
 
-		void Fill(Color color) { handleLazyWrite();  std::fill(mData.begin(), mData.end(), color); }
-		void FillRow(i32 row, Color color) { handleLazyWrite(); std::fill(mData.begin() + row * mSize.x, mData.begin() + (row + 1) * mSize.x, color); }
-		void FillColumn(i32 column, Color color) { handleLazyWrite(); for (i32 y = 0; y < mSize.y; y++) At({ column, y }) = color; }
+		TextureLayer& Fill(Color color) { handleLazyWrite();  std::fill(mData.begin(), mData.end(), color); return *this;}
+		TextureLayer& FillRow(i32 row, Color color) { handleLazyWrite(); std::fill(mData.begin() + row * mSize.x, mData.begin() + (row + 1) * mSize.x, color); return *this;}
+		TextureLayer& FillColumn(i32 column, Color color) { handleLazyWrite(); for (i32 y = 0; y < mSize.y; y++) At({ column, y }) = color; return *this;}
+		TextureLayer& FillGradientTopDown(Color start, Color end) { handleLazyWrite(); for (i32 i = 0; i < mData.size(); i++) mData[i] = start.Lerp(end, (float)i / (float)mData.size()); return *this;}
+		TextureLayer& FillGradientLeftRight(Color start, Color end) { handleLazyWrite(); for (i32 y = 0; y < mSize.y; y++) for (i32 x = 0; x < mSize.x; x++) At({ x, y }) = start.Lerp(end, (float)x / (float)mSize.x); return *this;}
+		// FIXME: Does not function corectly
+		TextureLayer& FillGradientAngle(Color start, Color end, float angle)
+		{ 
+			handleLazyWrite();
+			for (i32 y = 0; y < mSize.y; y++)
+				for (i32 x = 0; x < mSize.x; x++)
+					At({ x, y }) = start.Lerp(end, (float)(x * std::cos(angle) + y * std::sin(angle)) / (float)mSize.x /*handle the fact that rotation makes the distance longer*/);
+			return *this;
+		}
+		TextureLayer& FillGradientRow(i32 row, Color start, Color end) { handleLazyWrite(); for (i32 x = 0; x < mSize.x; x++) At({ x, row }) = start.Lerp(end, (float)x / (float)mSize.x); return *this;
+		}
+		TextureLayer& FillGradientColumn(i32 column, Color start, Color end) { handleLazyWrite(); for (i32 y = 0; y < mSize.y; y++) At({ column, y }) = start.Lerp(end, (float)y / (float)mSize.y); return *this; }
 		
-		void Multiply(Color color) 
+		TextureLayer& GrayScale() { handleLazyWrite(); std::transform(mData.begin(), mData.end(), mData.begin(), [](Color c) { return c.GrayScale(); }); return *this; }
+
+
+		TextureLayer& Multiply(Color color)
 		{ 
 			handleLazyWrite();
 			std::transform(mData.begin(), mData.end(), mData.begin(), [&color](Color c) { return c * color; }); 
+			return *this;
 		}
-		void MultiplyRow(i32 row, Color color) {
+		TextureLayer& Multiply(const TextureLayer& other) {
+			handleLazyWrite();
+			for (i32 i = 0; i < mData.size(); i++)
+				mData[i]*= other[i];
+			return *this;
+		}
+		TextureLayer& Multiply(const TextureLayer& other, float factor) {
+			handleLazyWrite();
+			for (i32 i = 0; i < mData.size(); i++)
+				mData[i]*= other[i] * factor;
+			return *this;
+		}
+		TextureLayer& Multiply(Color start, Color end) {
+			handleLazyWrite();
+			for (i32 i = 0; i < mData.size(); i++)
+				mData[i] *= start.Lerp(end, (float)i / (float)mData.size());
+			return *this;
+		}
+		TextureLayer& MultiplyRow(i32 row, Color color) {
 			handleLazyWrite();
 			std::transform(
 				mData.begin() + row * mSize.x,
 				mData.begin() + (row + 1) * mSize.x, mData.begin() + row * mSize.x,
 				[&color](Color c) { return c * color;});
+			return *this;
 		}
-		void MultiplyColumn(i32 column, Color color) {
+		TextureLayer& MultiplyColumn(i32 column, Color color) {
 			handleLazyWrite();
 			for (i32 y = 0; y < mSize.y; y++)
-			{
 				At({ column, y }) *= color;
-			}
+			return *this;
 		}
-		void Multiply(const TextureLayer& other) {
-			handleLazyWrite();
-			for (i32 i = 0; i < mData.size(); i++)
-				mData[i]*= other[i];
-		}
-		void Multiply(const TextureLayer& other, float factor) {
-			handleLazyWrite();
-			for (i32 i = 0; i < mData.size(); i++)
-				mData[i]*= other[i] * factor;
-		}
-		void DrawLine(IVec2 begin, IVec2 end, Color color, int thickness = 1)
+		TextureLayer& DrawLine(IVec2 begin, IVec2 end, Color color, int thickness = 1)
 		{
 			handleLazyWrite();
 			BresenHamLine<IVec2>(begin, end, [this, &color, thickness](IVec2 pos) {
@@ -105,8 +131,9 @@ namespace AgeAPI::Backend::Rp
 						for (int x = -thickness / 2; x < thickness / 2; x++)
 							SafeSet(pos + IVec2{ x, y }, color);
 			});
+			return *this;
 		}
-		void DrawLineUnsafe(IVec2 begin, IVec2 end, Color color, int thickness = 1)
+		TextureLayer& DrawLineUnsafe(IVec2 begin, IVec2 end, Color color, int thickness = 1)
 		{
 			handleLazyWrite();
 			BresenHamLine<IVec2>(begin, end, [this, &color, thickness](IVec2 pos) {
@@ -117,8 +144,35 @@ namespace AgeAPI::Backend::Rp
 						for (int x = -thickness / 2; x < thickness / 2; x++)
 							UnsafeSet(pos + IVec2{ x, y }, color);
 				});
+			return *this;
 		}
-		void DrawCircleOutline(IVec2 center, i32 radius, Color col, i32 thickness = 1)
+		TextureLayer& DrawLineGradiant(IVec2 begin, IVec2 end, Color start, Color endColor, int thickness = 1)
+		{
+				handleLazyWrite();
+				BresenHamLine<IVec2>(begin, end, [this, &start, end, thickness, begin, &endColor](IVec2 pos) {
+				if (thickness == 1)
+					SafeSet(pos, start.Lerp(endColor, (float)(pos - begin).Length() / (float)(end - begin).Length()));
+				else
+					for (int y = -thickness / 2; y < thickness / 2; y++)
+						for (int x = -thickness / 2; x < thickness / 2; x++)
+							SafeSet(pos + IVec2{ x, y }, start.Lerp(endColor, (float)(pos - begin).Length() / (float)(end - begin).Length()));
+			});
+			return *this;
+		}
+		TextureLayer& DrawLineGradiantUnsafe(IVec2 begin, IVec2 end, Color start, Color endColor, int thickness = 1)
+		{
+			handleLazyWrite();
+			BresenHamLine<IVec2>(begin, end, [this, &start, end, thickness, begin, &endColor](IVec2 pos) {
+				if (thickness == 1)
+					UnsafeSet(pos, start.Lerp(endColor, (float)(pos - begin).Length() / (float)(end - begin).Length()));
+				else
+					for (int y = -thickness / 2; y < thickness / 2; y++)
+						for (int x = -thickness / 2; x < thickness / 2; x++)
+							UnsafeSet(pos + IVec2{ x, y }, start.Lerp(endColor, (float)(pos - begin).Length() / (float)(end - begin).Length()));
+			});
+			return *this;
+		}
+		TextureLayer& DrawCircleOutline(IVec2 center, i32 radius, Color col, i32 thickness = 1)
 		{
 			handleLazyWrite();
 			for (i32 x = -radius; x < radius; x++)
@@ -128,8 +182,10 @@ namespace AgeAPI::Backend::Rp
 					if (distSq < radius * radius && distSq >= (radius - thickness) * (radius - thickness))
 						SafeSet(center + IVec2{ x, y }, col);
 				}
+			return *this;
+
 		}
-		void DrawCircleOutlineUnsafe(IVec2 center, i32 radius, Color col, i32 thickness = 1)
+		TextureLayer& DrawCircleOutlineUnsafe(IVec2 center, i32 radius, Color col, i32 thickness = 1)
 		{
 			handleLazyWrite();
 			for (i32 x = -radius; x < radius; x++)
@@ -139,68 +195,86 @@ namespace AgeAPI::Backend::Rp
 					if (distSq < radius * radius && distSq >= (radius - thickness) * (radius - thickness))
 						UnsafeSet(center + IVec2{ x, y }, col);
 				}
+			return *this;
+
 		}
-		void DrawCircle(IVec2 center, i32 rad, Color col)
+		TextureLayer& DrawCircle(IVec2 center, i32 rad, Color col)
 		{
 			handleLazyWrite();
 			for (i32 x = -rad; x < rad; x++)
 				for (i32 y = -rad; y < rad; y++)
 					if (x * x + y * y < rad * rad)
 						SafeSet(center + IVec2{ x, y }, col);
+			return *this;
+
 		}
-		void DrawCircleUnsafe(IVec2 center, i32 rad, Color col)
+		TextureLayer& DrawCircleUnsafe(IVec2 center, i32 rad, Color col)
 		{
 			handleLazyWrite();
 			for (i32 x = -rad; x < rad; x++)
 				for (i32 y = -rad; y < rad; y++)
 					if (x * x + y * y < rad * rad)
 						UnsafeSet(center + IVec2{ x, y }, col);
+			return *this;
+
 		}
-		void DrawRectangleOutline(IVec2 pos, IVec2 size, Color col, i32 thickness = 1)
+		TextureLayer& DrawRectangleOutline(IVec2 pos, IVec2 size, Color col, i32 thickness = 1)
 		{
 			handleLazyWrite();
 			for (i32 x = 0; x < size.x; x++)
 				for (i32 y = 0; y < size.y; y++)
 					if (x < thickness || y < thickness || x >= size.x - thickness || y >= size.y - thickness)
 						SafeSet(pos + IVec2{ x, y }, col);
+			return *this;
+
 		}
-		void DrawRectangleOutlineUnsafe(IVec2 pos, IVec2 size, Color col, i32 thickness = 1)
+		TextureLayer& DrawRectangleOutlineUnsafe(IVec2 pos, IVec2 size, Color col, i32 thickness = 1)
 		{
 			handleLazyWrite();
 			for (i32 x = 0; x < size.x; x++)
 				for (i32 y = 0; y < size.y; y++)
 					if (x < thickness || y < thickness || x >= size.x - thickness || y >= size.y - thickness)
 						UnsafeSet(pos + IVec2{ x, y }, col);
+			return *this;
+
 		}
-		void DrawRectangle(IVec2 pos, IVec2 size, Color col)
+		TextureLayer& DrawRectangle(IVec2 pos, IVec2 size, Color col)
 		{
 			handleLazyWrite();
 			for (i32 x = 0; x < size.x; x++)
 				for (i32 y = 0; y < size.y; y++)
 					SafeSet(pos + IVec2{ x, y }, col);
+			return *this;
+
 		}
-		void DrawRectangleUnsafe(IVec2 pos, IVec2 size, Color col)
+		TextureLayer& DrawRectangleUnsafe(IVec2 pos, IVec2 size, Color col)
 		{
 			handleLazyWrite();
 			for (i32 x = 0; x < size.x; x++)
 				for (i32 y = 0; y < size.y; y++)
 					UnsafeSet(pos + IVec2{ x, y }, col);
+			return *this;
+
 		}
-		void DrawTriangleOutline(IVec2 p1, IVec2 p2, IVec2 p3, Color col, i32 thickness = 1)
+		TextureLayer& DrawTriangleOutline(IVec2 p1, IVec2 p2, IVec2 p3, Color col, i32 thickness = 1)
 		{
 			handleLazyWrite();
 			DrawLine(p1, p2, col, thickness);
 			DrawLine(p2, p3, col, thickness);
 			DrawLine(p3, p1, col, thickness);
+			return *this;
+
 		}
-		void DrawTriangleOutlineUnsafe(IVec2 p1, IVec2 p2, IVec2 p3, Color col, i32 thickness = 1)
+		TextureLayer& DrawTriangleOutlineUnsafe(IVec2 p1, IVec2 p2, IVec2 p3, Color col, i32 thickness = 1)
 		{
 			handleLazyWrite();
 			DrawLineUnsafe(p1, p2, col, thickness);
 			DrawLineUnsafe(p2, p3, col, thickness);
 			DrawLineUnsafe(p3, p1, col, thickness);
+			return *this;
+
 		}
-		void DrawTriangle(IVec2 p1, IVec2 p2, IVec2 p3, Color col)
+		TextureLayer& DrawTriangle(IVec2 p1, IVec2 p2, IVec2 p3, Color col)
 		{
 			handleLazyWrite();
 			auto min = [](i32 a, i32 b) { return a < b ? a : b; };
@@ -208,18 +282,18 @@ namespace AgeAPI::Backend::Rp
 			auto IsPointInTriangle = [](IVec2 p, IVec2 a, IVec2 b, IVec2 c) -> bool {
 				auto sign = [](IVec2 p1, IVec2 p2, IVec2 p3) -> i32 {
 					return (p1.x - p3.x) * (p2.y - p3.y) - (p2.x - p3.x) * (p1.y - p3.y);
-				};
+					};
 				bool b1, b2, b3;
 				b1 = sign(p, a, b) < 0.0f;
 				b2 = sign(p, b, c) < 0.0f;
 				b3 = sign(p, c, a) < 0.0f;
 				return ((b1 == b2) && (b2 == b3));
-			};
+				};
 			auto edge = [&](IVec2 a, IVec2 b) {
 				BresenHamLine<IVec2>(a, b, [this, &col](IVec2 pos) {
-										SafeSet(pos, col);
-														});
-			};
+					SafeSet(pos, col);
+					});
+				};
 			auto fill = [&](IVec2 a, IVec2 b, IVec2 c) {
 				i32 minX = min(a.x, min(b.x, c.x));
 				i32 minY = min(a.y, min(b.y, c.y));
@@ -234,13 +308,15 @@ namespace AgeAPI::Backend::Rp
 						if (IsPointInTriangle(p, a, b, c))
 							SafeSet(p, col);
 					}
-			};
+				};
 			edge(p1, p2);
 			edge(p2, p3);
 			edge(p3, p1);
 			fill(p1, p2, p3);
+			return *this;
+
 		}
-		void DrawTriangleUnsafe(IVec2 p1, IVec2 p2, IVec2 p3, Color col)
+		TextureLayer& DrawTriangleUnsafe(IVec2 p1, IVec2 p2, IVec2 p3, Color col)
 		{
 			handleLazyWrite();
 			auto min = [](i32 a, i32 b) { return a < b ? a : b; };
@@ -279,23 +355,28 @@ namespace AgeAPI::Backend::Rp
 			edge(p2, p3);
 			edge(p3, p1);
 			fill(p1, p2, p3);
+			return *this;
+
 		}
-		void DrawPolygonOutline(const std::vector<IVec2>& points, Color col, i32 thickness = 1)
+		TextureLayer& DrawPolygonOutline(const std::vector<IVec2>& points, Color col, i32 thickness = 1)
 		{
 			handleLazyWrite();
 			for (i32 i = 0; i < points.size(); i++)
 				DrawLine(points[i], points[(i + 1) % points.size()], col, thickness);
+			return *this;
+
 		}
-		void DrawPolygonOutlineUnsafe(const std::vector<IVec2>& points, Color col, i32 thickness = 1)
+		TextureLayer& DrawPolygonOutlineUnsafe(const std::vector<IVec2>& points, Color col, i32 thickness = 1)
 		{
 			handleLazyWrite();
 			for (i32 i = 0; i < points.size(); i++)
 				DrawLineUnsafe(points[i], points[(i + 1) % points.size()], col, thickness);
+			return *this;
 		}
 		// TODO: Add bezier curve drawing
 		// TODO: Add polygon filling
 
-		void Merge(const TextureLayer& other, float alpha = 0.5f);
+		TextureLayer& Merge(const TextureLayer& other, float alpha = 0.5f);
 		// TODO: Add handling for different sized layers
 
 		Color GetAverageColor() const;
@@ -310,24 +391,26 @@ namespace AgeAPI::Backend::Rp
 		u8 GetFilterType() const { return mFilterType; }
 		u8 GetCompressionType() const { return mCompressionType; }
 
-		void Resize(IVec2 newSize);
-		void Resize(i32 newWidth, i32 newHeight) { Resize(IVec2{ newWidth, newHeight }); }
+		TextureLayer& Resize(IVec2 newSize);
+		TextureLayer& Resize(i32 newWidth, i32 newHeight) { Resize(IVec2{ newWidth, newHeight });  return *this;}
 
-		void SetColorType(u8 colorType) { mColorType = colorType; }
-		void SetBitDepth(u8 bitDepth) { mBitDepth = bitDepth; }
-		void SetInterlacing(u8 interlacing) { mInterlacing = interlacing; }
-		void SetFilterType(u8 filterType) { mFilterType = filterType; }
-		void SetCompressionType(u8 compressionType) { mCompressionType = compressionType; }
-		void SafeSet(IVec2 pos, Color color) 
+		TextureLayer& SetColorType(u8 colorType) { mColorType = colorType;  return *this; }
+		TextureLayer& SetBitDepth(u8 bitDepth) { mBitDepth = bitDepth;  return *this; }
+		TextureLayer& SetInterlacing(u8 interlacing) { mInterlacing = interlacing;  return *this; }
+		TextureLayer& SetFilterType(u8 filterType) { mFilterType = filterType;  return *this; }
+		TextureLayer& SetCompressionType(u8 compressionType) { mCompressionType = compressionType;  return *this; }
+		TextureLayer& SafeSet(IVec2 pos, Color color)
 		{
 			BoundingBox<IVec2> b = BoundingBox<IVec2>{ {0, 0}, mSize - 1 };
 			if (!b.Contains(pos)) [[unlikely]]
-				return;
+				return *this;
 
 			auto& col = At(pos);
 			col = color;
+			return *this;
 		}
-		void UnsafeSet(IVec2 pos, Color color) { At(pos) = color; }
+		TextureLayer& UnsafeSet(IVec2 pos, Color color) { At(pos) = color; return *this; }
+		
 	private:
 		void readToMemory(const std::string& path);
 		void handleLazyWrite() 
