@@ -6,7 +6,7 @@
 
 namespace AgeAPI::Backend::Rp
 {
-	struct Color
+	/*struct Color
 	{
 		float r, g, b, a;
 
@@ -24,7 +24,7 @@ namespace AgeAPI::Backend::Rp
 		Color& operator/=(float factor) { r /= factor; g /= factor; b /= factor; a /= factor; return *this; }
 		Color& operator/=(const Color& other) { r /= other.r; g /= other.g; b /= other.b; a /= other.a; return *this; }
 		
-	};
+	};*/
 
 	class TextureLayer
 	{
@@ -350,10 +350,10 @@ namespace AgeAPI::Backend::Rp
 					auto* colorDataOfRow = pixelRow + x * 4; 
 					// Assuming RGBA format which can be upheld due to libpng conversion
 					Color& color = mData[x + y * mSize.x];
-					color.r = static_cast<float>(colorDataOfRow[0]) / std::numeric_limits<T>::max();
-					color.g = static_cast<float>(colorDataOfRow[1]) / std::numeric_limits<T>::max();
-					color.b = static_cast<float>(colorDataOfRow[2]) / std::numeric_limits<T>::max();
-					color.a = static_cast<float>(colorDataOfRow[3]) / std::numeric_limits<T>::max();
+					color.x = static_cast<float>(colorDataOfRow[0]) / std::numeric_limits<T>::max();
+					color.y = static_cast<float>(colorDataOfRow[1]) / std::numeric_limits<T>::max();
+					color.z = static_cast<float>(colorDataOfRow[2]) / std::numeric_limits<T>::max();
+					color.w = static_cast<float>(colorDataOfRow[3]) / std::numeric_limits<T>::max();
 				}
 			}
 		}

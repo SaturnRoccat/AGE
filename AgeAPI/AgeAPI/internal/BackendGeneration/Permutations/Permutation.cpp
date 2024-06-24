@@ -3,20 +3,21 @@
 
 namespace AgeAPI::Backend
 {
-	ErrorString Permutation::WriteToJson(JsonProxy& proxy, std::unique_ptr<Addon>& addon, NonOwningPtr<Backend::Bp::BlockBehaviour> blk) const
+	ErrorString Permutation::WriteToJson(JsonProxy proxy, std::unique_ptr<Addon>& addon, NonOwningPtr<Backend::Bp::BlockBehaviour> blk) const
 	{
 		rapidjson::Value condition(this->mCondition, proxy.mAllocator);
 		proxy.mWriteLoc.AddMember("condition", condition, proxy.mAllocator);
 		rapidjson::Value components(rapidjson::kObjectType);
-		for (const auto& component : this->mComponents)
+		for (const auto& [namespace_, component] : this->mComponents)
 		{
-			rapidjson::Value key(component->GetComponentID().GetFullNamespace(), proxy.mAllocator);
+			rapidjson::Value key(namespace_, proxy.mAllocator);
 			rapidjson::Value value(rapidjson::kObjectType);
-			JsonProxy proxy(value, proxy.mAllocator);
-			auto err = component->WriteToJson(addon, proxy, blk);
+			JsonProxy NewProxy(value, proxy.mAllocator);
+			auto err = component->WriteToJson(addon, NewProxy, blk);
 			if (err.ContainsError())
 				return err;
-			components.AddMember(key, value, proxy.mAllocator);
+			if (!component->IsTransient())
+				components.AddMember(key, value, proxy.mAllocator);
 		}
 		proxy.mWriteLoc.AddMember("components", components, proxy.mAllocator);
 		return "";

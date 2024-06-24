@@ -6,75 +6,40 @@
 #include <AgeAPI/internal/BackendGeneration/BP/BehaviourPack.hpp>
 #include <rapidjson/prettywriter.h>
 #include <AgeAPI/internal/Addon/Addon.hpp>
-
+#include <AgeAPI/internal/BackendGeneration/RP/Textures/Texture.hpp>
 	
-
-
-template<std::size_t N>
-std::array<char, N> ExplodeString(const char* str)
-{
-	std::array<char, N> arr{};
-	for (std::size_t i = 0; i < N; i++)
-		arr[i] = str[i];
-	return arr;
-}
-#define Str(x) x "\0"
-#define ExpString(x) ExplodeString<sizeof(Str(x))>(Str(x))
-using namespace AgeAPI;
-using namespace AgeAPI::Components;
-using namespace AgeAPI::Backend::Bp;
-
-class TestBeh : public Components::BlockComponentBase
-{
-public:
-	TestBeh() : BlockComponentBase(0, { 1, 20, 80 }, "custom:component") {}
-	ErrorString WriteToJson(std::unique_ptr<Addon>& addon, JsonProxy& proxy, NonOwningPtr<Backend::Bp::BlockBehaviour> blk) const override
-	{
-		auto& allocator = proxy.mAllocator;
-		auto& val = proxy.mWriteLoc;
-		val.AddMember("test", "test", allocator);
-		rapidjson::Value arr(rapidjson::kArrayType);
-		for (int i = 0; i < 10; i++)
-		{
-			rapidjson::Value obj(rapidjson::kObjectType);
-			obj.AddMember("test", "test", allocator);
-			arr.PushBack(obj, allocator);
-		}
-		val.AddMember("array", arr, allocator);
-		return ErrorString();
-	}
-};
-
-class TestBeh2 : public Components::BlockComponentBase
-{
-	public:
-	TestBeh2() : BlockComponentBase(0, { 1, 20, 80 }, "custom:componentw") {}
-	ErrorString WriteToJson(std::unique_ptr<Addon>& addon, JsonProxy& proxy, NonOwningPtr<Backend::Bp::BlockBehaviour> blk) const override
-	{
-		auto& allocator = proxy.mAllocator;
-		auto& val = proxy.mWriteLoc;
-		val.AddMember("val", 100, allocator);
-		return ErrorString();
-	}
-};
-
-
-
+constexpr int SIZE = 1023;
+using namespace AgeAPI::Backend::Rp;
 int main(int argc, char** argv)
 {
-	Addon thing;
-	auto thingPtr = std::make_unique<Addon>(std::move(thing));
+	TextureLayer layer(AgeAPI::IVec2{ SIZE + 1, SIZE + 1}, 8);
+	TextureLayer layer2(AgeAPI::IVec2{ SIZE + 1, SIZE + 1}, 8);
+	TextureLayer layer3(AgeAPI::IVec2{ SIZE + 1, SIZE + 1}, 8);
+
+	Color Col{ 1.f, 0.3f, 1.f, 1.f };
+	Color Col2{ 0.3f, 1.f, 0.3f, 1.f };
+	Color Col3{ 0.3f, 0.3f, 1.f, 1.f };
+	Color Col4{ 1.f, 1.f, 0.3f, 1.f };
+
+	layer.DrawRectangleOutline({ 399, 399 }, { 400, 400 }, Col2, 40);
+	layer2.DrawCircleOutline({ 600, 500 }, 300, Col4, 5);
+	layer3.DrawTriangle({ 0, 0 }, { 100, 100 }, { 200, 0 }, Col3);
+	layer2.DrawCircle({ 150, 150 }, 100, Col);
+	layer3.DrawRectangle({50, 50}, {100, 100}, Col2);
 
 
+	layer.Write("test.png");
+	layer2.Write("test2.png");
+	layer3.Write("test3.png");
 
-	BlockBehaviour blk("test:ident", { 1, 20, 80 });
-	blk.AddBlockComponent(std::make_unique<TestBeh>());
-	blk.AddBlockComponent(std::make_unique<TestBeh2>());
+	Texture texture(std::move(layer));
+	texture.AddLayer(std::move(layer2));
+	texture.AddLayer(std::move(layer3));
+	texture.SelectLayer(2);
+	texture.SetSelectedLayerAlpha(0.5f);
 
-	auto doc = blk.BuildBlockBehaviourDocument(thingPtr);
-	rapidjson::StringBuffer buffer;
-	rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(buffer);
-	doc.value().Accept(writer);
-	std::println("{}", buffer.GetString());
+	texture.FinalizeAndWrite("final.png");
+
+
 	return 0;
 }

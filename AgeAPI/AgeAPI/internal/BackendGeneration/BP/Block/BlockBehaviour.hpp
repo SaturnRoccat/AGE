@@ -147,10 +147,10 @@ namespace AgeAPI::Backend::Bp
 			if (component->GetFormatVersion().GetVersion() > mFormatVersion.GetVersion())
 				return ErrorString("Component version is higher than the block behaviour version");
 			auto it = mBlockComponents.find(component->GetComponentID().GetFullNamespace());
-			if (it != mBlockComponents.end() && !component->IsTransient())
+			if (it != mBlockComponents.end() && !component->CanBeDoublePushed())
 				return ErrorString("Component already exists");
-			else if (component->IsTransient() && it != mBlockComponents.end())
-				return it->second->MergeTransient(addon, this, component);
+			else if (component->CanBeDoublePushed() && it != mBlockComponents.end())
+				return it->second->MergeDoublePush(addon, this, component);
 			else
 				mBlockComponents[component->GetComponentID().GetFullNamespace()] = std::move(component);
 			return "";

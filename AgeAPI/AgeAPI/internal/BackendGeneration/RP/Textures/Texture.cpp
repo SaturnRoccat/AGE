@@ -37,16 +37,16 @@ namespace AgeAPI::Backend::Rp
 				auto bottomColor = bottom[{x, y}];
 				auto topColor = Top[{x, y}];
 				Color newColor;
-				if (topColor.a == 0.f)
+				if (topColor.w == 0.f)
 					newColor = bottomColor;
-				else if (topColor.a == 1.f)
+				else if (topColor.w == 1.f)
 					newColor = topColor;
 				else
 				{
-					newColor.r = topColor.r * alpha + bottomColor.r * (1.f - alpha);
-					newColor.g = topColor.g * alpha + bottomColor.g * (1.f - alpha);
-					newColor.b = topColor.b * alpha + bottomColor.b * (1.f - alpha);
-					newColor.a = topColor.a * alpha + bottomColor.a * (1.f - alpha);
+					newColor.x = topColor.x * alpha + bottomColor.x * (1.f - alpha);
+					newColor.y = topColor.y * alpha + bottomColor.y * (1.f - alpha);
+					newColor.z = topColor.z * alpha + bottomColor.z * (1.f - alpha);
+					newColor.w = topColor.w * alpha + bottomColor.w * (1.f - alpha);
 				}
 				(*this)[{x, y}] = newColor;
 
@@ -128,16 +128,16 @@ namespace AgeAPI::Backend::Rp
 				auto bottomColor = At({ x, y });
 				auto topColor = other[{x, y}];
 				Color newColor;
-				if (topColor.a == 0.f)
+				if (topColor.w == 0.f)
 					newColor = bottomColor;
-				else if (topColor.a == 1.f && alpha == 1.f)
+				else if (topColor.w == 1.f && alpha == 1.f)
 					newColor = topColor;
 				else
 				{
-					newColor.r = topColor.r * alpha + bottomColor.r * (1.f - alpha);
-					newColor.g = topColor.g * alpha + bottomColor.g * (1.f - alpha);
-					newColor.b = topColor.b * alpha + bottomColor.b * (1.f - alpha);
-					newColor.a = topColor.a * alpha + bottomColor.a * (1.f - alpha);
+					newColor.x = topColor.x * alpha + bottomColor.x * (1.f - alpha);
+					newColor.y = topColor.y * alpha + bottomColor.y * (1.f - alpha);
+					newColor.z = topColor.z * alpha + bottomColor.z * (1.f - alpha);
+					newColor.w = topColor.w * alpha + bottomColor.w * (1.f - alpha);
 				}
 				(*this)[{x, y}] = newColor;
 			}
@@ -256,7 +256,7 @@ namespace AgeAPI::Backend::Rp
 
 	Color TextureLayer::GetAverageColor() const
 	{
-		Color Average;
+		Color Average{0., 0., 0., 0.};
 
 		for (auto& color : mData)
 			Average += color;

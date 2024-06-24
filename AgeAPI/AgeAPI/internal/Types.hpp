@@ -289,6 +289,7 @@ namespace AgeAPI
     {
     public:
         using Type = T;
+        using Vec = Vec2T<T>;
         T x, y;
     public:
         Vec2T() : x(0), y(0) {}
@@ -330,8 +331,12 @@ namespace AgeAPI
         T Cross(const Vec2T<T>& other) const { return x * other.y - y * other.x; }
         T Magnitude() const { return std::sqrt(x * x + y * y); }
         T MagnitudeSquared() const { return x * x + y * y; }
-        auto Abs() const { return Vec2T<T>(std::abs(x), std::abs(y)); }
-        auto Sign() const { return Vec2T<T>(x < 0 ? -1 : 1, y < 0 ? -1 : 1); }
+        Vec Abs() const { return Vec2T<T>(std::abs(x), std::abs(y)); }
+        Vec Sign() const { return Vec2T<T>(x < 0 ? -1 : 1, y < 0 ? -1 : 1); }
+        Vec Lerp(const Vec& other, float t) const { return Vec(
+            (T)x + (T)(((float)other.x - (float)x) * t),
+            (T)y + (T)(((float)other.y - (float)y) * t));
+        }
     };
 
     template<typename T>
@@ -349,6 +354,8 @@ namespace AgeAPI
     class Vec3T
     {
     public:
+        using Type = T;
+        using Vec = Vec3T<T>;
         T x, y, z;
     public:        Vec3T() : x(0), y(0), z(0) {}
         Vec3T(T x, T y, T z) : x(x), y(y), z(z) {}
@@ -381,11 +388,70 @@ namespace AgeAPI
         T Dot(const Vec3T<T>& other) const { return x * other.x + y * other.y + z * other.z; }
         T Magnitude() const { return std::sqrt(x * x + y * y + z * z); }
         T MagnitudeSquared() const { return x * x + y * y + z * z; }
-        auto Abs() const { return Vec3T<T>(std::abs(x), std::abs(y), std::abs(z)); }
-        Vec3T<T> Cross(const Vec3T<T>& other) const { return Vec3T<T>(y * other.z - z * other.y, z * other.x - x * other.z, x * other.y - y * other.x); }
+        Vec Abs() const { return Vec3T<T>(std::abs(x), std::abs(y), std::abs(z)); }
+        Vec Cross(const Vec3T<T>& other) const { return Vec3T<T>(y * other.z - z * other.y, z * other.x - x * other.z, x * other.y - y * other.x); }
+        Vec Lerp(const Vec& other, float t) const {
+            return Vec(
+			(T)x + (T)(((float)other.x - (float)x) * t),
+			(T)y + (T)(((float)other.y - (float)y) * t),
+			(T)z + (T)(((float)other.z - (float)z) * t));
+        }
+    };
+
+    template<typename T>
+    class Vec4T
+    {
+    public:
+        using Type = T;
+        using Vec = Vec4T<T>;
+        T x, y, z, w;
+    public:
+        Vec4T() : x(0), y(0), z(0), w(0) {}
+        Vec4T(T x, T y, T z, T w) : x(x), y(y), z(z), w(w) {}
+        Vec4T(const Vec&& other) noexcept : x(std::move(other.x)), y(std::move(other.y)), z(std::move(other.z)), w(std::move(other.w)) {}
+        Vec4T(const Vec& other) : x(other.x), y(other.y), z(other.z), w(other.w) {}
+
+        Vec& operator=(const Vec& other) { x = other.x; y = other.y; z = other.z; w = other.w; return *this; }
+        Vec& operator=(Vec&& other) noexcept { x = std::move(other.x); y = std::move(other.y); z = std::move(other.z); w = std::move(other.w); return *this; }
+        Vec operator+(const Vec& other) const { return Vec(x + other.x, y + other.y, z + other.z, w + other.w); }
+        Vec operator-(const Vec& other) const { return Vec(x - other.x, y - other.y, z - other.z, w - other.w); }
+        Vec operator*(const Vec& other) const { return Vec(x * other.x, y * other.y, z * other.z, w * other.w); }
+        Vec operator/(const Vec& other) const { return Vec(x / other.x, y / other.y, z / other.z, w / other.w); }
+        Vec operator+(T scalar) const { return Vec(x + scalar, y + scalar, z + scalar, w + scalar); }
+        Vec operator-(T scalar) const { return Vec(x - scalar, y - scalar, z - scalar, w - scalar); }
+        Vec operator*(T scalar) const { return Vec(x * scalar, y * scalar, z * scalar, w * scalar); }
+        Vec operator/(T scalar) const { return Vec(x / scalar, y / scalar, z / scalar, w / scalar); }
+        Vec& operator+=(const Vec& other) { x += other.x; y += other.y; z += other.z; w += other.w; return *this; }
+        Vec& operator-=(const Vec& other) { x -= other.x; y -= other.y; z -= other.z; w -= other.w; return *this; }
+        Vec& operator*=(const Vec& other) { x *= other.x; y *= other.y; z *= other.z; w *= other.w; return *this; }
+        Vec& operator/=(const Vec& other) { x /= other.x; y /= other.y; z /= other.z; w /= other.w; return *this; }
+        Vec& operator+=(T scalar) { x += scalar; y += scalar; z += scalar; w += scalar; return *this; }
+        Vec& operator-=(T scalar) { x -= scalar; y -= scalar; z -= scalar; w -= scalar; return *this; }
+        Vec& operator*=(T scalar) { x *= scalar; y *= scalar; z *= scalar; w *= scalar; return *this; }
+        Vec& operator/=(T scalar) { x /= scalar; y /= scalar; z /= scalar; w /= scalar; return *this; }
+        bool operator==(const Vec& other) const { return x == other.x && y == other.y && z == other.z && w == other.w; }
+        bool operator!=(const Vec& other) const { return x != other.x || y != other.y || z != other.z || w != other.w; }
+        bool operator<(const Vec& other) const { return x < other.x && y < other.y && z < other.z && w < other.w; }
+        bool operator>(const Vec& other) const { return x > other.x && y > other.y && z > other.z && w > other.w; }
+
+        T Dot(const Vec& other) const { return x * other.x + y * other.y + z * other.z + w * other.w; }
+        T Magnitude() const { return std::sqrt(x * x + y * y + z * z + w * w); }
+        T MagnitudeSquared() const { return x * x + y * y + z * z + w * w; }
+        Vec Abs() const { return Vec4T<T>(std::abs(x), std::abs(y), std::abs(z), std::abs(w)); }
+        Vec Lerp(const Vec& other, float t) const {
+            return Vec(
+			(T)x + (T)(((float)other.x - (float)x) * t),
+			(T)y + (T)(((float)other.y - (float)y) * t),
+			(T)z + (T)(((float)other.z - (float)z) * t),
+			(T)w + (T)(((float)other.w - (float)w) * t));
+        }
+
+
+        
 
 
     };
+    using Color = Vec4T<float>;
 
     template<typename T>
     class BoundingBox

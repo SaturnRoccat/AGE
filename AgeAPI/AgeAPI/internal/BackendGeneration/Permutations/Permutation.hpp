@@ -2,6 +2,7 @@
 #include <AgeAPI/internal/Types.hpp>
 #include <AgeAPI/internal/Components/BehaviourComponents/Block/BlockComponentBase.hpp>
 #include <memory>
+#include <unordered_map>
 
 namespace AgeAPI::Backend
 {
@@ -23,19 +24,30 @@ namespace AgeAPI::Backend
 		}
 
 
-		ErrorString WriteToJson(JsonProxy& proxy, std::unique_ptr<Addon>& addon, NonOwningPtr<Backend::Bp::BlockBehaviour> blk) const;
+		ErrorString WriteToJson(JsonProxy proxy, std::unique_ptr<Addon>& addon, NonOwningPtr<Backend::Bp::BlockBehaviour> blk) const;
 
 
 
 		const std::string& GetCondition() const { return mCondition; }
-		const std::vector<std::unique_ptr<Components::BlockComponentBase>>& GetComponents() const { return mComponents; }
+		const auto& GetComponents() const { return mComponents; }
 
 		void SetCondition(std::string_view condition) { mCondition = condition; }
 
-		void AddComponent(std::unique_ptr<Components::BlockComponentBase> component) { mComponents.emplace_back(std::move(component)); }
+		ErrorString AddComponent(std::unique_ptr<Components::BlockComponentBase>& component) 
+		{
+			auto it = mComponents.find(component->GetComponentID().GetFullNamespace());
+
+			if (it != mComponents.end() && !component->CanBeDoublePushed())
+				return ErrorString("Component already exists");
+			else if (component->CanBeDoublePushed() && it != mComponents.end())
+				return it->second->MergeDoublePushShort(component);
+			else
+				mComponents[component->GetComponentID().GetFullNamespace()] = std::move(component);
+			return "";
+		}
 	private:
 		std::string mCondition;
-		std::vector<std::unique_ptr<Components::BlockComponentBase>> mComponents{};
+		std::unordered_map<std::string, std::unique_ptr<Components::BlockComponentBase>> mComponents{};
 	};
 
 }

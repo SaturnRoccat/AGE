@@ -1,6 +1,6 @@
 #pragma once
-
 #include <AgeAPI/internal/Components/BehaviourComponents/BehaviourComponentBase.hpp>
+
 namespace AgeAPI::Backend::Bp
 {
 	class BlockBehaviour;
@@ -21,16 +21,16 @@ namespace AgeAPI::Components
 			: BehaviourComponentBase(settings, version, identifier, canBeDoublePushed, isTransient) {}
 		virtual ~BlockComponentBase() = default;
 		
-		// This may not modify the component
 		virtual ErrorString WriteToJson(std::unique_ptr<Addon>& addon, JsonProxy proxy, NonOwningPtr<Backend::Bp::BlockBehaviour> blk) const = 0;
 
-        virtual void OnComponentAdded(std::unique_ptr<Addon>& addon, NonOwningPtr<Backend::Bp::BlockBehaviour> blk) {};
+		virtual ErrorString MergeDoublePush(std::unique_ptr<Addon>& addon, NonOwningPtr<Backend::Bp::BlockBehaviour> blk, std::unique_ptr<BlockComponentBase>& other) {};
 
-		virtual ErrorString MergeTransient(std::unique_ptr<Addon>& addon, NonOwningPtr<Backend::Bp::BlockBehaviour> blk, std::unique_ptr<BlockComponentBase>& other) {};
+		virtual ErrorString MergeDoublePushShort(std::unique_ptr<BlockComponentBase>& other) {};
+
+        virtual void OnComponentAdded(std::unique_ptr<Addon>& addon, NonOwningPtr<Backend::Bp::BlockBehaviour> blk) {};
 
 	};
 	
 	template<typename T>
 	concept BlockComponent = std::is_base_of_v<BlockComponentBase, T>;
-
 }
