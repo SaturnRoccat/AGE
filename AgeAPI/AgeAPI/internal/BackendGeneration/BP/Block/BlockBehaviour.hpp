@@ -139,9 +139,8 @@ namespace AgeAPI::Backend::Bp
 		BlockBehaviour(
 			const Identifier& blockIdentifier,
 			const SemanticVersion& formatVersion,
-			NonOwningPtr<Addon> addon,
 			bool isHiddenInCommands = false
-		) : mBlockIdentifier(blockIdentifier), mFormatVersion(formatVersion), mIsHiddenInCommands(isHiddenInCommands), mAddon(addon) {}
+		) : mBlockIdentifier(blockIdentifier), mFormatVersion(formatVersion), mIsHiddenInCommands(isHiddenInCommands) {}
 
 		ErrorString AddBlockComponent(NonOwningPtr<Addon> addon, std::unique_ptr<Components::BlockComponentBase>& component) 
 		{ 
@@ -164,7 +163,7 @@ namespace AgeAPI::Backend::Bp
 		const auto& GetPermutations() const { return mPermutations; }
 
 		ErrorString BuildBlockBehaviourJson(NonOwningPtr<Addon> addon, rapidjson::Value& location, rapidjson::Document::AllocatorType& allocator);
-		inline std::expected<rapidjson::Document, ErrorString> BuildBlockBehaviourDocument(std::unique_ptr<Addon>& addon)
+		inline std::expected<rapidjson::Document, ErrorString> BuildBlockBehaviourDocument(NonOwningPtr<Addon> addon)
 		{
 			auto doc = rapidjson::Document{};
 			doc.SetObject();
@@ -187,7 +186,6 @@ namespace AgeAPI::Backend::Bp
 		Identifier mBlockIdentifier{};
 		SemanticVersion mFormatVersion{};
 		bool mIsHiddenInCommands = false;
-		NonOwningPtr<Addon> mAddon{};
 
 	};
 }
