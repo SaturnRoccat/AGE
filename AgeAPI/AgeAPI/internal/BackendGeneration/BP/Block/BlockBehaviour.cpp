@@ -21,9 +21,9 @@ namespace AgeAPI::Backend::Bp
     ErrorString BlockBehaviour::WriteComponents(std::unique_ptr<Addon>& addon, rapidjson::Value& location, rapidjson::Document::AllocatorType& allocator) 
     {
         rapidjson::Value components(rapidjson::kObjectType);
-        for (const auto& component : this->mBlockComponents)
+        for (const auto& [key, component] : this->mBlockComponents)
 		{
-            rapidjson::Value key(component->GetComponentID().GetFullNamespace(), allocator);
+            rapidjson::Value key(key, allocator);
             rapidjson::Value value(rapidjson::kObjectType);
             JsonProxy proxy(value, allocator);
             auto err = component->WriteToJson(addon, proxy, this);

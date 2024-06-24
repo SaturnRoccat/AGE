@@ -3,6 +3,7 @@
 #include <AgeAPI/internal/Components/BehaviourComponents/Block/BlockComponentBase.hpp>
 #include <AgeAPI/internal/BackendGeneration/States/States.hpp>
 #include <vector>
+#include <unordered_map>
 #include <AgeAPI/internal/BackendGeneration/Permutations/Permutation.hpp>
 
 namespace AgeAPI::Backend::Bp
@@ -141,11 +142,18 @@ namespace AgeAPI::Backend::Bp
 			bool isHiddenInCommands = false
 		) : mBlockIdentifier(blockIdentifier), mFormatVersion(formatVersion), mIsHiddenInCommands(isHiddenInCommands) {}
 
-		ErrorString AddBlockComponent(std::unique_ptr<Components::BlockComponentBase> component) 
+		ErrorString AddBlockComponent(std::unique_ptr<Addon>& addon, std::unique_ptr<Components::BlockComponentBase>& component) 
 		{ 
 			if (component->GetFormatVersion().GetVersion() > mFormatVersion.GetVersion())
 				return ErrorString("Component version is higher than the block behaviour version");
-			mBlockComponents.emplace_back(std::move(component));
+			auto it = mBlockComponents.find(component->GetComponentID().GetFullNamespace());
+			if (it != mBlockComponents.end() && !component->IsTransient())
+				return ErrorString("Component already exists");
+			else if (component->IsTransient() && it != mBlockComponents.end())
+				return it->second->MergeTransient(addon, this, component);
+			else
+				mBlockComponents[component->GetComponentID().GetFullNamespace()] = std::move(component);
+			return "";
 		}
 		void AddState(std::unique_ptr<AState> state) { mStates.emplace_back(std::move(state)); }
 		void AddPermutation(Permutation&& permutation) { mPermutations.emplace_back(std::move(permutation)); }
@@ -170,7 +178,7 @@ namespace AgeAPI::Backend::Bp
 		ErrorString WritePermutations(std::unique_ptr<Addon>& addon, rapidjson::Value& location, rapidjson::Document::AllocatorType& allocator);
 		void WriteStates(rapidjson::Value& location, rapidjson::Document::AllocatorType& allocator);
 	private:
-		std::vector<std::unique_ptr<Components::BlockComponentBase>> mBlockComponents{};
+		std::unordered_map<std::string, std::unique_ptr<Components::BlockComponentBase>> mBlockComponents{};
 		std::vector<std::unique_ptr<AState>> mStates{};
 		std::vector<Permutation> mPermutations{};
 		std::string mCategory{}; // This should be an enum but i cant remember the values so its a string for now 
