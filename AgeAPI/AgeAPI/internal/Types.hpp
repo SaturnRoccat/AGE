@@ -439,6 +439,7 @@ namespace AgeAPI
         bool operator>(const Vec& other) const { return x > other.x && y > other.y && z > other.z && w > other.w; }
 
         T Dot(const Vec& other) const { return x * other.x + y * other.y + z * other.z + w * other.w; }
+        T Flatten() const { return x + y + z + w; }
         T Magnitude() const { return std::sqrt(x * x + y * y + z * z + w * w); }
         T MagnitudeSquared() const { return x * x + y * y + z * z + w * w; }
         Vec Abs() const { return Vec4T<T>(std::abs(x), std::abs(y), std::abs(z), std::abs(w)); }
