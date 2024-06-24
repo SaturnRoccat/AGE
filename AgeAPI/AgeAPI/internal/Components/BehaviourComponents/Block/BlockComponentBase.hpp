@@ -26,6 +26,8 @@ namespace AgeAPI::Components
 
         virtual void OnComponentAdded(std::unique_ptr<Addon>& addon, NonOwningPtr<Backend::Bp::BlockBehaviour> blk) {};
 
+		virtual ErrorString MergeTransient(std::unique_ptr<Addon>& addon, NonOwningPtr<Backend::Bp::BlockBehaviour> blk, std::unique_ptr<BlockComponentBase>& other) {};
+
 	};
 	
 	template<typename T>
