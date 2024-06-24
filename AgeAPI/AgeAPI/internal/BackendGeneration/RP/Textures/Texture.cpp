@@ -21,8 +21,6 @@ namespace AgeAPI::Backend::Rp
 			throw std::runtime_error("Texture sizes do not match");
 		if (bottom.mBitDepth != Top.mBitDepth)
 			throw std::runtime_error("Texture bit depths do not match");
-		if (bottom.mColorType != Top.mColorType)
-			throw std::runtime_error("Texture color types do not match");
 
 		mSize = bottom.mSize;
 		mBitDepth = bottom.mBitDepth;
@@ -254,5 +252,15 @@ namespace AgeAPI::Backend::Rp
 	{
 		auto texture = Flatten();
 		texture.Write(path);
+	}
+
+	Color TextureLayer::GetAverageColor() const
+	{
+		Color Average;
+
+		for (auto& color : mData)
+			Average += color;
+
+		return Average / (float)mData.size();
 	}
 }

@@ -298,6 +298,8 @@ namespace AgeAPI::Backend::Rp
 		void Merge(const TextureLayer& other, float alpha = 0.5f);
 		// TODO: Add handling for different sized layers
 
+		Color GetAverageColor() const;
+
 
 		IVec2 GetSize() const { return mSize; }
 		i32 GetWidth() const { return mSize.x; }
@@ -381,9 +383,6 @@ namespace AgeAPI::Backend::Rp
 							[](float val)
 							{ return (T)(val * (float)std::numeric_limits<T>::max()); }
 						);
-
-
-
 					}
 				}
 				return std::move(*(std::vector<std::unique_ptr<u8[]>>*) & pixelData);
@@ -400,8 +399,7 @@ namespace AgeAPI::Backend::Rp
 				return BaseWrite.operator()<2>();
 			default:
 				throw std::runtime_error("Unsupported color type");
-			}
-				
+			}	
 		}
 	private:
 		bool mIsLazyLoaded = false;
