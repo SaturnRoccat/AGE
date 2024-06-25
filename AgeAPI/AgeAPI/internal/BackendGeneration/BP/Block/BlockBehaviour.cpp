@@ -13,17 +13,25 @@ namespace AgeAPI::Backend::Bp
         WritePermutations(addon, minecraftBlock, allocator);
         description.AddMember("identifier", this->mBlockIdentifier.GetFullNamespace(), allocator);
         WriteStates(description, allocator);
+        if (this->mCategory != "")
+        {
+            rapidjson::Value categoryObject(rapidjson::kObjectType);
+            categoryObject.AddMember("category", this->mCategory, allocator);
+            description.AddMember("menu_category", categoryObject, allocator);
+        }
         minecraftBlock.AddMember("description", description, allocator);
+
+
         location.AddMember("minecraft:block", minecraftBlock, allocator);
         return "";
     }
 
-    ErrorString BlockBehaviour::WriteComponents(NonOwningPtr<Addon> addon, rapidjson::Value& location, rapidjson::Document::AllocatorType& allocator) 
+    ErrorString BlockBehaviour::WriteComponents(NonOwningPtr<Addon> addon, rapidjson::Value& location, rapidjson::Document::AllocatorType& allocator)
     {
         rapidjson::Value components(rapidjson::kObjectType);
-        for (const auto& [key, component] : this->mBlockComponents)
+        for (const auto& [keyRawString, component] : this->mBlockComponents)
 		{
-            rapidjson::Value key(key, allocator);
+            rapidjson::Value key(keyRawString, allocator);
             rapidjson::Value value(rapidjson::kObjectType);
             JsonProxy proxy(value, allocator);
             auto err = component->WriteToJson(addon, proxy, this);
@@ -35,7 +43,7 @@ namespace AgeAPI::Backend::Bp
 		location.AddMember("components", components, allocator);
         return "";
     }
-    ErrorString BlockBehaviour::WritePermutations(NonOwningPtr<Addon> addon, rapidjson::Value& location, rapidjson::Document::AllocatorType& allocator)
+    ErrorString BlockBehaviour::WritePermutations(NonOwningPtr<Addon> addon, rapidjson::Value& location, rapidjson::Document::AllocatorType& allocator) 
     {
         if (this->mPermutations.empty())
 			return "";

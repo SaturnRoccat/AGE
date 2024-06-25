@@ -144,8 +144,8 @@ namespace AgeAPI::Backend::Bp
 
 		ErrorString AddBlockComponent(NonOwningPtr<Addon> addon, std::unique_ptr<Components::BlockComponentBase>& component) 
 		{ 
-			if (component->GetFormatVersion().GetVersion() > mFormatVersion.GetVersion())
-				return ErrorString("Component version is higher than the block behaviour version");
+			/*if (component->GetFormatVersion().GetVersion() < mFormatVersion.GetVersion())
+				return ErrorString("Component version is higher than the block behaviour version");*/
 			auto it = mBlockComponents.find(component->GetComponentID().GetFullNamespace());
 			if (it != mBlockComponents.end() && !component->CanBeDoublePushed())
 				return ErrorString("Component already exists");
@@ -157,13 +157,16 @@ namespace AgeAPI::Backend::Bp
 		}
 		void AddState(std::unique_ptr<AState> state) { mStates.emplace_back(std::move(state)); }
 		void AddPermutation(Permutation&& permutation) { mPermutations.emplace_back(std::move(permutation)); }
+		void SetIdentifier(const Identifier& identifier) { mBlockIdentifier = identifier; }
+		void SetCategory(const std::string& category) { mCategory = category; }
 
 		const auto& GetBlockComponents() const { return mBlockComponents; }
 		const auto& GetStates() const { return mStates; }
 		const auto& GetPermutations() const { return mPermutations; }
+		const auto& GetIdentifier() const { return mBlockIdentifier; }
 
-		ErrorString BuildBlockBehaviourJson(NonOwningPtr<Addon> addon, rapidjson::Value& location, rapidjson::Document::AllocatorType& allocator);
-		inline std::expected<rapidjson::Document, ErrorString> BuildBlockBehaviourDocument(NonOwningPtr<Addon> addon)
+		ErrorString BuildBlockBehaviourJson(NonOwningPtr<Addon> addon, rapidjson::Value& location, rapidjson::Document::AllocatorType& allocator) ;
+		inline std::expected<rapidjson::Document, ErrorString> BuildBlockBehaviourDocument(NonOwningPtr<Addon> addon) 
 		{
 			auto doc = rapidjson::Document{};
 			doc.SetObject();
@@ -174,9 +177,9 @@ namespace AgeAPI::Backend::Bp
 			return doc;
 		}
 	private:
-		ErrorString WriteComponents(NonOwningPtr<Addon> addon, rapidjson::Value& location, rapidjson::Document::AllocatorType& allocator);
-		ErrorString WritePermutations(NonOwningPtr<Addon> addon, rapidjson::Value& location, rapidjson::Document::AllocatorType& allocator);
-		void WriteStates(rapidjson::Value& location, rapidjson::Document::AllocatorType& allocator);
+		ErrorString WriteComponents(NonOwningPtr<Addon> addon, rapidjson::Value& location, rapidjson::Document::AllocatorType& allocator) ;
+		ErrorString WritePermutations(NonOwningPtr<Addon> addon, rapidjson::Value& location, rapidjson::Document::AllocatorType& allocator) ;
+		void WriteStates(rapidjson::Value& location, rapidjson::Document::AllocatorType& allocator) ;
 	private:
 		std::unordered_map<std::string, std::unique_ptr<Components::BlockComponentBase>> mBlockComponents{};
 		std::vector<std::unique_ptr<AState>> mStates{};

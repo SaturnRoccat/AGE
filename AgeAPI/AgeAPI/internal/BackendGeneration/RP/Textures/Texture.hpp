@@ -64,8 +64,18 @@ namespace AgeAPI::Backend::Rp
 		TextureLayer& Fill(Color color) { handleLazyWrite();  std::fill(mData.begin(), mData.end(), color); return *this;}
 		TextureLayer& FillRow(i32 row, Color color) { handleLazyWrite(); std::fill(mData.begin() + row * mSize.x, mData.begin() + (row + 1) * mSize.x, color); return *this;}
 		TextureLayer& FillColumn(i32 column, Color color) { handleLazyWrite(); for (i32 y = 0; y < mSize.y; y++) At({ column, y }) = color; return *this;}
-		TextureLayer& FillGradientTopDown(Color start, Color end) { handleLazyWrite(); for (i32 i = 0; i < mData.size(); i++) mData[i] = start.Lerp(end, (float)i / (float)mData.size()); return *this;}
-		TextureLayer& FillGradientLeftRight(Color start, Color end) { handleLazyWrite(); for (i32 y = 0; y < mSize.y; y++) for (i32 x = 0; x < mSize.x; x++) At({ x, y }) = start.Lerp(end, (float)x / (float)mSize.x); return *this;}
+		TextureLayer& FillGradientTopDown(Color start, Color end) {
+			handleLazyWrite();
+			for (int y = 0; y < mSize.y; y++)
+				FillRow(y, start.Lerp(end, (float)y / (float)mSize.y));
+			return *this;
+		}
+		TextureLayer& FillGradientLeftRight(Color start, Color end) {
+			handleLazyWrite();
+			for (int x = 0; x < mSize.x; x++)
+				FillColumn(x, start.Lerp(end, (float)x / (float)mSize.x));
+			return *this;
+		}
 		// FIXME: Does not function corectly
 		TextureLayer& FillGradientAngle(Color start, Color end, float angle)
 		{ 
@@ -520,8 +530,7 @@ namespace AgeAPI::Backend::Rp
 		IVec2 mSize{};
 		u8 mBitDepth{};
 		u8 mColorType{};
-		u8 mSelectedLayer{0};
-	private:
+		mutable u8 mSelectedLayer{0};
 	public:
 		Texture(
 			IVec2 size,
@@ -548,9 +557,9 @@ namespace AgeAPI::Backend::Rp
 		TextureLayer& operator[](i32 index) { return mLayers[index].TL; }
 		const TextureLayer& operator[](i32 index) const { return mLayers[index].TL; }
 
-		TextureLayer Flatten();
+		TextureLayer Flatten() const;
 
-		void FinalizeAndWrite(const std::string& path);
+		void FinalizeAndWrite(const std::string& path) const;
 
 		void AddLayer(const TextureLayer& layer) { mLayers.push_back(TextureInternalLayer(layer)); }
 		void AddLayer(TextureLayer&& layer) { mLayers.push_back(std::move(layer)); }
@@ -575,6 +584,7 @@ namespace AgeAPI::Backend::Rp
 		float GetSelectedLayerAlpha() const { return mLayers[mSelectedLayer].alpha; }
 		void SelectLayer(i32 index) { mSelectedLayer = index; }
 		auto& GetSelectedLayer() { return mLayers[mSelectedLayer]; }
+		const auto& GetSelectedLayer() const { return mLayers[mSelectedLayer]; }
 		constexpr static u8 GetFilterType() { return mFilterType; }
 		constexpr static u8 GetCompressionType() { return mCompressionType; }
 		constexpr static u8 GetInterlacing() { return mInterlacing; }

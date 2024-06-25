@@ -34,7 +34,7 @@ namespace AgeAPI
 		SemanticVersion mVersion{};
 	public:
 		Module() = default;
-		Module(const std::string& description, const std::string& uuid, const std::string& type, const SemanticVersion& version) : mDescription(description), mUUID(uuid), mType(type), mVersion(version) {}
+		Module(const std::string& type, const std::string& description = "", const SemanticVersion& version = {1, 0, 0}, const std::string& uuid = GetUUIDString()) : mDescription(description), mUUID(uuid), mType(type), mVersion(version) {}
 
 		std::string GetDescription() const { return mDescription; }
 		std::string GetUUID() const { return mUUID; }
@@ -76,7 +76,7 @@ namespace AgeAPI
 	class Manifest
 	{
 	private:
-		int mFormatVersion{};
+		int mFormatVersion{2};
 		SemanticVersion mMinEngineVersion{};
 		SemanticVersion mAddonVersion{};
 		std::string mName{""};
@@ -88,7 +88,26 @@ namespace AgeAPI
 		Capabilities mCapabilities{};
 	public:
 		Manifest() = default;
-		Manifest(int formatVersion, const SemanticVersion& minEngineVersion, const SemanticVersion& addonVersion, const std::string& name, const std::string& description, const std::string& uuid, const std::vector<Module>& modules, const std::vector<Dependency>& dependencies = {}, const Metadata& metadata = {}, const Capabilities& capabilities = {}) : mFormatVersion(formatVersion), mMinEngineVersion(minEngineVersion), mAddonVersion(addonVersion), mName(name), mDescription(description), mUUID(uuid), mModules(modules), mDependencies(dependencies), mMetadata(metadata), mCapabilities(capabilities) {}
+		Manifest(
+			const SemanticVersion& minEngineVersion,
+			const SemanticVersion& addonVersion,
+			const std::string& name,
+			const std::string& description,
+			const std::vector<Module>& modules,
+			const std::vector<Dependency>& dependencies = {},
+			const Metadata& metadata = {},
+			const Capabilities& capabilities = {},
+			const std::string& uuid = GetUUIDString()
+		) :
+			mMinEngineVersion(minEngineVersion),
+			mAddonVersion(addonVersion),
+			mName(name),
+			mDescription(description),
+			mUUID(uuid),
+			mModules(modules),
+			mDependencies(dependencies),
+			mMetadata(metadata),
+			mCapabilities(capabilities) {}
 
 		void AddModule(const Module& module) { mModules.push_back(module); }
 		void AddDependency(const Dependency& dependency) { mDependencies.push_back(dependency); }

@@ -71,6 +71,10 @@ namespace AgeAPI::Backend::Rp
 		}
 
 		std::vector<std::unique_ptr<u8[]>> fileData;
+		if (mBitDepth < 8)
+			mBitDepth = 8;
+		if (this->mColorType == PNG_COLOR_TYPE_PALETTE)
+			this->mColorType = PNG_COLOR_TYPE_RGBA;
 		switch (mBitDepth)
 		{
 		case 8:
@@ -110,10 +114,11 @@ namespace AgeAPI::Backend::Rp
 		);
 
 		png_write_info(png, info);
-		png_set_swap(png);
+		if (mBitDepth > 8)
+			png_set_swap(png);
 
 		png_write_image(png, (u8**)fileData.data());
-		png_write_end(png, nullptr);
+		png_write_end(png, info);
 
 		png_destroy_write_struct(&png, &info);
 		fclose(file);
@@ -185,7 +190,7 @@ namespace AgeAPI::Backend::Rp
 		mCompressionType = png_get_compression_type(png, info);
 		if (mBitDepth > 16)
 			throw std::runtime_error("Bit depth is too high");
-		mData.resize(mSize.x * mSize.y * sizeof(float)); // 4 bytes per pixel
+		mData.resize(mSize.x * mSize.y); // 4 bytes per pixel
 
 
 		png_set_swap(png);
@@ -204,6 +209,10 @@ namespace AgeAPI::Backend::Rp
 
 		if (mColorType == PNG_COLOR_TYPE_GRAY || mColorType == PNG_COLOR_TYPE_GRAY_ALPHA)
 			png_set_gray_to_rgb(png);
+		if (mColorType == PNG_COLOR_TYPE_PALETTE)
+			mColorType = PNG_COLOR_TYPE_RGB;
+		if (mBitDepth < 8)
+			mBitDepth = 8;
 
 		//png_set_swap(png);
 		png_read_update_info(png, info);
@@ -229,13 +238,13 @@ namespace AgeAPI::Backend::Rp
 
 
 	}
-	TextureLayer Texture::Flatten()
+	TextureLayer Texture::Flatten() const
 	{
 		if (this->mLayers.size() == 1)
 			return mLayers[0].TL;
 
 		u32 selectedLayerCache = mSelectedLayer;
-		SelectLayer(0);
+		mSelectedLayer = 0;
 
 		u32 readerIndex = 1;
 		TextureLayer flattenedLayer(GetSelectedLayer().TL, mLayers[readerIndex].TL, GetSelectedLayerAlpha());
@@ -243,7 +252,7 @@ namespace AgeAPI::Backend::Rp
 		readerIndex++;
 		while (readerIndex < mLayers.size())
 		{
-			SelectLayer(readerIndex);
+			mSelectedLayer = readerIndex;
 			auto& selectedLayer = GetSelectedLayer();
 			flattenedLayer.Merge(selectedLayer.TL, selectedLayer.alpha);
 			readerIndex++;
@@ -251,7 +260,7 @@ namespace AgeAPI::Backend::Rp
 		mSelectedLayer = selectedLayerCache;
 		return flattenedLayer;
 	}
-	void Texture::FinalizeAndWrite(const std::string& path)
+	void Texture::FinalizeAndWrite(const std::string& path) const
 	{
 		auto texture = Flatten();
 		texture.Write(path);
