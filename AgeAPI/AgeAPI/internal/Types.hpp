@@ -5,6 +5,7 @@
 #include <memory>
 #include <format>
 #include <AgeAPI/internal/Error.hpp>
+#include <filesystem>
 
 #ifndef TO_UNDERLYING
 #define TO_UNDERLYING(x) static_cast<std::underlying_type_t<decltype(x)>>(x)
@@ -33,6 +34,7 @@
 #include <rapidjson/stringbuffer.h>
 #include <AgeAPI/internal/Error.hpp>
 #include <format>
+#include <uuid_v4.h>
 #include <optional>
 
 
@@ -48,6 +50,11 @@ namespace AgeAPI
     using i64 = long long;
     using f32 = float;
     using f64 = double;
+
+    template<class... Ts>
+    struct overloaded : Ts... { using Ts::operator()...; };
+    template<class... Ts>
+    overloaded(Ts...) -> overloaded<Ts...>;
     class Identifier
     {
     public:
@@ -519,8 +526,21 @@ namespace AgeAPI
 
     using IVec2 = Vec2T<i32>;
 
-    template<typename T>
-    using AutoFreeRaw = std::unique_ptr<T, decltype(&free)>;
+    
+    static std::string GetUUIDString()
+    {
+        thread_local static UUIDv4::UUIDGenerator<std::mt19937_64> generator;
+        return generator.getUUID().str();
+
+    }
+
+    static const std::string& GetCurrentWorkingDirectory()
+    {
+		thread_local static std::string cwd = std::filesystem::current_path().string();
+		return cwd;
+	}
+
+
 }
 
 namespace std
@@ -543,4 +563,49 @@ namespace std
             return std::hash<AgeAPI::u32>{}(version.GetVersion());
         }
     };
+
+    template<typename T>
+    struct hash<AgeAPI::Vec2T<T>>
+    {
+        std::size_t operator()(const AgeAPI::Vec2T<T>& vec) const
+        {
+			return std::hash<T>{}(vec.x) ^ std::hash<T>{}(vec.y);
+		}
+	};
+
+    template<typename T>
+    struct hash<AgeAPI::Vec3T<T>>
+    {
+        std::size_t operator()(const AgeAPI::Vec3T<T>& vec) const
+        {
+			return std::hash<T>{}(vec.x) ^ std::hash<T>{}(vec.y) ^ std::hash<T>{}(vec.z);
+		}
+	};
+
+	template<typename T>
+    struct hash<AgeAPI::Vec4T<T>>
+    {
+        std::size_t operator()(const AgeAPI::Vec4T<T>& vec) const
+        {
+			return std::hash<T>{}(vec.x) ^ std::hash<T>{}(vec.y) ^ std::hash<T>{}(vec.z) ^ std::hash<T>{}(vec.w);
+		}
+	};
+
+	template<typename T>
+    struct hash<AgeAPI::BoundingBox<T>>
+    {
+        std::size_t operator()(const AgeAPI::BoundingBox<T>& box) const
+        {
+			return std::hash<T>{}(box.min) ^ std::hash<T>{}(box.max);
+		}
+	};
+
+	template<>
+    struct hash<AgeAPI::Color>
+    {
+        std::size_t operator()(const AgeAPI::Color& color) const
+        {
+			return std::hash<float>{}(color.x) ^ std::hash<float>{}(color.y) ^ std::hash<float>{}(color.z) ^ std::hash<float>{}(color.w);
+		}
+	};
 }
