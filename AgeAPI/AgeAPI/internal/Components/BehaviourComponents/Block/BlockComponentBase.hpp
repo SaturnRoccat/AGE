@@ -16,8 +16,8 @@ namespace AgeAPI::Components
 			const ExperimentalSettings& settings,
 			const SemanticVersion& version,
 			const Identifier& identifier,
-			bool canBeDoublePushed = false,
-			bool isTransient = false)
+			bool canBeDoublePushed = false, // If true, the component can be pushed twice to the same block and will call MergeDoublePush/MergeDoublePushShort if is permutation
+			bool isTransient = false) // If true, the component will not be written to the block json
 			: BehaviourComponentBase(settings, version, identifier, canBeDoublePushed, isTransient) {}
 		virtual ~BlockComponentBase() = default;
 		
