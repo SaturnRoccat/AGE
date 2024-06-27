@@ -13,12 +13,7 @@ namespace AgeAPI::Backend::Bp
         WritePermutations(addon, minecraftBlock, allocator);
         description.AddMember("identifier", this->mBlockIdentifier.GetFullNamespace(), allocator);
         WriteStates(description, allocator);
-        if (this->mCategory != "")
-        {
-            rapidjson::Value categoryObject(rapidjson::kObjectType);
-            categoryObject.AddMember("category", this->mCategory, allocator);
-            description.AddMember("menu_category", categoryObject, allocator);
-        }
+        mCategory.WriteToJson({description, allocator});
         minecraftBlock.AddMember("description", description, allocator);
 
 

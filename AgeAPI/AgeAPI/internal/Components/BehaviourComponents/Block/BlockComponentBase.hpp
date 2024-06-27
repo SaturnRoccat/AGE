@@ -13,8 +13,8 @@ namespace AgeAPI::Components
 	public:
 		BlockComponentBase() = default;
 		BlockComponentBase(
-			const ExperimentalSettings& settings,
-			const SemanticVersion& version,
+			ExperimentalSettings settings,
+			SemanticVersion version,
 			const Identifier& identifier,
 			bool canBeDoublePushed = false, // If true, the component can be pushed twice to the same block and will call MergeDoublePush/MergeDoublePushShort if is permutation
 			bool isTransient = false) // If true, the component will not be written to the block json
