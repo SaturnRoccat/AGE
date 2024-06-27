@@ -495,8 +495,8 @@ namespace AgeAPI::Backend::Rp
 			}	
 		}
 	private:
-		bool mIsLazyLoaded = false;
-		std::string mPath = "";
+		bool mIsLazyLoaded{ false };
+		std::string mPath{ "" };
 		u8 mColorType{};
 		u8 mBitDepth{};
 		u8 mInterlacing{};
