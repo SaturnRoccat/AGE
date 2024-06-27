@@ -8,7 +8,7 @@
 namespace AgeData
 {
 
-    template<typename T>
+    template<typename T, const bool Default>
     class ToggleOrData
     {
     public:
@@ -23,9 +23,21 @@ namespace AgeData
 
         T GetData() const { return std::get<T>(mValue); }
         void SetData(const T& value) { mValue = value; }
+      AgeAPI::ErrorString WriteToJson(const AgeAPI::JsonProxy& proxy) const
+        {
+            if (IsToggle())
+                proxy.mWriteLoc.SetBool(GetToggle());
+            else
+                GetData().WriteToJson(proxy);
+            return "";
+        }
+
     private:
-        std::variant<T, bool> mValue;
+        std::variant<T, bool> mValue = Default;
+
     };
+
+
 
     template<typename T>
     class BoundedValue : public AgeAPI::BoundingBox<T>
@@ -40,11 +52,7 @@ namespace AgeData
             T value,
             AgeAPI::BoundingBox<T> bounds
         ) : AgeAPI::BoundingBox<T>(bounds), mValue(value) {}
-
-        bool IsValid() const
-        {
-            return AgeAPI::BoundingBox<T>::Contains(mValue);
-        }
+        bool IsValid() const { return AgeAPI::BoundingBox<T>::Contains(mValue); }
     private:
         T mValue;
     };
@@ -56,21 +64,23 @@ namespace AgeData
             /// The minimal position of the bounds of the bounding box
             const AgeAPI::FVec3& origin = AgeAPI::FVec3(-8.f, 0.f, -8.f),
             /// The size of each side of the bounding box
-           const  AgeAPI::FVec3& size = AgeAPI::FVec3(16.f, 16.f, 16.f)
+            const  AgeAPI::FVec3& size = AgeAPI::FVec3(16.f, 16.f, 16.f)
         ) : std::pair<AgeAPI::FVec3, AgeAPI::FVec3>(
-            size,origin           
+            size, origin
 
         ) {}
 
         bool IsValid() const
         {
             auto val = this->first + this->second;
-            static AgeAPI::BoundingBox<AgeAPI::FVec3> bounds({-8.f, 0.f, -8.f}, {8.f, 16.f, 8.f});
+            static AgeAPI::BoundingBox<AgeAPI::FVec3> bounds({ -8.f, 0.f, -8.f }, { 8.f, 16.f, 8.f });
             return bounds.Contains(val);
         }
-        
+
+        AgeAPI::ErrorString WriteToJson(const AgeAPI::JsonProxy& proxy) const;
+
     };
-    
+
 
 
 }

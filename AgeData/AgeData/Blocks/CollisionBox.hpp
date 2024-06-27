@@ -8,7 +8,6 @@ namespace AgeData::BlockComponents
     class CollisionBox : public AgeAPI::Components::BlockComponentBase
     {
     public:
-
         CollisionBox(const AgeAPI::FVec3& origin, const AgeAPI::FVec3& size) : AgeAPI::Components::BlockComponentBase(
             0,
             { 1, 19, 50 },
@@ -21,10 +20,10 @@ namespace AgeData::BlockComponents
             "minecraft:collision_box"
         ), mValue(value) {}
 
-
-
+        AgeAPI::ErrorString WriteToJson(AgeAPI::NonOwningPtr<AgeAPI::Addon> addon, AgeAPI::JsonProxy proxy, AgeAPI::NonOwningPtr<AgeAPI::Backend::Bp::BlockBehaviour> blk) const override;
     private:
-        ToggleOrData<BlockBounds> mValue;
-
+        ToggleOrData<BlockBounds, true> mValue;
     };
+
+    
 }
