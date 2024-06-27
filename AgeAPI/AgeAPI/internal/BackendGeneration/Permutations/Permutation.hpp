@@ -43,7 +43,7 @@ namespace AgeAPI::Backend
 				return it->second->MergeDoublePushShort(component);
 			else
 				mComponents[component->GetComponentID().GetFullNamespace()] = std::move(component);
-			return "";
+			return ErrorString();
 		}
 	private:
 		std::string mCondition;

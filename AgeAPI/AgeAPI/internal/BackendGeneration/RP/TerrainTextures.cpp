@@ -16,6 +16,6 @@ namespace AgeAPI::Backend::Rp
 		for (auto& [name, texture] : mTextureData)
 			texture.WriteToJson(textureDataProxy);
 		proxy.mWriteLoc.AddMember("texture_data", textureData, proxy.mAllocator);
-		return "";
+		return ErrorString();
 	}
 }

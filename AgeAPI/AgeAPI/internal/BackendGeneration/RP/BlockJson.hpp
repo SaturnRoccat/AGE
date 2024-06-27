@@ -52,7 +52,7 @@ namespace AgeAPI::Backend::Rp
 			if (mEntries.find(key) != mEntries.end())
 				return ErrorString("Key already exists");
 			mEntries[key] = BlockJsonEntry(value);
-			return "";
+			return ErrorString();
 		}
 
 		ErrorString AddEntry(const std::string& key, const std::vector<std::pair<std::string, std::string>>& value)
@@ -60,7 +60,7 @@ namespace AgeAPI::Backend::Rp
 			if (mEntries.find(key) != mEntries.end())
 				return ErrorString("Key already exists");
 			mEntries[key] = BlockJsonEntry(value);
-			return "";
+			return ErrorString();
 		}
 
 		ErrorString AddEntry(const std::string& key, const BlockJsonEntry& value)
@@ -68,7 +68,7 @@ namespace AgeAPI::Backend::Rp
 			if (mEntries.find(key) != mEntries.end())
 				return ErrorString("Key already exists");
 			mEntries[key] = value;
-			return "";
+			return ErrorString();
 		}
 
 		ErrorString WriteToJson(JsonProxy json) const
@@ -81,7 +81,7 @@ namespace AgeAPI::Backend::Rp
 				rapidjson::Value keyVal(key, json.mAllocator);
 				json.mWriteLoc.AddMember(keyVal, textureObject, json.mAllocator);
 			}
-			return "";
+			return ErrorString();
 		}
 		std::expected<rapidjson::Document, ErrorString> BuildBlockJsonDocument() const
 		{

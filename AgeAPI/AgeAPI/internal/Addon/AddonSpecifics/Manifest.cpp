@@ -115,7 +115,7 @@ namespace AgeAPI
 
 		JsonProxy metadataProxy{ value, allocator };
 		this->mMetadata.WriteToJson(metadataProxy);
-		return "";
+		return ErrorString();
 	}
 }
 

@@ -29,9 +29,10 @@ namespace AgeAPI::Backend::Bp
 				return ErrorString("Component already exists");
 			else if (component->CanBeDoublePushed() && it != mBlockComponents.end())
 				return it->second->MergeDoublePush(addon, this, component);
-			component->OnComponentAdded(addon, this);
+			if (auto error = component->OnComponentAdded(addon, this); error.ContainsError())
+				return error;
 			mBlockComponents[component->GetComponentID().GetFullNamespace()] = std::move(component);
-			return "";
+			return ErrorString();
 		}
 		void AddState(std::unique_ptr<AState> state) { mStates.emplace_back(std::move(state)); }
 		void AddPermutation(Permutation&& permutation) { mPermutations.emplace_back(std::move(permutation)); }
