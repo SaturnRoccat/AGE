@@ -240,9 +240,7 @@ namespace AgeAPI
 		rapidjson::Value& mWriteLoc;
 		rapidjson::Document::AllocatorType& mAllocator;
 		JsonProxy Derive(rapidjson::Value& value) const { return JsonProxy(value, mAllocator); }
-
 		operator std::pair<rapidjson::Value&, rapidjson::Document::AllocatorType&>() { return { mWriteLoc, mAllocator }; }
-
 	};
 
 	class Addon; // Used all over the place
@@ -416,8 +414,8 @@ namespace AgeAPI
 			else
 				return "Invalid JSON Proxy";
 			return ErrorString();
-        }
-    };
+		}
+	};
 
 	template<typename T>
 	class Vec4T
@@ -482,17 +480,17 @@ namespace AgeAPI
 			{
 				auto& [value, allocator] = proxy;
 
-                value.AddMember("x", x, allocator);
-                value.AddMember("y", y, allocator);
-                value.AddMember("z", z, allocator);
-                value.AddMember("w", w, allocator);
-            } 
-            else
-                return "Invalid JSON Proxy";
-            return ErrorString();
-                
-        }
-    };
+				value.AddMember("x", x, allocator);
+				value.AddMember("y", y, allocator);
+				value.AddMember("z", z, allocator);
+				value.AddMember("w", w, allocator);
+			} 
+			else
+				return "Invalid JSON Proxy";
+			return ErrorString();
+				
+		}
+	};
 
 
 	using IVec2 = Vec2T<i32>;
@@ -525,28 +523,28 @@ namespace AgeAPI
 			return Color(gray, gray, gray, w);
 		}
 
-        ErrorString WriteToJson(const AgeAPI::JsonProxy& proxy) const
-        {
-            if (proxy.mWriteLoc.IsArray())
-            {
-                auto arr = proxy.mWriteLoc.GetArray();
-                arr.PushBack(x, proxy.mAllocator);
-                arr.PushBack(y, proxy.mAllocator);
-                arr.PushBack(z, proxy.mAllocator);
-                arr.PushBack(w, proxy.mAllocator);
-            }
-            else if (proxy.mWriteLoc.IsObject())
-            {
-                proxy.mWriteLoc.AddMember("r", x, proxy.mAllocator);
-                proxy.mWriteLoc.AddMember("g", y, proxy.mAllocator);
-                proxy.mWriteLoc.AddMember("b", z, proxy.mAllocator);
-                proxy.mWriteLoc.AddMember("a", w, proxy.mAllocator);
-            }
-            else
-            {
-                return "Invalid JSON Proxy";
-            }
-            return ErrorString();
+		ErrorString WriteToJson(const AgeAPI::JsonProxy& proxy) const
+		{
+			if (proxy.mWriteLoc.IsArray())
+			{
+				auto arr = proxy.mWriteLoc.GetArray();
+				arr.PushBack(x, proxy.mAllocator);
+				arr.PushBack(y, proxy.mAllocator);
+				arr.PushBack(z, proxy.mAllocator);
+				arr.PushBack(w, proxy.mAllocator);
+			}
+			else if (proxy.mWriteLoc.IsObject())
+			{
+				proxy.mWriteLoc.AddMember("r", x, proxy.mAllocator);
+				proxy.mWriteLoc.AddMember("g", y, proxy.mAllocator);
+				proxy.mWriteLoc.AddMember("b", z, proxy.mAllocator);
+				proxy.mWriteLoc.AddMember("a", w, proxy.mAllocator);
+			}
+			else
+			{
+				return "Invalid JSON Proxy";
+			}
+			return ErrorString();
 
 		}
 
@@ -838,27 +836,27 @@ namespace AgeAPI
 		""
 	};
 
-    inline const std::string& GetItemGroupString(ItemGroup group)
-    {
-        return ItemGroupStrings[static_cast<size_t>(group)];
-    }
-    class MenuCategory
-    {
-    private:
-        bool mIsHiddenInCommands = false;
-        ItemGroup mItemGroup = ItemGroup::itemGroup_name_none;
-        std::string mCategory = "construction";
-    public:
-        MenuCategory() = default;
-        MenuCategory(const std::string& category, ItemGroup itemGroup = ItemGroup::itemGroup_name_none, bool isHiddenInCommands = false) : mItemGroup(itemGroup), mCategory(category), mIsHiddenInCommands(isHiddenInCommands) {}
-        void SetItemGroup(ItemGroup group) { mItemGroup = group; }
-        void SetCategory(const std::string& category) { mCategory = category; }
-        void SetHiddenInCommands(bool hidden) { mIsHiddenInCommands = hidden; }
-        const auto& GetItemGroup() const { return mItemGroup; }
-        const auto& GetCategory() const { return mCategory; }
-        const auto& IsHiddenInCommands() const { return mIsHiddenInCommands; }
-        void WriteToJson(JsonProxy proxy);
-    };
+	inline const std::string& GetItemGroupString(ItemGroup group)
+	{
+		return ItemGroupStrings[static_cast<size_t>(group)];
+	}
+	class MenuCategory
+	{
+	private:
+		bool mIsHiddenInCommands = false;
+		ItemGroup mItemGroup = ItemGroup::itemGroup_name_none;
+		std::string mCategory = "construction";
+	public:
+		MenuCategory() = default;
+		MenuCategory(const std::string& category, ItemGroup itemGroup = ItemGroup::itemGroup_name_none, bool isHiddenInCommands = false) : mItemGroup(itemGroup), mCategory(category), mIsHiddenInCommands(isHiddenInCommands) {}
+		void SetItemGroup(ItemGroup group) { mItemGroup = group; }
+		void SetCategory(const std::string& category) { mCategory = category; }
+		void SetHiddenInCommands(bool hidden) { mIsHiddenInCommands = hidden; }
+		const auto& GetItemGroup() const { return mItemGroup; }
+		const auto& GetCategory() const { return mCategory; }
+		const auto& IsHiddenInCommands() const { return mIsHiddenInCommands; }
+		void WriteToJson(JsonProxy proxy);
+	};
 
 	template<typename T>
 	struct GenericBounds
