@@ -7,15 +7,21 @@
 namespace AgeData
 {
 
-    AgeAPI::ErrorString BlockBounds::WriteToJson(const AgeAPI::JsonProxy& proxy) const
+    void BlockBounds::WriteToJson(const AgeAPI::JsonProxy& proxy)
     {
-        rapidjson::Value val(rapidjson::kObjectType);
-
-        rapidjson::ValueWriteWithKey<std::array<float, 3>>::WriteToJsonValue("origin", this->first, val, proxy.mAllocator);
-        rapidjson::ValueWriteWithKey<std::array<float, 3>>::WriteToJsonValue("size", this->second, val, proxy.mAllocator);
-        proxy.mWriteLoc.AddMember("block_bounds", val, proxy.mAllocator);
-
-        return "";
+        auto& [value, allocator] = proxy;
+        value.SetObject(); 
+        rapidjson::ValueWriteWithKey<std::array<float, 3>>::WriteToJsonValue(
+            "origin",
+            this->first.ToArray(),
+            value,
+            allocator
+        );
+        rapidjson::ValueWriteWithKey<std::array<float, 3>>::WriteToJsonValue(
+            "size",
+            this->second.ToArray(),
+            value,
+            allocator);
     }
 
 

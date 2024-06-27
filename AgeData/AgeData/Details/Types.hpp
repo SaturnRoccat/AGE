@@ -1,4 +1,5 @@
-#pragma once
+#ifndef AGE_DATA_TYPES_HPP
+#define AGE_DATA_TYPES_HPP
 #include <AgeAPI/internal/Types.hpp>
 #include <variant> 
 
@@ -8,7 +9,7 @@
 namespace AgeData
 {
 
-    template<typename T, const bool Default>
+    template<typename T, bool Default>
     class ToggleOrData
     {
     public:
@@ -21,9 +22,9 @@ namespace AgeData
         bool GetToggle() const { return std::get<bool>(mValue); }
         void SetToggle(bool value) { mValue = value; }
 
-        T GetData() const { return std::get<T>(mValue); }
+        T& GetData() const { return std::get<T>(mValue); }
         void SetData(const T& value) { mValue = value; }
-      AgeAPI::ErrorString WriteToJson(const AgeAPI::JsonProxy& proxy) const
+        AgeAPI::ErrorString WriteToJson(const AgeAPI::JsonProxy& proxy) const
         {
             if (IsToggle())
                 proxy.mWriteLoc.SetBool(GetToggle());
@@ -77,10 +78,12 @@ namespace AgeData
             return bounds.Contains(val);
         }
 
-        AgeAPI::ErrorString WriteToJson(const AgeAPI::JsonProxy& proxy) const;
-
+        void WriteToJson(const AgeAPI::JsonProxy& proxy);
+        auto& GetOrigin() { return this->second; }
+        auto& GetSize() { return this->first; }
     };
 
 
 
 }
+#endif
