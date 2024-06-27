@@ -17,9 +17,8 @@ namespace AgeAPI::Backend::Bp
 		BlockBehaviour(BlockBehaviour&&) = default;
 		BlockBehaviour(
 			const Identifier& blockIdentifier,
-			const SemanticVersion& formatVersion,
-			bool isHiddenInCommands = false
-		) : mBlockIdentifier(blockIdentifier), mFormatVersion(formatVersion), mIsHiddenInCommands(isHiddenInCommands) {}
+			const SemanticVersion& formatVersion
+		) : mBlockIdentifier(blockIdentifier), mFormatVersion(formatVersion) {}
 
 		ErrorString AddBlockComponent(NonOwningPtr<Addon> addon, std::unique_ptr<Components::BlockComponentBase>& component) 
 		{ 
@@ -64,10 +63,10 @@ namespace AgeAPI::Backend::Bp
 		std::vector<std::unique_ptr<AState>> mStates{};
 		std::vector<Permutation> mPermutations{};
 		MenuCategory mCategory{}; // This should be an enum but i cant remember the values so its a string for now 
+		// TODO: Add custom components and block traits
 
 		Identifier mBlockIdentifier{};
 		SemanticVersion mFormatVersion{};
-		bool mIsHiddenInCommands = false;
 
 	};
 }
