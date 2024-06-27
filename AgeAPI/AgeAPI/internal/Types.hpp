@@ -33,6 +33,9 @@ namespace AgeAPI
     using f32 = float;
     using f64 = double;
 
+    template<typename T>
+    T* NoConst (const T* ptr) { return const_cast<T*>(ptr); }
+
     template<class... Ts>
     struct overloaded : Ts... { using Ts::operator()...; };
     template<class... Ts>
