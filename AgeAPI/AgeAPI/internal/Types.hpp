@@ -414,6 +414,8 @@ namespace AgeAPI
           }
 
         std::string WriteToJson(const JsonProxy& proxy) const;
+
+        std::array<float, 3> const ToArray() {return {x, y, z};}
     };
 
     template<typename T>
@@ -814,7 +816,7 @@ namespace AgeAPI
         ""
     };
 
-    inline const std::string_view GetItemGroupString(ItemGroup group)
+    inline const std::string& GetItemGroupString(ItemGroup group)
     {
         return ItemGroupStrings[static_cast<size_t>(group)];
     }
