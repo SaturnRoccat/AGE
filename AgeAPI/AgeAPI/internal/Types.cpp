@@ -7,7 +7,7 @@ namespace AgeAPI
 		val.AddMember("category", mCategory, proxy.mAllocator);
 		auto stringGroup = GetItemGroupString(mItemGroup);
 		if (!stringGroup.empty())
-			val.AddMember("group", stringGroup, proxy.mAllocator);
+			val.AddMember("group", std::string(stringGroup), proxy.mAllocator);
 		if (!mIsHiddenInCommands)
 			val.AddMember("is_hidden_in_commands", mIsHiddenInCommands, proxy.mAllocator);
 		proxy.mWriteLoc.AddMember("menu_category", val, proxy.mAllocator);

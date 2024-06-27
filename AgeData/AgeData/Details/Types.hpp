@@ -28,7 +28,7 @@ namespace AgeData
     };
 
     template<typename T>
-    class BoundedValue : private AgeAPI::BoundingBox<T>
+    class BoundedValue : public AgeAPI::BoundingBox<T>
     {
     public:
         BoundedValue(
@@ -49,17 +49,17 @@ namespace AgeData
         T mValue;
     };
 
-    class BlockBounds : private std::pair<BoundedValue<AgeAPI::FVec3>, BoundedValue<AgeAPI::FVec3>>
+    class BlockBounds : private std::pair<AgeAPI::FVec3, AgeAPI::FVec3>
     {
     public:
         BlockBounds(
             /// The minimal position of the bounds of the bounding box
-            AgeAPI::IVec3 origin = AgeAPI::IVec3(-8.f, 0.f, -8.f),
+            const AgeAPI::FVec3& origin = AgeAPI::FVec3(-8.f, 0.f, -8.f),
             /// The size of each side of the bounding box
-            AgeAPI::IVec3 size = AgeAPI::IVec3(16.f, 16.f, 16.f)
-        ) : std::pair<BoundedValue<AgeAPI::FVec3>, BoundedValue<AgeAPI::FVec3>>(
-            BoundedValue<AgeAPI::FVec3>(origin, AgeAPI::FVec3(-8.f, 0.f, -8.f ), AgeAPI::FVec3(8.f, 16.f, 8.f)),
-            BoundedValue<AgeAPI::FVec3>(size, {0.f, 0.f, 0.f}, {16.f, 16.f, 16.f})
+           const  AgeAPI::FVec3& size = AgeAPI::FVec3(16.f, 16.f, 16.f)
+        ) : std::pair<AgeAPI::FVec3, AgeAPI::FVec3>(
+            size,origin           
+
         ) {}
 
         bool IsValid() const
