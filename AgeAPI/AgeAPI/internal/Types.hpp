@@ -1,41 +1,23 @@
-#pragma once
+#ifndef AGE_API_TYPES
+
+#define AGE_API_TYPES
 #include <string>
 #include <vector>
 #include <array>
 #include <memory>
+#include <AgeAPI/internal/RapidJsonExtension/TypeTranslations.hpp>
 #include <format>
 #include <AgeAPI/internal/Error.hpp>
 #include <filesystem>
+#include <uuid_v4.h>
+#include <optional>
+#include <charconv>
+#include <concepts>
 
 #ifndef TO_UNDERLYING
 #define TO_UNDERLYING(x) static_cast<std::underlying_type_t<decltype(x)>>(x)
 #endif
 
-#ifndef RAPIDJSON_HAS_STDSTRING
-#define RAPIDJSON_HAS_STDSTRING 1
-#define RAPIDJSON_HAS_CXX11_RVALUE_REFS 1
-#define RAPIDJSON_HAS_CXX11_NOEXCEPT 1
-#define RAPIDJSON_HAS_CXX11_TYPETRAITS 1
-#define RAPIDJSON_HAS_CXX11_RANGE_FOR 1
-#define RAPIDJSON_HAS_CXX11_UNCAUGHT_EXCEPTION 1
-#define RAPIDJSON_HAS_CXX11_USER_DEFINED_LITERALS 1
-#define RAPIDJSON_HAS_CXX11_TEMPLATED_LITERALS 1
-#define RAPIDJSON_HAS_CXX11_TYPENAME 1
-#define RAPIDJSON_HAS_CXX11_EXPLICIT_CONVERSION 1
-#endif
-#include <rapidjson/rapidjson.h>
-#include <rapidjson/document.h>
-#include <rapidjson/writer.h>
-#include <rapidjson/reader.h>
-#include <rapidjson/prettywriter.h>
-#include <rapidjson/istreamwrapper.h>
-#include <rapidjson/ostreamwrapper.h>
-#include <rapidjson/error/en.h>
-#include <rapidjson/stringbuffer.h>
-#include <AgeAPI/internal/Error.hpp>
-#include <format>
-#include <uuid_v4.h>
-#include <optional>
 
 
 namespace AgeAPI
@@ -256,7 +238,10 @@ namespace AgeAPI
         rapidjson::Document::AllocatorType& mAllocator;
         JsonProxy Derive(rapidjson::Value& value) const { return JsonProxy(value, mAllocator); }
 
+        operator std::pair<rapidjson::Value&, rapidjson::Document::AllocatorType&>() { return { mWriteLoc, mAllocator }; }
+
     };
+    // Legacy code
     struct DependencyProxy
     {
         rapidjson::Value& mDependencies;
@@ -352,7 +337,23 @@ namespace AgeAPI
         }
         T Length() const { return std::sqrt(x * x + y * y); }
 
-        std::string WriteToJson(const AgeAPI::JsonProxy& proxy) const;
+        std::array<T, 2> const ToArray() {return {x, y};}
+
+        ErrorString WriteToJson(JsonProxy proxy)
+        {
+            if (proxy.mWriteLoc.IsArray())
+                rapidjson::ValueWriter<std::array<T, 2>>::WriteToJsonValue(proxy.mWriteLoc, proxy.mAllocator);
+            else if (proxy.mWriteLoc.IsObject())
+            {
+                auto& [value, allocator] = proxy;
+
+                value.AddMember("x", x, allocator);
+                value.AddMember("y", y, allocator);
+            }
+            else
+                return "Invalid JSON Proxy";
+        }
+
     };
 
     template<typename T>
@@ -373,49 +374,67 @@ namespace AgeAPI
         using Type = T;
         using Vec = Vec3T<T>;
         T x, y, z;
-    public:        Vec3T() : x(0), y(0), z(0) {}
-          Vec3T(T x, T y, T z) : x(x), y(y), z(z) {}
-          Vec3T(const Vec3T<T>& other) : x(other.x), y(other.y), z(other.z) {}
-          Vec3T(Vec3T<T>&& other) noexcept : x(std::move(other.x)), y(std::move(other.y)), z(std::move(other.z)) {}
-          Vec3T<T>& operator=(const Vec3T<T>& other) { x = other.x; y = other.y; z = other.z; return *this; }
-          Vec3T<T>& operator=(Vec3T<T>&& other) noexcept { x = std::move(other.x); y = std::move(other.y); z = std::move(other.z); return *this; }
-          Vec3T<T> operator+(const Vec3T<T>& other) const { return Vec3T<T>(x + other.x, y + other.y, z + other.z); }
-          Vec3T<T> operator-(const Vec3T<T>& other) const { return Vec3T<T>(x - other.x, y - other.y, z - other.z); }
-          Vec3T<T> operator*(const Vec3T<T>& other) const { return Vec3T<T>(x * other.x, y * other.y, z * other.z); }
-          Vec3T<T> operator/(const Vec3T<T>& other) const { return Vec3T<T>(x / other.x, y / other.y, z / other.z); }
-          Vec3T<T> operator+(T scalar) const { return Vec3T<T>(x + scalar, y + scalar, z + scalar); }
-          Vec3T<T> operator-(T scalar) const { return Vec3T<T>(x - scalar, y - scalar, z - scalar); }
-          Vec3T<T> operator*(T scalar) const { return Vec3T<T>(x * scalar, y * scalar, z * scalar); }
-          Vec3T<T> operator/(T scalar) const { return Vec3T<T>(x / scalar, y / scalar, z / scalar); }
-          Vec3T<T>& operator+=(const Vec3T<T>& other) { x += other.x; y += other.y; z += other.z; return *this; }
-          Vec3T<T>& operator-=(const Vec3T<T>& other) { x -= other.x; y -= other.y; z -= other.z; return *this; }
-          Vec3T<T>& operator*=(const Vec3T<T>& other) { x *= other.x; y *= other.y; z *= other.z; return *this; }
-          Vec3T<T>& operator/=(const Vec3T<T>& other) { x /= other.x; y /= other.y; z /= other.z; return *this; }
-          Vec3T<T>& operator+=(T scalar) { x += scalar; y += scalar; z += scalar; return *this; }
-          Vec3T<T>& operator-=(T scalar) { x -= scalar; y -= scalar; z -= scalar; return *this; }
-          Vec3T<T>& operator*=(T scalar) { x *= scalar; y *= scalar; z *= scalar; return *this; }
-          Vec3T<T>& operator/=(T scalar) { x /= scalar; y /= scalar; z /= scalar; return *this; }
-          bool operator==(const Vec3T<T>& other) const { return x == other.x && y == other.y && z == other.z; }
-          bool operator!=(const Vec3T<T>& other) const { return x != other.x || y != other.y || z != other.z; }
-          bool operator<(const Vec3T<T>& other) const { return x < other.x && y < other.y && z < other.z; }
-          bool operator>(const Vec3T<T>& other) const { return x > other.x && y > other.y && z > other.z; }
-          bool operator<=(const Vec3T<T>& other) const { return x <= other.x && y <= other.y && z <= other.z; }
-          bool operator>=(const Vec3T<T>& other) const { return x >= other.x && y >= other.y && z >= other.z; }
-          T Dot(const Vec3T<T>& other) const { return x * other.x + y * other.y + z * other.z; }
-          T Magnitude() const { return std::sqrt(x * x + y * y + z * z); }
-          T MagnitudeSquared() const { return x * x + y * y + z * z; }
-          Vec Abs() const { return Vec3T<T>(std::abs(x), std::abs(y), std::abs(z)); }
-          Vec Cross(const Vec3T<T>& other) const { return Vec3T<T>(y * other.z - z * other.y, z * other.x - x * other.z, x * other.y - y * other.x); }
-          Vec Lerp(const Vec& other, float t) const {
+    public:        
+        Vec3T() : x(0), y(0), z(0) {}
+        Vec3T(T x, T y, T z) : x(x), y(y), z(z) {}
+        Vec3T(const Vec3T<T>& other) : x(other.x), y(other.y), z(other.z) {}
+        Vec3T(Vec3T<T>&& other) noexcept : x(std::move(other.x)), y(std::move(other.y)), z(std::move(other.z)) {}
+        Vec3T<T>& operator=(const Vec3T<T>& other) { x = other.x; y = other.y; z = other.z; return *this; }
+        Vec3T<T>& operator=(Vec3T<T>&& other) noexcept { x = std::move(other.x); y = std::move(other.y); z = std::move(other.z); return *this; }
+        Vec3T<T> operator+(const Vec3T<T>& other) const { return Vec3T<T>(x + other.x, y + other.y, z + other.z); }
+        Vec3T<T> operator-(const Vec3T<T>& other) const { return Vec3T<T>(x - other.x, y - other.y, z - other.z); }
+        Vec3T<T> operator*(const Vec3T<T>& other) const { return Vec3T<T>(x * other.x, y * other.y, z * other.z); }
+        Vec3T<T> operator/(const Vec3T<T>& other) const { return Vec3T<T>(x / other.x, y / other.y, z / other.z); }
+        Vec3T<T> operator+(T scalar) const { return Vec3T<T>(x + scalar, y + scalar, z + scalar); }
+        Vec3T<T> operator-(T scalar) const { return Vec3T<T>(x - scalar, y - scalar, z - scalar); }
+        Vec3T<T> operator*(T scalar) const { return Vec3T<T>(x * scalar, y * scalar, z * scalar); }
+        Vec3T<T> operator/(T scalar) const { return Vec3T<T>(x / scalar, y / scalar, z / scalar); }
+        Vec3T<T>& operator+=(const Vec3T<T>& other) { x += other.x; y += other.y; z += other.z; return *this; }
+        Vec3T<T>& operator-=(const Vec3T<T>& other) { x -= other.x; y -= other.y; z -= other.z; return *this; }
+        Vec3T<T>& operator*=(const Vec3T<T>& other) { x *= other.x; y *= other.y; z *= other.z; return *this; }
+        Vec3T<T>& operator/=(const Vec3T<T>& other) { x /= other.x; y /= other.y; z /= other.z; return *this; }
+        Vec3T<T>& operator+=(T scalar) { x += scalar; y += scalar; z += scalar; return *this; }
+        Vec3T<T>& operator-=(T scalar) { x -= scalar; y -= scalar; z -= scalar; return *this; }
+        Vec3T<T>& operator*=(T scalar) { x *= scalar; y *= scalar; z *= scalar; return *this; }
+        Vec3T<T>& operator/=(T scalar) { x /= scalar; y /= scalar; z /= scalar; return *this; }
+        bool operator==(const Vec3T<T>& other) const { return x == other.x && y == other.y && z == other.z; }
+        bool operator!=(const Vec3T<T>& other) const { return x != other.x || y != other.y || z != other.z; }
+        bool operator<(const Vec3T<T>& other) const { return x < other.x && y < other.y && z < other.z; }
+        bool operator>(const Vec3T<T>& other) const { return x > other.x && y > other.y && z > other.z; }
+        bool operator<=(const Vec3T<T>& other) const { return x <= other.x && y <= other.y && z <= other.z; }
+        bool operator>=(const Vec3T<T>& other) const { return x >= other.x && y >= other.y && z >= other.z; }
+        T Dot(const Vec3T<T>& other) const { return x * other.x + y * other.y + z * other.z; }
+        T Magnitude() const { return std::sqrt(x * x + y * y + z * z); }
+        T MagnitudeSquared() const { return x * x + y * y + z * z; }
+        Vec Abs() const { return Vec3T<T>(std::abs(x), std::abs(y), std::abs(z)); }
+        Vec Cross(const Vec3T<T>& other) const { return Vec3T<T>(y * other.z - z * other.y, z * other.x - x * other.z, x * other.y - y * other.x); }
+        Vec Lerp(const Vec& other, float t) const {
               return Vec(
                   (T)x + (T)(((float)other.x - (float)x) * t),
                   (T)y + (T)(((float)other.y - (float)y) * t),
                   (T)z + (T)(((float)other.z - (float)z) * t));
           }
 
-        std::string WriteToJson(const JsonProxy& proxy) const;
+        std::array<T, 3> const ToArray() {return {x, y, z};}
 
-        std::array<float, 3> const ToArray() {return {x, y, z};}
+        ErrorString WriteToJson(JsonProxy proxy)
+        {
+            if (proxy.mWriteLoc.IsArray())
+			{
+				rapidjson::ValueWriter<std::array<T, 3>>::WriteToJsonValue(proxy.mWriteLoc, proxy.mAllocator);
+			}
+			else if (proxy.mWriteLoc.IsObject())
+			{
+				auto& [value, allocator] = proxy;
+
+				value.AddMember("x", x, allocator);
+				value.AddMember("y", y, allocator);
+				value.AddMember("z", z, allocator);
+			}
+			else
+				return "Invalid JSON Proxy";
+			return "";
+        }
     };
 
     template<typename T>
@@ -469,7 +488,28 @@ namespace AgeAPI
         }
         T Length() const { return std::sqrt(x * x + y * y + z * z + w * w); }
 
-        std::string WriteToJson(const AgeAPI::JsonProxy& proxy) const;
+        std::array<T, 4> const ToArray() {return {x, y, z, w};}
+        
+        ErrorString WriteToJson(AgeAPI::JsonProxy proxy) const
+        {
+            if  (proxy.mWriteLoc.IsArray())
+            {
+                rapidjson::ValueWriter<std::array<T, 4>>::WriteToJsonValue(proxy.mWriteLoc, proxy.mAllocator);
+            }
+            else if (proxy.mWriteLoc.IsObject())
+            {
+                auto& [value, allocator] = proxy;
+
+                value.AddMember("x", x, allocator);
+                value.AddMember("y", y, allocator);
+                value.AddMember("z", z, allocator);
+                value.AddMember("w", w, allocator);
+            } 
+            else
+                return "Invalid JSON Proxy";
+            return "";
+                
+        }
     };
 
 
@@ -874,6 +914,66 @@ namespace AgeAPI
     }
 
 
+};
+
+namespace rapidjson
+{
+    template<>
+    struct TypeTranslation<AgeAPI::Identifier, false>
+    {
+        static void WriteToJson(const AgeAPI::Identifier& value, rapidjson::Value& jsonValue, rapidjson::Document::AllocatorType& allocator)
+        {
+            jsonValue.SetString(value.GetFullNamespace(), allocator);
+        }
+
+        static AgeAPI::Identifier ReadFromJson(const rapidjson::Value& jsonValue)
+        {
+            return AgeAPI::Identifier(jsonValue.GetString());
+        }
+    };
+
+    template<>
+    struct TypeTranslation<AgeAPI::SemanticVersion, false>
+    {
+        static void WriteToJson(const AgeAPI::SemanticVersion value, rapidjson::Value& jsonValue, rapidjson::Document::AllocatorType& allocator)
+        {
+            jsonValue.SetString(std::format("{}.{}.{}", value.GetMajor(), value.GetMinor(), value.GetPatch()), allocator);
+        }
+
+        static AgeAPI::SemanticVersion ReadFromJson(const rapidjson::Value& jsonValue)
+        {
+            using namespace AgeAPI;
+            if (jsonValue.IsArray())
+            {
+                auto arr = jsonValue.GetArray();
+                std::array<u8, 3> version;
+                for (int i = 0; i < arr.Capacity(); i++)
+                {
+                    auto& arrVal = arr[i];
+                    if (!arrVal.IsInt()) [[unlikely]]
+                        throw std::runtime_error("Value Is Not In The expected Format");
+
+                        u8 section = (u8)arrVal.GetInt();
+                        version[i] = section;
+                }
+            }
+            else if (jsonValue.IsString())
+            {
+                auto str = jsonValue.GetString();
+                auto parts = AgeAPI::ExplodeString(str, ".");
+                if (parts.size() != 3) [[unlikely]]
+                    throw std::runtime_error("Value Is Not In The expected Format");
+
+                    std::array<u8, 3> version;
+                    for (int i = 0; i < 3; i++)
+                        if (auto fromChar = std::from_chars(parts[i].data(), parts[i].data() + parts[i].size(), version[i]); fromChar.ec != std::errc())
+                            throw std::runtime_error("Value Is Not In The expected Format");
+            }
+            else [[unlikely]]
+                throw std::runtime_error("Value Is Not In The expected Format");
+        }
+    };
+
 }
 
 namespace std
@@ -942,3 +1042,4 @@ namespace std
         }
     };
 }
+#endif // !AGE_API_TYPES_H

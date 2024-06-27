@@ -1,9 +1,30 @@
 #pragma once
-#include <AgeAPI/internal/Types.hpp>
 #include <typeinfo>
 #include <iostream>
 #include <functional>
+#ifndef RAPIDJSON_HAS_STDSTRING
+#define RAPIDJSON_HAS_STDSTRING 1
+#define RAPIDJSON_HAS_CXX11_RVALUE_REFS 1
+#define RAPIDJSON_HAS_CXX11_NOEXCEPT 1
+#define RAPIDJSON_HAS_CXX11_TYPETRAITS 1
+#define RAPIDJSON_HAS_CXX11_RANGE_FOR 1
+#define RAPIDJSON_HAS_CXX11_UNCAUGHT_EXCEPTION 1
+#define RAPIDJSON_HAS_CXX11_USER_DEFINED_LITERALS 1
+#define RAPIDJSON_HAS_CXX11_TEMPLATED_LITERALS 1
+#define RAPIDJSON_HAS_CXX11_TYPENAME 1
+#define RAPIDJSON_HAS_CXX11_EXPLICIT_CONVERSION 1
+#endif
+#include <rapidjson/rapidjson.h>
+#include <rapidjson/document.h>
+#include <rapidjson/writer.h>
+#include <rapidjson/reader.h>
+#include <rapidjson/prettywriter.h>
+#include <rapidjson/istreamwrapper.h>
+#include <rapidjson/ostreamwrapper.h>
+#include <rapidjson/error/en.h>
+#include <rapidjson/stringbuffer.h>
 #include <charconv>
+#include <string>
 namespace rapidjson
 {
 
@@ -79,62 +100,6 @@ namespace rapidjson
 		static std::string ReadFromJson(const rapidjson::Value& jsonValue)
 		{
 			return jsonValue.GetString();
-		}
-	};
-
-	template<>
-	struct TypeTranslation<AgeAPI::Identifier, false>
-	{
-		static void WriteToJson(const AgeAPI::Identifier& value, rapidjson::Value& jsonValue, rapidjson::Document::AllocatorType& allocator)
-		{
-			jsonValue.SetString(value.GetFullNamespace(), allocator);
-		}
-
-		static AgeAPI::Identifier ReadFromJson(const rapidjson::Value& jsonValue)
-		{
-			return AgeAPI::Identifier(jsonValue.GetString());
-		}
-	};
-
-	template<>
-	struct TypeTranslation<AgeAPI::SemanticVersion, false>
-	{
-		static void WriteToJson(const AgeAPI::SemanticVersion value, rapidjson::Value& jsonValue, rapidjson::Document::AllocatorType& allocator)
-		{
-			jsonValue.SetString(std::format("{}.{}.{}", value.GetMajor(), value.GetMinor(), value.GetPatch()), allocator);
-		}
-
-		static AgeAPI::SemanticVersion ReadFromJson(const rapidjson::Value& jsonValue)
-		{
-			using namespace AgeAPI;
-			if (jsonValue.IsArray())
-			{
-				auto arr = jsonValue.GetArray();
-				std::array<u8, 3> version;
-				for (int i = 0; i < arr.Capacity(); i++)
-				{
-					auto& arrVal = arr[i];
-					if (!arrVal.IsInt()) [[unlikely]]
-						throw std::runtime_error("Value Is Not In The expected Format");
-
-					u8 section = (u8)arrVal.GetInt();
-					version[i] = section;
-				}
-			}
-			else if (jsonValue.IsString())
-			{
-				auto str = jsonValue.GetString();
-				auto parts = AgeAPI::ExplodeString(str, ".");
-				if (parts.size() != 3) [[unlikely]]
-					throw std::runtime_error("Value Is Not In The expected Format");
-
-				std::array<u8, 3> version;
-				for (int i = 0; i < 3; i++)
-					if (auto fromChar = std::from_chars(parts[i].data(), parts[i].data() + parts[i].size(), version[i]); fromChar.ec != std::errc())
-						throw std::runtime_error("Value Is Not In The expected Format");	
-			}
-			else [[unlikely]]
-				throw std::runtime_error("Value Is Not In The expected Format");
 		}
 	};
 	
