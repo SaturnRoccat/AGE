@@ -8,7 +8,7 @@ namespace AgeData::BlockComponents
     class CollisionBox : public AgeAPI::Components::BlockComponentBase
     {
     public:
-        CollisionBox(const AgeAPI::FVec3& origin, const AgeAPI::FVec3& size) : AgeAPI::Components::BlockComponentBase(
+        CollisionBox(const AgeAPI::IVec3& origin, const AgeAPI::IVec3& size) : AgeAPI::Components::BlockComponentBase(
             0,
             { 1, 19, 50 },
             "minecraft:collision_box"

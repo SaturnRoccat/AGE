@@ -22,7 +22,10 @@ namespace AgeData
         bool GetToggle() const { return std::get<bool>(mValue); }
         void SetToggle(bool value) { mValue = value; }
 
-        T& GetData() const { return std::get<T>(mValue); }
+        const T& GetData() const
+        {
+            return std::get<T>(mValue);
+        }
         void SetData(const T& value) { mValue = value; }
         AgeAPI::ErrorString WriteToJson(const AgeAPI::JsonProxy& proxy) const
         {
@@ -58,15 +61,15 @@ namespace AgeData
         T mValue;
     };
 
-    class BlockBounds : private std::pair<AgeAPI::FVec3, AgeAPI::FVec3>
+    class BlockBounds : private std::pair<AgeAPI::IVec3, AgeAPI::IVec3>
     {
     public:
         BlockBounds(
             /// The minimal position of the bounds of the bounding box
-            const AgeAPI::FVec3& origin = AgeAPI::FVec3(-8.f, 0.f, -8.f),
+            const AgeAPI::IVec3& origin = AgeAPI::IVec3(-8, 0, -8),
             /// The size of each side of the bounding box
-            const  AgeAPI::FVec3& size = AgeAPI::FVec3(16.f, 16.f, 16.f)
-        ) : std::pair<AgeAPI::FVec3, AgeAPI::FVec3>(
+            const  AgeAPI::IVec3& size = AgeAPI::IVec3(16, 16, 16)
+        ) : std::pair<AgeAPI::IVec3, AgeAPI::IVec3>(
             size, origin
 
         ) {}
@@ -74,13 +77,13 @@ namespace AgeData
         bool IsValid() const
         {
             auto val = this->first + this->second;
-            static AgeAPI::BoundingBox<AgeAPI::FVec3> bounds({ -8.f, 0.f, -8.f }, { 8.f, 16.f, 8.f });
+            static AgeAPI::BoundingBox<AgeAPI::IVec3> bounds({ -8, 0, -8 }, { 8, 16, 8 });
             return bounds.Contains(val);
         }
 
-        void WriteToJson(const AgeAPI::JsonProxy& proxy);
-        auto& GetOrigin() { return this->second; }
-        auto& GetSize() { return this->first; }
+        void WriteToJson(AgeAPI::JsonProxy proxy) const;
+        const auto& GetOrigin() const { return this->second; }
+        const auto& GetSize() const { return this->first; }
     };
 
 
