@@ -20,6 +20,6 @@ namespace AgeAPI::Backend
 				components.AddMember(key, value, proxy.mAllocator);
 		}
 		proxy.mWriteLoc.AddMember("components", components, proxy.mAllocator);
-		return "";
+		return ErrorString();
 	}
 }

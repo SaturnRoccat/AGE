@@ -89,6 +89,20 @@ namespace rapidjson
 		}
 	};
 
+	template<std::floating_point T>
+	struct TypeTranslation<T, false>
+	{
+		static void WriteToJson(const T& value, rapidjson::Value& jsonValue, rapidjson::Document::AllocatorType& allocator)
+		{
+			jsonValue.SetDouble(value);
+		}
+
+		static T ReadFromJson(const rapidjson::Value& jsonValue)
+		{
+			return static_cast<T>(jsonValue.GetDouble());
+		}
+	};
+
 	template<>
 	struct TypeTranslation<std::string, true> // So string technically matches out container specialization
 	{

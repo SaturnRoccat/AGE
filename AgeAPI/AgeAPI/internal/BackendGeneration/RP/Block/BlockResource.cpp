@@ -21,6 +21,6 @@ namespace AgeAPI::Backend::Rp
 			rapidjson::ValueWriteWithKey<std::vector<BlockResourceElement>>::WriteToJsonValue("textures", this->mTextures, TextureObject, proxy.mAllocator);
 		rapidjson::Value key(this->mTextureShortName, proxy.mAllocator);
 		proxy.mWriteLoc.AddMember(key, TextureObject, proxy.mAllocator);
-		return "";
+		return ErrorString();
 	}
 }

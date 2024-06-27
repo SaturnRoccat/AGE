@@ -40,7 +40,7 @@ namespace AgeAPI::Backend::Rp
 			if (it != mTextureData.end())
 				return "Texture with the same name already exists";
 			mTextureData[texture.GetTextureShortName()] = texture;
-			return "";
+			return ErrorString();
 		}
 
 		ErrorString AddTexture(BlockResource&& texture)
@@ -49,7 +49,7 @@ namespace AgeAPI::Backend::Rp
 			if (it != mTextureData.end())
 				return "Texture with the same name already exists";
 			mTextureData[texture.GetTextureShortName()] = std::move(texture);
-			return "";
+			return ErrorString();
 		}
 
 		void Write(const std::filesystem::path& base) const

@@ -436,7 +436,7 @@ namespace AgeAPI
 			}
 			else
 				return "Invalid JSON Proxy";
-			return "";
+			return ErrorString();
         }
     };
 
@@ -510,7 +510,7 @@ namespace AgeAPI
             } 
             else
                 return "Invalid JSON Proxy";
-            return "";
+            return ErrorString();
                 
         }
     };
@@ -567,7 +567,7 @@ namespace AgeAPI
             {
                 return "Invalid JSON Proxy";
             }
-            return "";
+            return ErrorString();
 
         }
 
@@ -867,7 +867,7 @@ namespace AgeAPI
     {
     private:
         bool mIsHiddenInCommands = false;
-        ItemGroup mItemGroup = ItemGroup::itemGroup_name_planks;
+        ItemGroup mItemGroup = ItemGroup::itemGroup_name_none;
         std::string mCategory = "construction";
     public:
         MenuCategory() = default;

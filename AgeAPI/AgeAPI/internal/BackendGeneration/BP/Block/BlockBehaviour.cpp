@@ -9,8 +9,12 @@ namespace AgeAPI::Backend::Bp
         rapidjson::ValueWriteWithKey<std::string>::WriteToJsonValue("format_version", this->mFormatVersion.GetString(), location, allocator);
         rapidjson::Value minecraftBlock(rapidjson::kObjectType);
         rapidjson::Value description(rapidjson::kObjectType);
-        WriteComponents(addon, minecraftBlock, allocator);
-        WritePermutations(addon, minecraftBlock, allocator);
+        auto err = WriteComponents(addon, minecraftBlock, allocator);
+        if (err.ContainsError())
+            return err;
+        err = WritePermutations(addon, minecraftBlock, allocator);
+        if (err.ContainsError())
+			return err;
         description.AddMember("identifier", this->mBlockIdentifier.GetFullNamespace(), allocator);
         WriteStates(description, allocator);
         mCategory.WriteToJson({description, allocator});
@@ -18,7 +22,7 @@ namespace AgeAPI::Backend::Bp
 
 
         location.AddMember("minecraft:block", minecraftBlock, allocator);
-        return "";
+        return ErrorString();
     }
 
     ErrorString BlockBehaviour::WriteComponents(NonOwningPtr<Addon> addon, rapidjson::Value& location, rapidjson::Document::AllocatorType& allocator)
@@ -30,18 +34,18 @@ namespace AgeAPI::Backend::Bp
             rapidjson::Value value(rapidjson::kObjectType);
             JsonProxy proxy(value, allocator);
             auto err = component->WriteToJson(addon, proxy, this);
-            if (err.ContainsError())
+            if (err.ContainsError() == true)
 				return err;
             if (!component->IsTransient())
                 components.AddMember(key, value, allocator);
 		}
 		location.AddMember("components", components, allocator);
-        return "";
+        return ErrorString();
     }
     ErrorString BlockBehaviour::WritePermutations(NonOwningPtr<Addon> addon, rapidjson::Value& location, rapidjson::Document::AllocatorType& allocator) 
     {
         if (this->mPermutations.empty())
-			return "";
+			return ErrorString();
         rapidjson::Value permutations(rapidjson::kArrayType);
         for (const auto& permutation : this->mPermutations)
         {
@@ -53,7 +57,7 @@ namespace AgeAPI::Backend::Bp
 			permutations.PushBack(value, allocator);
         }
         location.AddMember("permutations", permutations, allocator);
-        return "";
+        return ErrorString();
     }
     void BlockBehaviour::WriteStates(rapidjson::Value& location, rapidjson::Document::AllocatorType& allocator)
     {
