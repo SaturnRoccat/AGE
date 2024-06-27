@@ -22,7 +22,7 @@ namespace AgeAPI
 		void SetUUID(const std::string& uuid) { mUUID = uuid; }
 		void SetVersion(const SemanticVersion& version) { mVersion = version; }
 
-		void WriteToJson(DependencyProxy& proxy) const;
+		void WriteToJson(JsonProxy& proxy) const;
 	};
 
 	class Module
@@ -46,7 +46,7 @@ namespace AgeAPI
 		void SetType(const std::string& type) { mType = type; }
 		void SetVersion(const SemanticVersion& version) { mVersion = version; }
 
-		void WriteToJson(ModuleProxy& proxy) const;
+		void WriteToJson(JsonProxy& proxy) const;
 	};
 
 	class Metadata
@@ -67,7 +67,7 @@ namespace AgeAPI
 		void SetLicense(const std::string& license) { mLicense = license; }
 		void SetURL(const std::string& url) { mURL = url; }
 
-		void WriteToJson(MetadataProxy& proxy) const;
+		void WriteToJson(JsonProxy& proxy) const;
 	
 
 	};

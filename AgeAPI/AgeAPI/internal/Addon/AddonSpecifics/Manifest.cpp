@@ -2,71 +2,71 @@
 
 namespace AgeAPI
 {
-	void Metadata::WriteToJson(MetadataProxy& proxy) const
+	void Metadata::WriteToJson(JsonProxy& proxy) const
 	{
 		if (!this->mAuthors.empty())
 			rapidjson::ValueWriteWithKey<std::vector<std::string>>::WriteToJsonValue(
 			"authors",
 			this->mAuthors,
-			proxy.mMetadata,
+			proxy.mWriteLoc,
 			proxy.mAllocator
 		);
 		if (this->mLicense != "")
 			rapidjson::ValueWriteWithKey<std::string>::WriteToJsonValue(
 			"license",
 			this->mLicense,
-			proxy.mMetadata,
+			proxy.mWriteLoc,
 			proxy.mAllocator
 		);
 		if (this->mURL != "")
 			rapidjson::ValueWriteWithKey<std::string>::WriteToJsonValue(
 			"url",
 			this->mURL,
-			proxy.mMetadata,
+			proxy.mWriteLoc,
 			proxy.mAllocator
 		);
 	}
-	void Module::WriteToJson(ModuleProxy& proxy) const
+	void Module::WriteToJson(JsonProxy& proxy) const
 	{
 		if (this->mDescription != "")
 			rapidjson::ValueWriteWithKey<std::string>::WriteToJsonValue(
 				"description",
 				this->mDescription,
-				proxy.mModules,
+				proxy.mWriteLoc,
 				proxy.mAllocator
 			);
 		if (this->mVersion.GetVersion() != 0)
 			rapidjson::ValueWriteWithKey<std::array<u8, 3>>::WriteToJsonValue(
 				"version",
 				this->mVersion.GetVersionArray(),
-				proxy.mModules,
+				proxy.mWriteLoc,
 				proxy.mAllocator
 			);
 		rapidjson::ValueWriteWithKey<std::string>::WriteToJsonValue(
 			"uuid",
 			this->mUUID,
-			proxy.mModules,
+			proxy.mWriteLoc,
 			proxy.mAllocator
 		);
 		rapidjson::ValueWriteWithKey<std::string>::WriteToJsonValue(
 			"type",
 			this->mType,
-			proxy.mModules,
+			proxy.mWriteLoc,
 			proxy.mAllocator
 		);
 	}
-	void Dependency::WriteToJson(DependencyProxy& proxy) const
+	void Dependency::WriteToJson(JsonProxy& proxy) const
 	{
 		rapidjson::ValueWriteWithKey<std::string>::WriteToJsonValue(
 			"uuid",
 			this->mUUID,
-			proxy.mDependencies,
+			proxy.mWriteLoc,
 			proxy.mAllocator
 		);
 		rapidjson::ValueWriteWithKey<std::array<u8, 3>>::WriteToJsonValue(
 			"version",
 			this->mVersion.GetVersionArray(),
-			proxy.mDependencies,
+			proxy.mWriteLoc,
 			proxy.mAllocator
 		);
 	}
@@ -92,7 +92,7 @@ namespace AgeAPI
 			for (const auto& module : this->mModules)
 			{
 				rapidjson::Value moduleValue(rapidjson::kObjectType);
-				ModuleProxy moduleProxy{ moduleValue, allocator };
+				JsonProxy moduleProxy{ moduleValue, allocator };
 				module.WriteToJson(moduleProxy);
 				modules.PushBack(moduleValue, allocator);
 			}
@@ -106,14 +106,14 @@ namespace AgeAPI
 			for (const auto& dependency : this->mDependencies)
 			{
 				rapidjson::Value dependencyValue(rapidjson::kObjectType);
-				DependencyProxy dependencyProxy{ dependencyValue, allocator };
+				JsonProxy dependencyProxy{ dependencyValue, allocator };
 				dependency.WriteToJson(dependencyProxy);
 				dependencies.PushBack(dependencyValue, allocator);
 			}
 			value.AddMember("dependencies", dependencies, allocator);
 		}
 
-		MetadataProxy metadataProxy{ value, allocator };
+		JsonProxy metadataProxy{ value, allocator };
 		this->mMetadata.WriteToJson(metadataProxy);
 		return "";
 	}

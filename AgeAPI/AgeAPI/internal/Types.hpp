@@ -22,407 +22,386 @@
 
 namespace AgeAPI
 {
-    using u8 = unsigned char;
-    using i8 = char;
-    using u16 = unsigned short;
-    using i16 = short;
-    using u32 = unsigned int;
-    using i32 = int;
-    using u64 = unsigned long long;
-    using i64 = long long;
-    using f32 = float;
-    using f64 = double;
+	using u8 = unsigned char;
+	using i8 = char;
+	using u16 = unsigned short;
+	using i16 = short;
+	using u32 = unsigned int;
+	using i32 = int;
+	using u64 = unsigned long long;
+	using i64 = long long;
+	using f32 = float;
+	using f64 = double;
 
-    template<typename T>
-    T* NoConst (const T* ptr) { return const_cast<T*>(ptr); }
+	template<typename T>
+	T* NoConst (const T* ptr) { return const_cast<T*>(ptr); }
 
-    template<class... Ts>
-    struct overloaded : Ts... { using Ts::operator()...; };
-    template<class... Ts>
-    overloaded(Ts...) -> overloaded<Ts...>;
-    class Identifier
-    {
-    public:
-        Identifier() = default;
-        Identifier(const std::string& fullNamespace) : mFullNamespace(fullNamespace) { mColonPos = mFullNamespace.find(':'); }
-        Identifier(const std::string& name, const std::string& namespace_) : mFullNamespace(namespace_ + ":" + name) { mColonPos = mFullNamespace.find(':'); }
-        Identifier(const char* fullNamespace) : mFullNamespace(fullNamespace) { mColonPos = mFullNamespace.find(':'); }
-        Identifier(const char* name, const char* namespace_) : mFullNamespace(std::format("{}:{}", name, namespace_)) { mColonPos = mFullNamespace.find(':'); }
-        Identifier(const Identifier& other) : mFullNamespace(other.mFullNamespace), mColonPos(other.mColonPos) {}
+	template<class... Ts>
+	struct overloaded : Ts... { using Ts::operator()...; };
+	template<class... Ts>
+	overloaded(Ts...) -> overloaded<Ts...>;
+	class Identifier
+	{
+	public:
+		Identifier() = default;
+		Identifier(const std::string& fullNamespace) : mFullNamespace(fullNamespace) { mColonPos = mFullNamespace.find(':'); }
+		Identifier(const std::string& name, const std::string& namespace_) : mFullNamespace(namespace_ + ":" + name) { mColonPos = mFullNamespace.find(':'); }
+		Identifier(const char* fullNamespace) : mFullNamespace(fullNamespace) { mColonPos = mFullNamespace.find(':'); }
+		Identifier(const char* name, const char* namespace_) : mFullNamespace(std::format("{}:{}", name, namespace_)) { mColonPos = mFullNamespace.find(':'); }
+		Identifier(const Identifier& other) : mFullNamespace(other.mFullNamespace), mColonPos(other.mColonPos) {}
 
-        const std::string_view GetName() const { return mFullNamespace.substr(mColonPos + 1); }
-        const std::string_view GetNamespace() const { return mFullNamespace.substr(0, mColonPos); }
-        const std::string& GetFullNamespace() const { return mFullNamespace; }
+		const std::string_view GetName() const { return mFullNamespace.substr(mColonPos + 1); }
+		const std::string_view GetNamespace() const { return mFullNamespace.substr(0, mColonPos); }
+		const std::string& GetFullNamespace() const { return mFullNamespace; }
 
-        void SetName(const std::string& name) { mFullNamespace = std::format("{}:{}", GetNamespace(), name); }
-        void SetNamespace(const std::string& namespace_) { mFullNamespace = std::format("{}:{}", namespace_, GetName()); }
-        void SetFullNamespace(const std::string& fullNamespace)
-        {
-            mFullNamespace = fullNamespace;
-            mColonPos = mFullNamespace.find(':');
-        }
+		void SetName(const std::string& name) { mFullNamespace = std::format("{}:{}", GetNamespace(), name); }
+		void SetNamespace(const std::string& namespace_) { mFullNamespace = std::format("{}:{}", namespace_, GetName()); }
+		void SetFullNamespace(const std::string& fullNamespace)
+		{
+			mFullNamespace = fullNamespace;
+			mColonPos = mFullNamespace.find(':');
+		}
 
-        bool operator==(const Identifier& other) const { return mFullNamespace == other.mFullNamespace; }
-        bool operator!=(const Identifier& other) const { return mFullNamespace != other.mFullNamespace; }
+		bool operator==(const Identifier& other) const { return mFullNamespace == other.mFullNamespace; }
+		bool operator!=(const Identifier& other) const { return mFullNamespace != other.mFullNamespace; }
 
 
-    private:
-        std::string mFullNamespace{};
-        u32 mColonPos{ 0 };
-    };
+	private:
+		std::string mFullNamespace{};
+		u32 mColonPos{ 0 };
+	};
 
-    class SemanticVersion
-    {
-    public:
-        SemanticVersion(u8 major, u8 minor, u8 patch) : mMajor(major), mMinor(minor), mPatch(patch) {}
-        SemanticVersion(std::array<u8, 3> version) : mVersionArray(version) {}
-        SemanticVersion(u32 version = 0) : mVersion(version) {}
-        ~SemanticVersion() = default;
-        u8 GetMajor() const { return mMajor; }
-        u8 GetMinor() const { return mMinor; }
-        u8 GetPatch() const { return mPatch; }
-        u32 GetVersion() const { return mVersion; }
-        std::vector<u8> GetVersionVector() const { return { mMajor, mMinor, mPatch }; }
-        std::array<u8, 3> GetVersionArray() const { return mVersionArray; }
-        std::string GetString() const { return std::format("{}.{}.{}", mMajor, mMinor, mPatch); }
-        void SetMajor(u8 major) { mMajor = major; }
-        void SetMinor(u8 minor) { mMinor = minor; }
-        void SetPatch(u8 patch) { mPatch = patch; }
+	class SemanticVersion
+	{
+	public:
+		SemanticVersion(u8 major, u8 minor, u8 patch) : mMajor(major), mMinor(minor), mPatch(patch) {}
+		SemanticVersion(std::array<u8, 3> version) : mVersionArray(version) {}
+		SemanticVersion(u32 version = 0) : mVersion(version) {}
+		~SemanticVersion() = default;
+		u8 GetMajor() const { return mMajor; }
+		u8 GetMinor() const { return mMinor; }
+		u8 GetPatch() const { return mPatch; }
+		u32 GetVersion() const { return mVersion; }
+		std::vector<u8> GetVersionVector() const { return { mMajor, mMinor, mPatch }; }
+		std::array<u8, 3> GetVersionArray() const { return mVersionArray; }
+		std::string GetString() const { return std::format("{}.{}.{}", mMajor, mMinor, mPatch); }
+		void SetMajor(u8 major) { mMajor = major; }
+		void SetMinor(u8 minor) { mMinor = minor; }
+		void SetPatch(u8 patch) { mPatch = patch; }
 
-        bool operator==(const SemanticVersion& other) const { return mVersion == other.mVersion; }
-        bool operator!=(const SemanticVersion& other) const { return mVersion != other.mVersion; }
-        bool operator<(const SemanticVersion& other) const { return mVersion < other.mVersion; }
-        bool operator>(const SemanticVersion& other) const { return mVersion > other.mVersion; }
-        bool operator<=(const SemanticVersion& other) const { return mVersion <= other.mVersion; }
-        bool operator>=(const SemanticVersion& other) const { return mVersion >= other.mVersion; }
-    private:
-        union
-        {
-            struct
-            {
-                u8 mMajor;
-                u8 mMinor;
-                u8 mPatch;
-            };
-            std::array<u8, 3> mVersionArray;
-            u32 mVersion{ 0 };
-        };
-    };
+		bool operator==(const SemanticVersion& other) const { return mVersion == other.mVersion; }
+		bool operator!=(const SemanticVersion& other) const { return mVersion != other.mVersion; }
+		bool operator<(const SemanticVersion& other) const { return mVersion < other.mVersion; }
+		bool operator>(const SemanticVersion& other) const { return mVersion > other.mVersion; }
+		bool operator<=(const SemanticVersion& other) const { return mVersion <= other.mVersion; }
+		bool operator>=(const SemanticVersion& other) const { return mVersion >= other.mVersion; }
+	private:
+		union
+		{
+			struct
+			{
+				u8 mMajor;
+				u8 mMinor;
+				u8 mPatch;
+			};
+			std::array<u8, 3> mVersionArray;
+			u32 mVersion{ 0 };
+		};
+	};
 
-    template<typename T>
-    class NonOwningPtr
-    {
-    public:
-        NonOwningPtr(T* ptr) : mPtr(ptr) {}
-        NonOwningPtr(const NonOwningPtr<T>& other) : mPtr(other.mPtr) {}
-        NonOwningPtr(NonOwningPtr<T>&& other) noexcept : mPtr(std::move(other.mPtr)) {}
-        NonOwningPtr() = default;
-        T* operator->()
-        {
+	template<typename T>
+	class NonOwningPtr
+	{
+	public:
+		NonOwningPtr(T* ptr) : mPtr(ptr) {}
+		NonOwningPtr(const NonOwningPtr<T>& other) : mPtr(other.mPtr) {}
+		NonOwningPtr(NonOwningPtr<T>&& other) noexcept : mPtr(std::move(other.mPtr)) {}
+		NonOwningPtr() = default;
+		T* operator->()
+		{
 #ifndef NDEBUG
-            if (!mPtr)
-                throw std::runtime_error("NonOwningPtr Destroyed While Still Being Required");
+			if (!mPtr)
+				throw std::runtime_error("NonOwningPtr Destroyed While Still Being Required");
 #endif
-            return mPtr;
-        }
-        T& operator*()
-        {
+			return mPtr;
+		}
+		T& operator*()
+		{
 #ifndef NDEBUG
-            if (!mPtr)
-                throw std::runtime_error("NonOwningPtr Destroyed While Still Being Required");
+			if (!mPtr)
+				throw std::runtime_error("NonOwningPtr Destroyed While Still Being Required");
 #endif
-            return *mPtr;
-        }
-        T* Get()
-        {
+			return *mPtr;
+		}
+		T* Get()
+		{
 #ifndef NDEBUG
-            if (!mPtr)
-                throw std::runtime_error("NonOwningPtr Destroyed While Still Being Required");
+			if (!mPtr)
+				throw std::runtime_error("NonOwningPtr Destroyed While Still Being Required");
 #endif
 
-            return mPtr;
-        }
-        const T* Get() const
-        {
+			return mPtr;
+		}
+		const T* Get() const
+		{
 #ifndef NDEBUG
-            if (!mPtr)
-                throw std::runtime_error("NonOwningPtr Destroyed While Still Being Required");
+			if (!mPtr)
+				throw std::runtime_error("NonOwningPtr Destroyed While Still Being Required");
 #endif
-            return mPtr;
-        }
-        operator T* ()
-        {
+			return mPtr;
+		}
+		operator T* ()
+		{
 #ifndef NDEBUG
-            if (!mPtr)
-                throw std::runtime_error("NonOwningPtr Destroyed While Still Being Required");
+			if (!mPtr)
+				throw std::runtime_error("NonOwningPtr Destroyed While Still Being Required");
 #endif
-            return mPtr;
-        }
+			return mPtr;
+		}
 
-        void operator delete(void* ptr) = delete;
-    private:
-        T* mPtr{ nullptr };
-
-
-    };
-
-    // CompactOption is the same size as the type it holds 
-    template<typename T>
-    class CompactOptional
-    {
-    private:
-        union
-        {
-            T mValue;
-            std::array<u8, sizeof(T)> mStorage = std::fill(mStorage.begin(), mStorage.end(), 0xAF);
-        };
-    public:
-
-        CompactOptional() = default;
-        CompactOptional(const T& value) : mValue(value) {}
-        CompactOptional(T&& value) : mValue(std::move(value)) {}
-        CompactOptional(const CompactOptional<T>& other) : mValue(other.mValue) {}
-        CompactOptional(CompactOptional<T>&& other) : mValue(std::move(other.mValue)) {}
-
-        T& operator*() { return mValue; }
-        T* operator->() { return &mValue; }
-        T& value() { return mValue; }
-        const T& Value() const { return mValue; }
-
-        bool HasValue() const { for (u8 byte : mStorage) if (byte != 0xAF) return true; return false; }
-        void OwnValue(T& val) { val = std::move(mValue); }
-        explicit operator bool() const { return HasValue(); }
-
-        void Reset() { mStorage.fill(0xAF); }
-        void Reset(const T& value) { mValue = value; }
-        void Reset(T&& value) { mValue = std::move(value); }
-
-        CompactOptional<T>& operator=(const T& value) { mValue = value; return *this; }
-        CompactOptional<T>& operator=(T&& value) { mValue = std::move(value); return *this; }
-        CompactOptional<T>& operator=(const CompactOptional<T>& other) { mValue = other.mValue; return *this; }
-        CompactOptional<T>& operator=(CompactOptional<T>&& other) { mValue = std::move(other.mValue); return *this; }
-    };
+		void operator delete(void* ptr) = delete;
+	private:
+		T* mPtr{ nullptr };
 
 
-    enum class Experiments : u8
-    {
-        HolidayCreatorFeatures = 1 << 0,
-        CustomBiomes = 1 << 1,
-        UpcomingCreatorFeatures = 1 << 2,
-        BetaAPI = 1 << 3,
-        ExperimentalCameras = 1 << 4,
-        ExperimentsALL = 0xFF
-    };
-    class ExperimentalSettings
-    {
-    public:
-        ExperimentalSettings() = default;
-        ExperimentalSettings(u8 flags) : mExperimentalFlags(flags) {}
-        ExperimentalSettings(const std::array<Experiments, 5> flags)
-        {
-            for (Experiments flag : flags)
-                mExperimentalFlags |= TO_UNDERLYING(flag);
-        }
-        ExperimentalSettings(const Experiments flags) : mExperimentalFlags(TO_UNDERLYING(flags)) {}
+	};
 
-        bool IsFlagSet(u8 flag) const { return mExperimentalFlags & flag; }
-        void SetFlag(u8 flag) { mExperimentalFlags |= flag; }
-        void ClearFlag(u8 flag) { mExperimentalFlags &= ~flag; }
-        u8 GetFlags() const { return mExperimentalFlags; }
-    private:
-        u8 mExperimentalFlags{ 0 };
+	// CompactOption is the same size as the type it holds 
+	template<typename T>
+	class CompactOptional
+	{
+	private:
+		union
+		{
+			T mValue;
+			std::array<u8, sizeof(T)> mStorage = std::fill(mStorage.begin(), mStorage.end(), 0xAF);
+		};
+	public:
 
-    };
+		CompactOptional() = default;
+		CompactOptional(const T& value) : mValue(value) {}
+		CompactOptional(T&& value) : mValue(std::move(value)) {}
+		CompactOptional(const CompactOptional<T>& other) : mValue(other.mValue) {}
+		CompactOptional(CompactOptional<T>&& other) : mValue(std::move(other.mValue)) {}
 
-    struct JsonProxy
-    {
-        JsonProxy(rapidjson::Value& writeLoc, rapidjson::Document::AllocatorType& allocator) : mWriteLoc(writeLoc), mAllocator(allocator) {}
-        rapidjson::Value& mWriteLoc;
-        rapidjson::Document::AllocatorType& mAllocator;
-        JsonProxy Derive(rapidjson::Value& value) const { return JsonProxy(value, mAllocator); }
+		T& operator*() { return mValue; }
+		T* operator->() { return &mValue; }
+		T& value() { return mValue; }
+		const T& Value() const { return mValue; }
 
-        operator std::pair<rapidjson::Value&, rapidjson::Document::AllocatorType&>() { return { mWriteLoc, mAllocator }; }
+		bool HasValue() const { for (u8 byte : mStorage) if (byte != 0xAF) return true; return false; }
+		void OwnValue(T& val) { val = std::move(mValue); }
+		explicit operator bool() const { return HasValue(); }
 
-    };
-    // Legacy code
-    struct DependencyProxy
-    {
-        rapidjson::Value& mDependencies;
-        rapidjson::Document::AllocatorType& mAllocator;
-    };
-    struct ModuleProxy
-    {
-        rapidjson::Value& mModules;
-        rapidjson::Document::AllocatorType& mAllocator;
-    };
-    struct MetadataProxy
-    {
-        rapidjson::Value& mMetadata;
-        rapidjson::Document::AllocatorType& mAllocator;
-    };
-    struct PermutationProxy
-    {
-        rapidjson::Value& mPermutation;
-        rapidjson::Document::AllocatorType& mAllocator;
-    };
+		void Reset() { mStorage.fill(0xAF); }
+		void Reset(const T& value) { mValue = value; }
+		void Reset(T&& value) { mValue = std::move(value); }
 
-    class Addon; // Used all over the place
+		CompactOptional<T>& operator=(const T& value) { mValue = value; return *this; }
+		CompactOptional<T>& operator=(T&& value) { mValue = std::move(value); return *this; }
+		CompactOptional<T>& operator=(const CompactOptional<T>& other) { mValue = other.mValue; return *this; }
+		CompactOptional<T>& operator=(CompactOptional<T>&& other) { mValue = std::move(other.mValue); return *this; }
+	};
 
 
-    static std::vector<std::string_view> ExplodeString(std::string_view string, std::string_view delim)
-    {
-        std::vector<std::string_view> result;
-        size_t pos = 0;
-        while ((pos = string.find(delim)) != std::string::npos)
-        {
-            result.push_back(string.substr(0, pos));
-            string.remove_prefix(pos + delim.length());
-        }
-        result.push_back(string);
-        return result;
-    }
+	enum class Experiments : u8
+	{
+		HolidayCreatorFeatures = 1 << 0,
+		CustomBiomes = 1 << 1,
+		UpcomingCreatorFeatures = 1 << 2,
+		BetaAPI = 1 << 3,
+		ExperimentalCameras = 1 << 4,
+		ExperimentsALL = 0xFF
+	};
+	class ExperimentalSettings
+	{
+	public:
+		ExperimentalSettings() = default;
+		ExperimentalSettings(u8 flags) : mExperimentalFlags(flags) {}
+		ExperimentalSettings(const std::array<Experiments, 5> flags)
+		{
+			for (Experiments flag : flags)
+				mExperimentalFlags |= TO_UNDERLYING(flag);
+		}
+		ExperimentalSettings(const Experiments flags) : mExperimentalFlags(TO_UNDERLYING(flags)) {}
+
+		bool IsFlagSet(u8 flag) const { return mExperimentalFlags & flag; }
+		void SetFlag(u8 flag) { mExperimentalFlags |= flag; }
+		void ClearFlag(u8 flag) { mExperimentalFlags &= ~flag; }
+		u8 GetFlags() const { return mExperimentalFlags; }
+	private:
+		u8 mExperimentalFlags{ 0 };
+
+	};
+
+	struct JsonProxy
+	{
+		JsonProxy(rapidjson::Value& writeLoc, rapidjson::Document::AllocatorType& allocator) : mWriteLoc(writeLoc), mAllocator(allocator) {}
+		rapidjson::Value& mWriteLoc;
+		rapidjson::Document::AllocatorType& mAllocator;
+		JsonProxy Derive(rapidjson::Value& value) const { return JsonProxy(value, mAllocator); }
+
+		operator std::pair<rapidjson::Value&, rapidjson::Document::AllocatorType&>() { return { mWriteLoc, mAllocator }; }
+
+	};
+
+	class Addon; // Used all over the place
+
+
+	static std::vector<std::string_view> ExplodeString(std::string_view string, std::string_view delim)
+	{
+		std::vector<std::string_view> result;
+		size_t pos = 0;
+		while ((pos = string.find(delim)) != std::string::npos)
+		{
+			result.push_back(string.substr(0, pos));
+			string.remove_prefix(pos + delim.length());
+		}
+		result.push_back(string);
+		return result;
+	}
 
 
 
-    template<typename T>
-    class Vec2T
-    {
-    public:
-        using Type = T;
-        using Vec = Vec2T<T>;
-        T x, y;
-    public:
-        Vec2T() : x(0), y(0) {}
-        Vec2T(T x, T y) : x(x), y(y) {}
-        Vec2T(const Vec2T<T>& other) : x(other.x), y(other.y) {}
-        Vec2T(Vec2T<T>&& other) noexcept : x(std::move(other.x)), y(std::move(other.y)) {}
+	template<typename T>
+	class Vec2T
+	{
+	public:
+		using Type = T;
+		using Vec = Vec2T<T>;
+		T x, y;
+	public:
+		Vec2T() : x(0), y(0) {}
+		Vec2T(T x, T y) : x(x), y(y) {}
+		Vec2T(const Vec2T<T>& other) : x(other.x), y(other.y) {}
+		Vec2T(Vec2T<T>&& other) noexcept : x(std::move(other.x)), y(std::move(other.y)) {}
 
-        Vec2T<T>& operator=(const Vec2T<T>& other) { x = other.x; y = other.y; return *this; }
-        Vec2T<T>& operator=(Vec2T<T>&& other) noexcept { x = std::move(other.x); y = std::move(other.y); return *this; }
+		Vec2T<T>& operator=(const Vec2T<T>& other) { x = other.x; y = other.y; return *this; }
+		Vec2T<T>& operator=(Vec2T<T>&& other) noexcept { x = std::move(other.x); y = std::move(other.y); return *this; }
 
-        Vec2T<T> operator+(const Vec2T<T>& other) const { return Vec2T<T>(x + other.x, y + other.y); }
-        Vec2T<T> operator-(const Vec2T<T>& other) const { return Vec2T<T>(x - other.x, y - other.y); }
-        Vec2T<T> operator*(const Vec2T<T>& other) const { return Vec2T<T>(x * other.x, y * other.y); }
-        Vec2T<T> operator/(const Vec2T<T>& other) const { return Vec2T<T>(x / other.x, y / other.y); }
+		Vec2T<T> operator+(const Vec2T<T>& other) const { return Vec2T<T>(x + other.x, y + other.y); }
+		Vec2T<T> operator-(const Vec2T<T>& other) const { return Vec2T<T>(x - other.x, y - other.y); }
+		Vec2T<T> operator*(const Vec2T<T>& other) const { return Vec2T<T>(x * other.x, y * other.y); }
+		Vec2T<T> operator/(const Vec2T<T>& other) const { return Vec2T<T>(x / other.x, y / other.y); }
 
-        Vec2T<T> operator+(T scalar) const { return Vec2T<T>(x + scalar, y + scalar); }
-        Vec2T<T> operator-(T scalar) const { return Vec2T<T>(x - scalar, y - scalar); }
-        Vec2T<T> operator*(T scalar) const { return Vec2T<T>(x * scalar, y * scalar); }
-        Vec2T<T> operator/(T scalar) const { return Vec2T<T>(x / scalar, y / scalar); }
+		Vec2T<T> operator+(T scalar) const { return Vec2T<T>(x + scalar, y + scalar); }
+		Vec2T<T> operator-(T scalar) const { return Vec2T<T>(x - scalar, y - scalar); }
+		Vec2T<T> operator*(T scalar) const { return Vec2T<T>(x * scalar, y * scalar); }
+		Vec2T<T> operator/(T scalar) const { return Vec2T<T>(x / scalar, y / scalar); }
 
-        Vec2T<T>& operator+=(const Vec2T<T>& other) { x += other.x; y += other.y; return *this; }
-        Vec2T<T>& operator-=(const Vec2T<T>& other) { x -= other.x; y -= other.y; return *this; }
-        Vec2T<T>& operator*=(const Vec2T<T>& other) { x *= other.x; y *= other.y; return *this; }
-        Vec2T<T>& operator/=(const Vec2T<T>& other) { x /= other.x; y /= other.y; return *this; }
+		Vec2T<T>& operator+=(const Vec2T<T>& other) { x += other.x; y += other.y; return *this; }
+		Vec2T<T>& operator-=(const Vec2T<T>& other) { x -= other.x; y -= other.y; return *this; }
+		Vec2T<T>& operator*=(const Vec2T<T>& other) { x *= other.x; y *= other.y; return *this; }
+		Vec2T<T>& operator/=(const Vec2T<T>& other) { x /= other.x; y /= other.y; return *this; }
 
-        Vec2T<T>& operator+=(T scalar) { x += scalar; y += scalar; return *this; }
-        Vec2T<T>& operator-=(T scalar) { x -= scalar; y -= scalar; return *this; }
-        Vec2T<T>& operator*=(T scalar) { x *= scalar; y *= scalar; return *this; }
-        Vec2T<T>& operator/=(T scalar) { x /= scalar; y /= scalar; return *this; }
+		Vec2T<T>& operator+=(T scalar) { x += scalar; y += scalar; return *this; }
+		Vec2T<T>& operator-=(T scalar) { x -= scalar; y -= scalar; return *this; }
+		Vec2T<T>& operator*=(T scalar) { x *= scalar; y *= scalar; return *this; }
+		Vec2T<T>& operator/=(T scalar) { x /= scalar; y /= scalar; return *this; }
 
-        bool operator==(const Vec2T<T>& other) const { return x == other.x && y == other.y; }
-        bool operator!=(const Vec2T<T>& other) const { return x != other.x || y != other.y; }
-        bool operator<(const Vec2T<T>& other) const { return x < other.x && y < other.y; }
-        bool operator>(const Vec2T<T>& other) const { return x > other.x && y > other.y; }
-        bool operator<=(const Vec2T<T>& other) const { return x <= other.x && y <= other.y; }
-        bool operator>=(const Vec2T<T>& other) const { return x >= other.x && y >= other.y; }
+		bool operator==(const Vec2T<T>& other) const { return x == other.x && y == other.y; }
+		bool operator!=(const Vec2T<T>& other) const { return x != other.x || y != other.y; }
+		bool operator<(const Vec2T<T>& other) const { return x < other.x && y < other.y; }
+		bool operator>(const Vec2T<T>& other) const { return x > other.x && y > other.y; }
+		bool operator<=(const Vec2T<T>& other) const { return x <= other.x && y <= other.y; }
+		bool operator>=(const Vec2T<T>& other) const { return x >= other.x && y >= other.y; }
 
-        T Dot(const Vec2T<T>& other) const { return x * other.x + y * other.y; }
-        T Cross(const Vec2T<T>& other) const { return x * other.y - y * other.x; }
-        T Magnitude() const { return std::sqrt(x * x + y * y); }
-        T MagnitudeSquared() const { return x * x + y * y; }
-        Vec Abs() const { return Vec2T<T>(std::abs(x), std::abs(y)); }
-        Vec Sign() const { return Vec2T<T>(x < 0 ? -1 : 1, y < 0 ? -1 : 1); }
-        Vec Lerp(const Vec& other, float t) const {
-            return Vec(
-                (T)x + (T)(((float)other.x - (float)x) * t),
-                (T)y + (T)(((float)other.y - (float)y) * t));
-        }
-        T Length() const { return std::sqrt(x * x + y * y); }
+		T Dot(const Vec2T<T>& other) const { return x * other.x + y * other.y; }
+		T Cross(const Vec2T<T>& other) const { return x * other.y - y * other.x; }
+		T Magnitude() const { return std::sqrt(x * x + y * y); }
+		T MagnitudeSquared() const { return x * x + y * y; }
+		Vec Abs() const { return Vec2T<T>(std::abs(x), std::abs(y)); }
+		Vec Sign() const { return Vec2T<T>(x < 0 ? -1 : 1, y < 0 ? -1 : 1); }
+		Vec Lerp(const Vec& other, float t) const {
+			return Vec(
+				(T)x + (T)(((float)other.x - (float)x) * t),
+				(T)y + (T)(((float)other.y - (float)y) * t));
+		}
+		T Length() const { return std::sqrt(x * x + y * y); }
 
-        std::array<T, 2> const ToArray() {return {x, y};}
+		std::array<T, 2> const ToArray() {return {x, y};}
 
-        ErrorString WriteToJson(JsonProxy proxy)
-        {
-            if (proxy.mWriteLoc.IsArray())
-                rapidjson::ValueWriter<std::array<T, 2>>::WriteToJsonValue(proxy.mWriteLoc, proxy.mAllocator);
-            else if (proxy.mWriteLoc.IsObject())
-            {
-                auto& [value, allocator] = proxy;
+		ErrorString WriteToJson(JsonProxy proxy)
+		{
+			if (proxy.mWriteLoc.IsArray())
+				rapidjson::ValueWriter<std::array<T, 2>>::WriteToJsonValue(proxy.mWriteLoc, proxy.mAllocator);
+			else if (proxy.mWriteLoc.IsObject())
+			{
+				auto& [value, allocator] = proxy;
 
-                value.AddMember("x", x, allocator);
-                value.AddMember("y", y, allocator);
-            }
-            else
-                return "Invalid JSON Proxy";
-        }
+				value.AddMember("x", x, allocator);
+				value.AddMember("y", y, allocator);
+			}
+			else
+				return "Invalid JSON Proxy";
+		}
 
-    };
+	};
 
-    template<typename T>
-    concept IntegralVec2 = requires(T a)
-    {
-        std::is_integral_v<typename T::Type>;
-        std::is_integral_v<decltype(a.x)>;
-        std::is_integral_v<decltype(a.y)>;
-        // Make sure has an abs function
-        { a.Abs() } -> std::same_as<T>;
+	template<typename T>
+	concept IntegralVec2 = requires(T a)
+	{
+		std::is_integral_v<typename T::Type>;
+		std::is_integral_v<decltype(a.x)>;
+		std::is_integral_v<decltype(a.y)>;
+		// Make sure has an abs function
+		{ a.Abs() } -> std::same_as<T>;
 
-    };
+	};
 
-    template<typename T>
-    class Vec3T
-    {
-    public:
-        using Type = T;
-        using Vec = Vec3T<T>;
-        T x, y, z;
-    public:        
-        Vec3T() : x(0), y(0), z(0) {}
-        Vec3T(T x, T y, T z) : x(x), y(y), z(z) {}
-        Vec3T(const Vec3T<T>& other) : x(other.x), y(other.y), z(other.z) {}
-        Vec3T(Vec3T<T>&& other) noexcept : x(std::move(other.x)), y(std::move(other.y)), z(std::move(other.z)) {}
-        Vec3T<T>& operator=(const Vec3T<T>& other) { x = other.x; y = other.y; z = other.z; return *this; }
-        Vec3T<T>& operator=(Vec3T<T>&& other) noexcept { x = std::move(other.x); y = std::move(other.y); z = std::move(other.z); return *this; }
-        Vec3T<T> operator+(const Vec3T<T>& other) const { return Vec3T<T>(x + other.x, y + other.y, z + other.z); }
-        Vec3T<T> operator-(const Vec3T<T>& other) const { return Vec3T<T>(x - other.x, y - other.y, z - other.z); }
-        Vec3T<T> operator*(const Vec3T<T>& other) const { return Vec3T<T>(x * other.x, y * other.y, z * other.z); }
-        Vec3T<T> operator/(const Vec3T<T>& other) const { return Vec3T<T>(x / other.x, y / other.y, z / other.z); }
-        Vec3T<T> operator+(T scalar) const { return Vec3T<T>(x + scalar, y + scalar, z + scalar); }
-        Vec3T<T> operator-(T scalar) const { return Vec3T<T>(x - scalar, y - scalar, z - scalar); }
-        Vec3T<T> operator*(T scalar) const { return Vec3T<T>(x * scalar, y * scalar, z * scalar); }
-        Vec3T<T> operator/(T scalar) const { return Vec3T<T>(x / scalar, y / scalar, z / scalar); }
-        Vec3T<T>& operator+=(const Vec3T<T>& other) { x += other.x; y += other.y; z += other.z; return *this; }
-        Vec3T<T>& operator-=(const Vec3T<T>& other) { x -= other.x; y -= other.y; z -= other.z; return *this; }
-        Vec3T<T>& operator*=(const Vec3T<T>& other) { x *= other.x; y *= other.y; z *= other.z; return *this; }
-        Vec3T<T>& operator/=(const Vec3T<T>& other) { x /= other.x; y /= other.y; z /= other.z; return *this; }
-        Vec3T<T>& operator+=(T scalar) { x += scalar; y += scalar; z += scalar; return *this; }
-        Vec3T<T>& operator-=(T scalar) { x -= scalar; y -= scalar; z -= scalar; return *this; }
-        Vec3T<T>& operator*=(T scalar) { x *= scalar; y *= scalar; z *= scalar; return *this; }
-        Vec3T<T>& operator/=(T scalar) { x /= scalar; y /= scalar; z /= scalar; return *this; }
-        bool operator==(const Vec3T<T>& other) const { return x == other.x && y == other.y && z == other.z; }
-        bool operator!=(const Vec3T<T>& other) const { return x != other.x || y != other.y || z != other.z; }
-        bool operator<(const Vec3T<T>& other) const { return x < other.x && y < other.y && z < other.z; }
-        bool operator>(const Vec3T<T>& other) const { return x > other.x && y > other.y && z > other.z; }
-        bool operator<=(const Vec3T<T>& other) const { return x <= other.x && y <= other.y && z <= other.z; }
-        bool operator>=(const Vec3T<T>& other) const { return x >= other.x && y >= other.y && z >= other.z; }
-        T Dot(const Vec3T<T>& other) const { return x * other.x + y * other.y + z * other.z; }
-        T Magnitude() const { return std::sqrt(x * x + y * y + z * z); }
-        T MagnitudeSquared() const { return x * x + y * y + z * z; }
-        Vec Abs() const { return Vec3T<T>(std::abs(x), std::abs(y), std::abs(z)); }
-        Vec Cross(const Vec3T<T>& other) const { return Vec3T<T>(y * other.z - z * other.y, z * other.x - x * other.z, x * other.y - y * other.x); }
-        Vec Lerp(const Vec& other, float t) const {
-              return Vec(
-                  (T)x + (T)(((float)other.x - (float)x) * t),
-                  (T)y + (T)(((float)other.y - (float)y) * t),
-                  (T)z + (T)(((float)other.z - (float)z) * t));
-          }
+	template<typename T>
+	class Vec3T
+	{
+	public:
+		using Type = T;
+		using Vec = Vec3T<T>;
+		T x, y, z;
+	public:        
+		Vec3T() : x(0), y(0), z(0) {}
+		Vec3T(T x, T y, T z) : x(x), y(y), z(z) {}
+		Vec3T(const Vec3T<T>& other) : x(other.x), y(other.y), z(other.z) {}
+		Vec3T(Vec3T<T>&& other) noexcept : x(std::move(other.x)), y(std::move(other.y)), z(std::move(other.z)) {}
+		Vec3T<T>& operator=(const Vec3T<T>& other) { x = other.x; y = other.y; z = other.z; return *this; }
+		Vec3T<T>& operator=(Vec3T<T>&& other) noexcept { x = std::move(other.x); y = std::move(other.y); z = std::move(other.z); return *this; }
+		Vec3T<T> operator+(const Vec3T<T>& other) const { return Vec3T<T>(x + other.x, y + other.y, z + other.z); }
+		Vec3T<T> operator-(const Vec3T<T>& other) const { return Vec3T<T>(x - other.x, y - other.y, z - other.z); }
+		Vec3T<T> operator*(const Vec3T<T>& other) const { return Vec3T<T>(x * other.x, y * other.y, z * other.z); }
+		Vec3T<T> operator/(const Vec3T<T>& other) const { return Vec3T<T>(x / other.x, y / other.y, z / other.z); }
+		Vec3T<T> operator+(T scalar) const { return Vec3T<T>(x + scalar, y + scalar, z + scalar); }
+		Vec3T<T> operator-(T scalar) const { return Vec3T<T>(x - scalar, y - scalar, z - scalar); }
+		Vec3T<T> operator*(T scalar) const { return Vec3T<T>(x * scalar, y * scalar, z * scalar); }
+		Vec3T<T> operator/(T scalar) const { return Vec3T<T>(x / scalar, y / scalar, z / scalar); }
+		Vec3T<T>& operator+=(const Vec3T<T>& other) { x += other.x; y += other.y; z += other.z; return *this; }
+		Vec3T<T>& operator-=(const Vec3T<T>& other) { x -= other.x; y -= other.y; z -= other.z; return *this; }
+		Vec3T<T>& operator*=(const Vec3T<T>& other) { x *= other.x; y *= other.y; z *= other.z; return *this; }
+		Vec3T<T>& operator/=(const Vec3T<T>& other) { x /= other.x; y /= other.y; z /= other.z; return *this; }
+		Vec3T<T>& operator+=(T scalar) { x += scalar; y += scalar; z += scalar; return *this; }
+		Vec3T<T>& operator-=(T scalar) { x -= scalar; y -= scalar; z -= scalar; return *this; }
+		Vec3T<T>& operator*=(T scalar) { x *= scalar; y *= scalar; z *= scalar; return *this; }
+		Vec3T<T>& operator/=(T scalar) { x /= scalar; y /= scalar; z /= scalar; return *this; }
+		bool operator==(const Vec3T<T>& other) const { return x == other.x && y == other.y && z == other.z; }
+		bool operator!=(const Vec3T<T>& other) const { return x != other.x || y != other.y || z != other.z; }
+		bool operator<(const Vec3T<T>& other) const { return x < other.x && y < other.y && z < other.z; }
+		bool operator>(const Vec3T<T>& other) const { return x > other.x && y > other.y && z > other.z; }
+		bool operator<=(const Vec3T<T>& other) const { return x <= other.x && y <= other.y && z <= other.z; }
+		bool operator>=(const Vec3T<T>& other) const { return x >= other.x && y >= other.y && z >= other.z; }
+		T Dot(const Vec3T<T>& other) const { return x * other.x + y * other.y + z * other.z; }
+		T Magnitude() const { return std::sqrt(x * x + y * y + z * z); }
+		T MagnitudeSquared() const { return x * x + y * y + z * z; }
+		Vec Abs() const { return Vec3T<T>(std::abs(x), std::abs(y), std::abs(z)); }
+		Vec Cross(const Vec3T<T>& other) const { return Vec3T<T>(y * other.z - z * other.y, z * other.x - x * other.z, x * other.y - y * other.x); }
+		Vec Lerp(const Vec& other, float t) const {
+			  return Vec(
+				  (T)x + (T)(((float)other.x - (float)x) * t),
+				  (T)y + (T)(((float)other.y - (float)y) * t),
+				  (T)z + (T)(((float)other.z - (float)z) * t));
+		  }
 
-        std::array<T, 3> const ToArray() {return {x, y, z};}
+		std::array<T, 3> const ToArray() {return {x, y, z};}
 
-        ErrorString WriteToJson(JsonProxy proxy)
-        {
-            if (proxy.mWriteLoc.IsArray())
+		ErrorString WriteToJson(JsonProxy proxy)
+		{
+			if (proxy.mWriteLoc.IsArray())
 			{
 				rapidjson::ValueWriter<std::array<T, 3>>::WriteToJsonValue(proxy.mWriteLoc, proxy.mAllocator);
 			}
@@ -437,612 +416,612 @@ namespace AgeAPI
 			else
 				return "Invalid JSON Proxy";
 			return "";
-        }
-    };
+		}
+	};
 
-    template<typename T>
-    class Vec4T
-    {
-    public:
-        using Type = T;
-        using Vec = Vec4T<T>;
-        T x, y, z, w;
-    public:
-        Vec4T() : x(0), y(0), z(0), w(0) {}
-        Vec4T(T x, T y, T z, T w) : x(x), y(y), z(z), w(w) {}
-        Vec4T(const Vec&& other) noexcept : x(std::move(other.x)), y(std::move(other.y)), z(std::move(other.z)), w(std::move(other.w)) {}
-        Vec4T(const Vec& other) : x(other.x), y(other.y), z(other.z), w(other.w) {}
+	template<typename T>
+	class Vec4T
+	{
+	public:
+		using Type = T;
+		using Vec = Vec4T<T>;
+		T x, y, z, w;
+	public:
+		Vec4T() : x(0), y(0), z(0), w(0) {}
+		Vec4T(T x, T y, T z, T w) : x(x), y(y), z(z), w(w) {}
+		Vec4T(const Vec&& other) noexcept : x(std::move(other.x)), y(std::move(other.y)), z(std::move(other.z)), w(std::move(other.w)) {}
+		Vec4T(const Vec& other) : x(other.x), y(other.y), z(other.z), w(other.w) {}
 
-        Vec& operator=(const Vec& other) { x = other.x; y = other.y; z = other.z; w = other.w; return *this; }
-        Vec& operator=(Vec&& other) noexcept { x = std::move(other.x); y = std::move(other.y); z = std::move(other.z); w = std::move(other.w); return *this; }
-        Vec operator+(const Vec& other) const { return Vec(x + other.x, y + other.y, z + other.z, w + other.w); }
-        Vec operator-(const Vec& other) const { return Vec(x - other.x, y - other.y, z - other.z, w - other.w); }
-        Vec operator*(const Vec& other) const { return Vec(x * other.x, y * other.y, z * other.z, w * other.w); }
-        Vec operator/(const Vec& other) const { return Vec(x / other.x, y / other.y, z / other.z, w / other.w); }
-        Vec operator+(T scalar) const { return Vec(x + scalar, y + scalar, z + scalar, w + scalar); }
-        Vec operator-(T scalar) const { return Vec(x - scalar, y - scalar, z - scalar, w - scalar); }
-        Vec operator*(T scalar) const { return Vec(x * scalar, y * scalar, z * scalar, w * scalar); }
-        Vec operator/(T scalar) const { return Vec(x / scalar, y / scalar, z / scalar, w / scalar); }
-        Vec& operator+=(const Vec& other) { x += other.x; y += other.y; z += other.z; w += other.w; return *this; }
-        Vec& operator-=(const Vec& other) { x -= other.x; y -= other.y; z -= other.z; w -= other.w; return *this; }
-        Vec& operator*=(const Vec& other) { x *= other.x; y *= other.y; z *= other.z; w *= other.w; return *this; }
-        Vec& operator/=(const Vec& other) { x /= other.x; y /= other.y; z /= other.z; w /= other.w; return *this; }
-        Vec& operator+=(T scalar) { x += scalar; y += scalar; z += scalar; w += scalar; return *this; }
-        Vec& operator-=(T scalar) { x -= scalar; y -= scalar; z -= scalar; w -= scalar; return *this; }
-        Vec& operator*=(T scalar) { x *= scalar; y *= scalar; z *= scalar; w *= scalar; return *this; }
-        Vec& operator/=(T scalar) { x /= scalar; y /= scalar; z /= scalar; w /= scalar; return *this; }
-        bool operator==(const Vec& other) const { return x == other.x && y == other.y && z == other.z && w == other.w; }
-        bool operator!=(const Vec& other) const { return x != other.x || y != other.y || z != other.z || w != other.w; }
-        bool operator<(const Vec& other) const { return x < other.x && y < other.y && z < other.z && w < other.w; }
-        bool operator>(const Vec& other) const { return x > other.x && y > other.y && z > other.z && w > other.w; }
+		Vec& operator=(const Vec& other) { x = other.x; y = other.y; z = other.z; w = other.w; return *this; }
+		Vec& operator=(Vec&& other) noexcept { x = std::move(other.x); y = std::move(other.y); z = std::move(other.z); w = std::move(other.w); return *this; }
+		Vec operator+(const Vec& other) const { return Vec(x + other.x, y + other.y, z + other.z, w + other.w); }
+		Vec operator-(const Vec& other) const { return Vec(x - other.x, y - other.y, z - other.z, w - other.w); }
+		Vec operator*(const Vec& other) const { return Vec(x * other.x, y * other.y, z * other.z, w * other.w); }
+		Vec operator/(const Vec& other) const { return Vec(x / other.x, y / other.y, z / other.z, w / other.w); }
+		Vec operator+(T scalar) const { return Vec(x + scalar, y + scalar, z + scalar, w + scalar); }
+		Vec operator-(T scalar) const { return Vec(x - scalar, y - scalar, z - scalar, w - scalar); }
+		Vec operator*(T scalar) const { return Vec(x * scalar, y * scalar, z * scalar, w * scalar); }
+		Vec operator/(T scalar) const { return Vec(x / scalar, y / scalar, z / scalar, w / scalar); }
+		Vec& operator+=(const Vec& other) { x += other.x; y += other.y; z += other.z; w += other.w; return *this; }
+		Vec& operator-=(const Vec& other) { x -= other.x; y -= other.y; z -= other.z; w -= other.w; return *this; }
+		Vec& operator*=(const Vec& other) { x *= other.x; y *= other.y; z *= other.z; w *= other.w; return *this; }
+		Vec& operator/=(const Vec& other) { x /= other.x; y /= other.y; z /= other.z; w /= other.w; return *this; }
+		Vec& operator+=(T scalar) { x += scalar; y += scalar; z += scalar; w += scalar; return *this; }
+		Vec& operator-=(T scalar) { x -= scalar; y -= scalar; z -= scalar; w -= scalar; return *this; }
+		Vec& operator*=(T scalar) { x *= scalar; y *= scalar; z *= scalar; w *= scalar; return *this; }
+		Vec& operator/=(T scalar) { x /= scalar; y /= scalar; z /= scalar; w /= scalar; return *this; }
+		bool operator==(const Vec& other) const { return x == other.x && y == other.y && z == other.z && w == other.w; }
+		bool operator!=(const Vec& other) const { return x != other.x || y != other.y || z != other.z || w != other.w; }
+		bool operator<(const Vec& other) const { return x < other.x && y < other.y && z < other.z && w < other.w; }
+		bool operator>(const Vec& other) const { return x > other.x && y > other.y && z > other.z && w > other.w; }
 
-        T Dot(const Vec& other) const { return x * other.x + y * other.y + z * other.z + w * other.w; }
-        T Flatten() const { return x + y + z + w; }
-        T Magnitude() const { return std::sqrt(x * x + y * y + z * z + w * w); }
-        T MagnitudeSquared() const { return x * x + y * y + z * z + w * w; }
-        Vec Abs() const { return Vec4T<T>(std::abs(x), std::abs(y), std::abs(z), std::abs(w)); }
-        Vec Lerp(const Vec& other, const float t) const {
-            // FIXME: Replace C-style casts with dynamic cast
-            return Vec(
-                (T)x + (T)(((float)other.x - (float)x) * t),
-                (T)y + (T)(((float)other.y - (float)y) * t),
-                (T)z + (T)(((float)other.z - (float)z) * t),
-                (T)w + (T)(((float)other.w - (float)w) * t));
-        }
-        T Length() const { return std::sqrt(x * x + y * y + z * z + w * w); }
+		T Dot(const Vec& other) const { return x * other.x + y * other.y + z * other.z + w * other.w; }
+		T Flatten() const { return x + y + z + w; }
+		T Magnitude() const { return std::sqrt(x * x + y * y + z * z + w * w); }
+		T MagnitudeSquared() const { return x * x + y * y + z * z + w * w; }
+		Vec Abs() const { return Vec4T<T>(std::abs(x), std::abs(y), std::abs(z), std::abs(w)); }
+		Vec Lerp(const Vec& other, const float t) const {
+			// FIXME: Replace C-style casts with dynamic cast
+			return Vec(
+				(T)x + (T)(((float)other.x - (float)x) * t),
+				(T)y + (T)(((float)other.y - (float)y) * t),
+				(T)z + (T)(((float)other.z - (float)z) * t),
+				(T)w + (T)(((float)other.w - (float)w) * t));
+		}
+		T Length() const { return std::sqrt(x * x + y * y + z * z + w * w); }
 
-        std::array<T, 4> const ToArray() {return {x, y, z, w};}
-        
-        ErrorString WriteToJson(AgeAPI::JsonProxy proxy) const
-        {
-            if  (proxy.mWriteLoc.IsArray())
-            {
-                rapidjson::ValueWriter<std::array<T, 4>>::WriteToJsonValue(proxy.mWriteLoc, proxy.mAllocator);
-            }
-            else if (proxy.mWriteLoc.IsObject())
-            {
-                auto& [value, allocator] = proxy;
+		std::array<T, 4> const ToArray() {return {x, y, z, w};}
+		
+		ErrorString WriteToJson(AgeAPI::JsonProxy proxy) const
+		{
+			if  (proxy.mWriteLoc.IsArray())
+			{
+				rapidjson::ValueWriter<std::array<T, 4>>::WriteToJsonValue(proxy.mWriteLoc, proxy.mAllocator);
+			}
+			else if (proxy.mWriteLoc.IsObject())
+			{
+				auto& [value, allocator] = proxy;
 
-                value.AddMember("x", x, allocator);
-                value.AddMember("y", y, allocator);
-                value.AddMember("z", z, allocator);
-                value.AddMember("w", w, allocator);
-            } 
-            else
-                return "Invalid JSON Proxy";
-            return "";
-                
-        }
-    };
-
-
-    using IVec2 = Vec2T<i32>;
-    using IVec3 = Vec3T<i32>;
-    using IVec4 = Vec4T<i32>;
-    using UVec2 = Vec2T<u32>;
-    using UVec3 = Vec3T<u32>;
-    using UVec4 = Vec4T<u32>;
-    using FVec2 = Vec2T<float>;
-    using FVec3 = Vec3T<float>;
-    using FVec4 = Vec4T<float>;
-
-    class Color : public Vec4T<float>
-    {
-    public:
-        using Vec = Vec4T<float>;
-    public:
-        Color() : Vec4T<float>(0, 0, 0, 0) {}
-        Color(float r, float g, float b, float a) : Vec4T<float>(r, g, b, a) {}
-        Color(const Color& other) : Vec4T<float>(other) {}
-        Color(const Vec& other) : Vec4T<float>(other) {}
-        Color(Vec&& other) noexcept : Vec4T<float>(std::move(other)) {}
-
-        Color GrayScale() const
-        {
-            float redSmoosh = x * 0.3f;
-            float greenSmoosh = y * 0.59f;
-            float blueSmoosh = z * 0.11f;
-            float gray = redSmoosh + greenSmoosh + blueSmoosh;
-            return Color(gray, gray, gray, w);
-        }
-
-        ErrorString WriteToJson(const AgeAPI::JsonProxy& proxy) const
-        {
-            if (proxy.mWriteLoc.IsArray())
-            {
-                auto arr = proxy.mWriteLoc.GetArray();
-                arr.PushBack(x, proxy.mAllocator);
-                arr.PushBack(y, proxy.mAllocator);
-                arr.PushBack(z, proxy.mAllocator);
-                arr.PushBack(w, proxy.mAllocator);
-            }
-            else if (proxy.mWriteLoc.IsObject())
-            {
-                proxy.mWriteLoc.AddMember("r", x, proxy.mAllocator);
-                proxy.mWriteLoc.AddMember("g", y, proxy.mAllocator);
-                proxy.mWriteLoc.AddMember("b", z, proxy.mAllocator);
-                proxy.mWriteLoc.AddMember("a", w, proxy.mAllocator);
-            }
-            else
-            {
-                return "Invalid JSON Proxy";
-            }
-            return "";
-
-        }
-
-    };
-
-    template<typename T>
-    class BoundingBox
-    {
-    public:
-        T min, max;
-    public:
-
-        BoundingBox() : min(0), max(0) {}
-        BoundingBox(T min, T max) : min(min), max(max) {}
-        BoundingBox(const BoundingBox<T>& other) : min(other.min), max(other.max) {}
-        BoundingBox(BoundingBox<T>&& other) noexcept : min(std::move(other.min)), max(std::move(other.max)) {}
-        BoundingBox<T>& operator=(const BoundingBox<T>& other) { min = other.min; max = other.max; return *this; }
-        BoundingBox<T>& operator=(BoundingBox<T>&& other) noexcept { min = std::move(other.min); max = std::move(other.max); return *this; }
-        BoundingBox<T> operator+(const BoundingBox<T>& other) const { return BoundingBox<T>(min + other.min, max + other.max); }
-        BoundingBox<T> operator-(const BoundingBox<T>& other) const { return BoundingBox<T>(min - other.min, max - other.max); }
-        BoundingBox<T> operator*(const BoundingBox<T>& other) const { return BoundingBox<T>(min * other.min, max * other.max); }
-        BoundingBox<T> operator/(const BoundingBox<T>& other) const { return BoundingBox<T>(min / other.min, max / other.max); }
-        BoundingBox<T> operator+(T scalar) const { return BoundingBox<T>(min + scalar, max + scalar); }
-        BoundingBox<T> operator-(T scalar) const { return BoundingBox<T>(min - scalar, max - scalar); }
-        BoundingBox<T> operator*(T scalar) const { return BoundingBox<T>(min * scalar, max * scalar); }
-        BoundingBox<T> operator/(T scalar) const { return BoundingBox<T>(min / scalar, max / scalar); }
-        BoundingBox<T>& operator+=(const BoundingBox<T>& other) { min += other.min; max += other.max; return *this; }
-        BoundingBox<T>& operator-=(const BoundingBox<T>& other) { min -= other.min; max -= other.max; return *this; }
-        BoundingBox<T>& operator*=(const BoundingBox<T>& other) { min *= other.min; max *= other.max; return *this; }
-        BoundingBox<T>& operator/=(const BoundingBox<T>& other) { min /= other.min; max /= other.max; return *this; }
-        BoundingBox<T>& operator+=(T scalar) { min += scalar; max += scalar; return *this; }
-        BoundingBox<T>& operator-=(T scalar) { min -= scalar; max -= scalar; return *this; }
-        BoundingBox<T>& operator*=(T scalar) { min *= scalar; max *= scalar; return *this; }
-        BoundingBox<T>& operator/=(T scalar) { min /= scalar; max /= scalar; return *this; }
-        bool operator==(const BoundingBox<T>& other) const { return min == other.min && max == other.max; }
-        bool operator!=(const BoundingBox<T>& other) const { return min != other.min || max != other.max; }
-
-        bool Contains(const T& point) const {
-            return point >= min && point <= max;
-        }
-    };
+				value.AddMember("x", x, allocator);
+				value.AddMember("y", y, allocator);
+				value.AddMember("z", z, allocator);
+				value.AddMember("w", w, allocator);
+			} 
+			else
+				return "Invalid JSON Proxy";
+			return "";
+				
+		}
+	};
 
 
-    // Dumped from the BDS via strings fuck you mojang for removing symbols
-    enum class ItemGroup : u8
-    {
-        itemGroup_name_planks,
-        itemGroup_name_walls,
-        itemGroup_name_fence,
-        itemGroup_name_fenceGate,
-        itemGroup_name_stairs,
-        itemGroup_name_door,
-        itemGroup_name_trapdoor,
-        itemGroup_name_element,
-        itemGroup_name_glass,
-        itemGroup_name_glassPane,
-        itemGroup_name_slab,
-        itemGroup_name_stoneBrick,
-        itemGroup_name_sandstone,
-        itemGroup_name_copper,
-        itemGroup_name_wool,
-        itemGroup_name_woolCarpet,
-        itemGroup_name_concretePowder,
-        itemGroup_name_concrete,
-        itemGroup_name_stainedClay,
-        itemGroup_name_glazedTerracotta,
-        itemGroup_name_ore,
-        itemGroup_name_stone,
-        itemGroup_name_log,
-        itemGroup_name_wood,
-        itemGroup_name_leaves,
-        itemGroup_name_sapling,
-        itemGroup_name_seed,
-        itemGroup_name_crop,
-        itemGroup_name_grass,
-        itemGroup_name_coral_decorations,
-        itemGroup_name_flower,
-        itemGroup_name_dye,
-        itemGroup_name_rawFood,
-        itemGroup_name_mushroom,
-        itemGroup_name_monsterStoneEgg,
-        itemGroup_name_mobEgg,
-        itemGroup_name_coral,
-        itemGroup_name_sculk,
-        itemGroup_name_helmet,
-        itemGroup_name_chestplate,
-        itemGroup_name_leggings,
-        itemGroup_name_boots,
-        itemGroup_name_sword,
-        itemGroup_name_axe,
-        itemGroup_name_pickaxe,
-        itemGroup_name_shovel,
-        itemGroup_name_hoe,
-        itemGroup_name_arrow,
-        itemGroup_name_cookedFood,
-        itemGroup_name_miscFood,
-        itemGroup_name_goatHorn,
-        itemGroup_name_horseArmor,
-        itemGroup_name_potion,
-        itemGroup_name_splashPotion,
-        itemGroup_name_lingeringPotion,
-        itemGroup_name_bed,
-        itemGroup_name_candles,
-        itemGroup_name_chemistrytable,
-        itemGroup_name_anvil,
-        itemGroup_name_chest,
-        itemGroup_name_shulkerBox,
-        itemGroup_name_record,
-        itemGroup_name_sign,
-        itemGroup_name_hanging_sign,
-        itemGroup_name_skull,
-        itemGroup_name_enchantedBook,
-        itemGroup_name_boat,
-        itemGroup_name_chestboat,
-        itemGroup_name_rail,
-        itemGroup_name_minecart,
-        itemGroup_name_buttons,
-        itemGroup_name_pressurePlate,
-        itemGroup_name_banner,
-        itemGroup_name_banner_pattern,
-        itemGroup_name_potterySherds,
-        itemGroup_name_smithing_templates,
-        itemGroup_name_firework,
-        itemGroup_name_fireworkStars,
-        itemGroup_name_dirt,
-        itemGroup_name_cobblestone,
-        itemGroup_name_natureBuildingBlocks,
-        itemGroup_name_sand,
-        itemGroup_name_gravel,
-        itemGroup_name_oreBlocks,
-        itemGroup_name_redstoneContainers,
-        itemGroup_name_musicBlocks,
-        itemGroup_name_pistons,
-        itemGroup_name_natureMisc,
-        itemGroup_name_greenery,
-        itemGroup_name_brick,
-        itemGroup_name_tnt,
-        itemGroup_name_enchantingTable,
-        itemGroup_name_constructionMisc,
-        itemGroup_name_torch,
-        itemGroup_name_craftingTables,
-        itemGroup_name_furnaces,
-        itemGroup_name_climbing,
-        itemGroup_name_redstoneProducers,
-        itemGroup_name_redstone,
-        itemGroup_name_ice,
-        itemGroup_name_cactus,
-        itemGroup_name_clay,
-        itemGroup_name_glowstone,
-        itemGroup_name_pumpkins,
-        itemGroup_name_ironFence,
-        itemGroup_name_beacon,
-        itemGroup_name_endPortalFrame,
-        itemGroup_name_eggBlocks,
-        itemGroup_name_lights,
-        itemGroup_name_purpur,
-        itemGroup_name_endRod,
-        itemGroup_name_permission,
-        itemGroup_name_camera,
-        itemGroup_name_lectern,
-        itemGroup_name_grindStone,
-        itemGroup_name_bell,
-        itemGroup_name_composter,
-        itemGroup_name_chiseledBookshelf,
-        itemGroup_name_none,
-        itemGroup_name_count
-    };
+	using IVec2 = Vec2T<i32>;
+	using IVec3 = Vec3T<i32>;
+	using IVec4 = Vec4T<i32>;
+	using UVec2 = Vec2T<u32>;
+	using UVec3 = Vec3T<u32>;
+	using UVec4 = Vec4T<u32>;
+	using FVec2 = Vec2T<float>;
+	using FVec3 = Vec3T<float>;
+	using FVec4 = Vec4T<float>;
 
-    static std::array<std::string, TO_UNDERLYING(ItemGroup::itemGroup_name_count)>ItemGroupStrings
-    {
-        "itemGroup.name.planks",
-        "itemGroup.name.walls",
-        "itemGroup.name.fence",
-        "itemGroup.name.fenceGate",
-        "itemGroup.name.stairs",
-        "itemGroup.name.door",
-        "itemGroup.name.trapdoor",
-        "itemGroup.name.element",
-        "itemGroup.name.glass",
-        "itemGroup.name.glassPane",
-        "itemGroup.name.slab",
-        "itemGroup.name.stoneBrick",
-        "itemGroup.name.sandstone",
-        "itemGroup.name.copper",
-        "itemGroup.name.wool",
-        "itemGroup.name.woolCarpet",
-        "itemGroup.name.concretePowder",
-        "itemGroup.name.concrete",
-        "itemGroup.name.stainedClay",
-        "itemGroup.name.glazedTerracotta",
-        "itemGroup.name.ore",
-        "itemGroup.name.stone",
-        "itemGroup.name.log",
-        "itemGroup.name.wood",
-        "itemGroup.name.leaves",
-        "itemGroup.name.sapling",
-        "itemGroup.name.seed",
-        "itemGroup.name.crop",
-        "itemGroup.name.grass",
-        "itemGroup.name.coral_decorations",
-        "itemGroup.name.flower",
-        "itemGroup.name.dye",
-        "itemGroup.name.rawFood",
-        "itemGroup.name.mushroom",
-        "itemGroup.name.monsterStoneEgg",
-        "itemGroup.name.mobEgg",
-        "itemGroup.name.coral",
-        "itemGroup.name.sculk",
-        "itemGroup.name.helmet",
-        "itemGroup.name.chestplate",
-        "itemGroup.name.leggings",
-        "itemGroup.name.boots",
-        "itemGroup.name.sword",
-        "itemGroup.name.axe",
-        "itemGroup.name.pickaxe",
-        "itemGroup.name.shovel",
-        "itemGroup.name.hoe",
-        "itemGroup.name.arrow",
-        "itemGroup.name.cookedFood",
-        "itemGroup.name.miscFood",
-        "itemGroup.name.goatHorn",
-        "itemGroup.name.horseArmor",
-        "itemGroup.name.potion",
-        "itemGroup.name.splashPotion",
-        "itemGroup.name.lingeringPotion",
-        "itemGroup.name.bed",
-        "itemGroup.name.candles",
-        "itemGroup.name.chemistrytable",
-        "itemGroup.name.anvil",
-        "itemGroup.name.chest",
-        "itemGroup.name.shulkerBox",
-        "itemGroup.name.record",
-        "itemGroup.name.sign",
-        "itemGroup.name.hanging_sign",
-        "itemGroup.name.skull",
-        "itemGroup.name.enchantedBook",
-        "itemGroup.name.boat",
-        "itemGroup.name.chestboat",
-        "itemGroup.name.rail",
-        "itemGroup.name.minecart",
-        "itemGroup.name.buttons",
-        "itemGroup.name.pressurePlate",
-        "itemGroup.name.banner",
-        "itemGroup.name.banner_pattern",
-        "itemGroup.name.potterySherds",
-        "itemGroup.name.smithing_templates",
-        "itemGroup.name.firework",
-        "itemGroup.name.fireworkStars",
-        "itemGroup.name.dirt",
-        "itemGroup.name.cobblestone",
-        "itemGroup.name.natureBuildingBlocks",
-        "itemGroup.name.sand",
-        "itemGroup.name.gravel",
-        "itemGroup.name.oreBlocks",
-        "itemGroup.name.redstoneContainers",
-        "itemGroup.name.musicBlocks",
-        "itemGroup.name.pistons",
-        "itemGroup.name.natureMisc",
-        "itemGroup.name.greenery",
-        "itemGroup.name.brick",
-        "itemGroup.name.tnt",
-        "itemGroup.name.enchantingTable",
-        "itemGroup.name.constructionMisc",
-        "itemGroup.name.torch",
-        "itemGroup.name.craftingTables",
-        "itemGroup.name.furnaces",
-        "itemGroup.name.climbing",
-        "itemGroup.name.redstoneProducers",
-        "itemGroup.name.redstone",
-        "itemGroup.name.ice",
-        "itemGroup.name.cactus",
-        "itemGroup.name.clay",
-        "itemGroup.name.glowstone",
-        "itemGroup.name.pumpkins",
-        "itemGroup.name.ironFence",
-        "itemGroup.name.beacon",
-        "itemGroup.name.endPortalFrame",
-        "itemGroup.name.eggBlocks",
-        "itemGroup.name.lights",
-        "itemGroup.name.purpur",
-        "itemGroup.name.endRod",
-        "itemGroup.name.permission",
-        "itemGroup.name.camera",
-        "itemGroup.name.lectern",
-        "itemGroup.name.grindStone",
-        "itemGroup.name.bell",
-        "itemGroup.name.composter",
-        "itemGroup.name.chiseledBookshelf",
-        ""
-    };
+	class Color : public Vec4T<float>
+	{
+	public:
+		using Vec = Vec4T<float>;
+	public:
+		Color() : Vec4T<float>(0, 0, 0, 0) {}
+		Color(float r, float g, float b, float a) : Vec4T<float>(r, g, b, a) {}
+		Color(const Color& other) : Vec4T<float>(other) {}
+		Color(const Vec& other) : Vec4T<float>(other) {}
+		Color(Vec&& other) noexcept : Vec4T<float>(std::move(other)) {}
 
-    inline const std::string& GetItemGroupString(ItemGroup group)
-    {
-        return ItemGroupStrings[static_cast<size_t>(group)];
-    }
-    class MenuCategory
-    {
-    private:
-        bool mIsHiddenInCommands = false;
-        ItemGroup mItemGroup = ItemGroup::itemGroup_name_planks;
-        std::string mCategory = "construction";
-    public:
-        MenuCategory() = default;
-        MenuCategory(const std::string& category, ItemGroup itemGroup = ItemGroup::itemGroup_name_none, bool isHiddenInCommands = false) : mItemGroup(itemGroup), mCategory(category), mIsHiddenInCommands(isHiddenInCommands) {}
-        void SetItemGroup(ItemGroup group) { mItemGroup = group; }
-        void SetCategory(const std::string& category) { mCategory = category; }
-        void SetHiddenInCommands(bool hidden) { mIsHiddenInCommands = hidden; }
-        const auto& GetItemGroup() const { return mItemGroup; }
-        const auto& GetCategory() const { return mCategory; }
-        const auto& IsHiddenInCommands() const { return mIsHiddenInCommands; }
-        void WriteToJson(JsonProxy proxy);
-    };
+		Color GrayScale() const
+		{
+			float redSmoosh = x * 0.3f;
+			float greenSmoosh = y * 0.59f;
+			float blueSmoosh = z * 0.11f;
+			float gray = redSmoosh + greenSmoosh + blueSmoosh;
+			return Color(gray, gray, gray, w);
+		}
 
-    template<typename T>
-    struct GenericBounds
-    {
-        T min, max;
-        GenericBounds() : min(0), max(0) {}
-        GenericBounds(T min, T max) : min(min), max(max) {}
-        GenericBounds(const GenericBounds<T>& other) : min(other.min), max(other.max) {}
-        GenericBounds(GenericBounds<T>&& other) noexcept : min(std::move(other.min)), max(std::move(other.max)) {}
-        GenericBounds<T>& operator=(const GenericBounds<T>& other) { min = other.min; max = other.max; return *this; }
-        GenericBounds<T>& operator=(GenericBounds<T>&& other) noexcept { min = std::move(other.min); max = std::move(other.max); return *this; }
+		ErrorString WriteToJson(const AgeAPI::JsonProxy& proxy) const
+		{
+			if (proxy.mWriteLoc.IsArray())
+			{
+				auto arr = proxy.mWriteLoc.GetArray();
+				arr.PushBack(x, proxy.mAllocator);
+				arr.PushBack(y, proxy.mAllocator);
+				arr.PushBack(z, proxy.mAllocator);
+				arr.PushBack(w, proxy.mAllocator);
+			}
+			else if (proxy.mWriteLoc.IsObject())
+			{
+				proxy.mWriteLoc.AddMember("r", x, proxy.mAllocator);
+				proxy.mWriteLoc.AddMember("g", y, proxy.mAllocator);
+				proxy.mWriteLoc.AddMember("b", z, proxy.mAllocator);
+				proxy.mWriteLoc.AddMember("a", w, proxy.mAllocator);
+			}
+			else
+			{
+				return "Invalid JSON Proxy";
+			}
+			return "";
 
-        bool operator==(const GenericBounds<T>& other) const { return min == other.min && max == other.max; }
-        bool operator!=(const GenericBounds<T>& other) const { return min != other.min || max != other.max; }
-        bool operator<(const GenericBounds<T>& other) const { return min < other.min && max < other.max; }
-        bool operator>(const GenericBounds<T>& other) const { return min > other.min && max > other.max; }
-        bool operator<=(const GenericBounds<T>& other) const { return min <= other.min && max <= other.max; }
-        bool operator>=(const GenericBounds<T>& other) const { return min >= other.min && max >= other.max; }
-    };
+		}
 
-    using BlockBounds = GenericBounds<FVec3>;
+	};
+
+	template<typename T>
+	class BoundingBox
+	{
+	public:
+		T min, max;
+	public:
+
+		BoundingBox() : min(0), max(0) {}
+		BoundingBox(T min, T max) : min(min), max(max) {}
+		BoundingBox(const BoundingBox<T>& other) : min(other.min), max(other.max) {}
+		BoundingBox(BoundingBox<T>&& other) noexcept : min(std::move(other.min)), max(std::move(other.max)) {}
+		BoundingBox<T>& operator=(const BoundingBox<T>& other) { min = other.min; max = other.max; return *this; }
+		BoundingBox<T>& operator=(BoundingBox<T>&& other) noexcept { min = std::move(other.min); max = std::move(other.max); return *this; }
+		BoundingBox<T> operator+(const BoundingBox<T>& other) const { return BoundingBox<T>(min + other.min, max + other.max); }
+		BoundingBox<T> operator-(const BoundingBox<T>& other) const { return BoundingBox<T>(min - other.min, max - other.max); }
+		BoundingBox<T> operator*(const BoundingBox<T>& other) const { return BoundingBox<T>(min * other.min, max * other.max); }
+		BoundingBox<T> operator/(const BoundingBox<T>& other) const { return BoundingBox<T>(min / other.min, max / other.max); }
+		BoundingBox<T> operator+(T scalar) const { return BoundingBox<T>(min + scalar, max + scalar); }
+		BoundingBox<T> operator-(T scalar) const { return BoundingBox<T>(min - scalar, max - scalar); }
+		BoundingBox<T> operator*(T scalar) const { return BoundingBox<T>(min * scalar, max * scalar); }
+		BoundingBox<T> operator/(T scalar) const { return BoundingBox<T>(min / scalar, max / scalar); }
+		BoundingBox<T>& operator+=(const BoundingBox<T>& other) { min += other.min; max += other.max; return *this; }
+		BoundingBox<T>& operator-=(const BoundingBox<T>& other) { min -= other.min; max -= other.max; return *this; }
+		BoundingBox<T>& operator*=(const BoundingBox<T>& other) { min *= other.min; max *= other.max; return *this; }
+		BoundingBox<T>& operator/=(const BoundingBox<T>& other) { min /= other.min; max /= other.max; return *this; }
+		BoundingBox<T>& operator+=(T scalar) { min += scalar; max += scalar; return *this; }
+		BoundingBox<T>& operator-=(T scalar) { min -= scalar; max -= scalar; return *this; }
+		BoundingBox<T>& operator*=(T scalar) { min *= scalar; max *= scalar; return *this; }
+		BoundingBox<T>& operator/=(T scalar) { min /= scalar; max /= scalar; return *this; }
+		bool operator==(const BoundingBox<T>& other) const { return min == other.min && max == other.max; }
+		bool operator!=(const BoundingBox<T>& other) const { return min != other.min || max != other.max; }
+
+		bool Contains(const T& point) const {
+			return point >= min && point <= max;
+		}
+	};
 
 
-    static std::string GetUUIDString()
-    {
-        thread_local static UUIDv4::UUIDGenerator<std::mt19937_64> generator;
-        return generator.getUUID().str();
+	// Dumped from the BDS via strings fuck you mojang for removing symbols
+	enum class ItemGroup : u8
+	{
+		itemGroup_name_planks,
+		itemGroup_name_walls,
+		itemGroup_name_fence,
+		itemGroup_name_fenceGate,
+		itemGroup_name_stairs,
+		itemGroup_name_door,
+		itemGroup_name_trapdoor,
+		itemGroup_name_element,
+		itemGroup_name_glass,
+		itemGroup_name_glassPane,
+		itemGroup_name_slab,
+		itemGroup_name_stoneBrick,
+		itemGroup_name_sandstone,
+		itemGroup_name_copper,
+		itemGroup_name_wool,
+		itemGroup_name_woolCarpet,
+		itemGroup_name_concretePowder,
+		itemGroup_name_concrete,
+		itemGroup_name_stainedClay,
+		itemGroup_name_glazedTerracotta,
+		itemGroup_name_ore,
+		itemGroup_name_stone,
+		itemGroup_name_log,
+		itemGroup_name_wood,
+		itemGroup_name_leaves,
+		itemGroup_name_sapling,
+		itemGroup_name_seed,
+		itemGroup_name_crop,
+		itemGroup_name_grass,
+		itemGroup_name_coral_decorations,
+		itemGroup_name_flower,
+		itemGroup_name_dye,
+		itemGroup_name_rawFood,
+		itemGroup_name_mushroom,
+		itemGroup_name_monsterStoneEgg,
+		itemGroup_name_mobEgg,
+		itemGroup_name_coral,
+		itemGroup_name_sculk,
+		itemGroup_name_helmet,
+		itemGroup_name_chestplate,
+		itemGroup_name_leggings,
+		itemGroup_name_boots,
+		itemGroup_name_sword,
+		itemGroup_name_axe,
+		itemGroup_name_pickaxe,
+		itemGroup_name_shovel,
+		itemGroup_name_hoe,
+		itemGroup_name_arrow,
+		itemGroup_name_cookedFood,
+		itemGroup_name_miscFood,
+		itemGroup_name_goatHorn,
+		itemGroup_name_horseArmor,
+		itemGroup_name_potion,
+		itemGroup_name_splashPotion,
+		itemGroup_name_lingeringPotion,
+		itemGroup_name_bed,
+		itemGroup_name_candles,
+		itemGroup_name_chemistrytable,
+		itemGroup_name_anvil,
+		itemGroup_name_chest,
+		itemGroup_name_shulkerBox,
+		itemGroup_name_record,
+		itemGroup_name_sign,
+		itemGroup_name_hanging_sign,
+		itemGroup_name_skull,
+		itemGroup_name_enchantedBook,
+		itemGroup_name_boat,
+		itemGroup_name_chestboat,
+		itemGroup_name_rail,
+		itemGroup_name_minecart,
+		itemGroup_name_buttons,
+		itemGroup_name_pressurePlate,
+		itemGroup_name_banner,
+		itemGroup_name_banner_pattern,
+		itemGroup_name_potterySherds,
+		itemGroup_name_smithing_templates,
+		itemGroup_name_firework,
+		itemGroup_name_fireworkStars,
+		itemGroup_name_dirt,
+		itemGroup_name_cobblestone,
+		itemGroup_name_natureBuildingBlocks,
+		itemGroup_name_sand,
+		itemGroup_name_gravel,
+		itemGroup_name_oreBlocks,
+		itemGroup_name_redstoneContainers,
+		itemGroup_name_musicBlocks,
+		itemGroup_name_pistons,
+		itemGroup_name_natureMisc,
+		itemGroup_name_greenery,
+		itemGroup_name_brick,
+		itemGroup_name_tnt,
+		itemGroup_name_enchantingTable,
+		itemGroup_name_constructionMisc,
+		itemGroup_name_torch,
+		itemGroup_name_craftingTables,
+		itemGroup_name_furnaces,
+		itemGroup_name_climbing,
+		itemGroup_name_redstoneProducers,
+		itemGroup_name_redstone,
+		itemGroup_name_ice,
+		itemGroup_name_cactus,
+		itemGroup_name_clay,
+		itemGroup_name_glowstone,
+		itemGroup_name_pumpkins,
+		itemGroup_name_ironFence,
+		itemGroup_name_beacon,
+		itemGroup_name_endPortalFrame,
+		itemGroup_name_eggBlocks,
+		itemGroup_name_lights,
+		itemGroup_name_purpur,
+		itemGroup_name_endRod,
+		itemGroup_name_permission,
+		itemGroup_name_camera,
+		itemGroup_name_lectern,
+		itemGroup_name_grindStone,
+		itemGroup_name_bell,
+		itemGroup_name_composter,
+		itemGroup_name_chiseledBookshelf,
+		itemGroup_name_none,
+		itemGroup_name_count
+	};
 
-    }
+	static std::array<std::string, TO_UNDERLYING(ItemGroup::itemGroup_name_count)>ItemGroupStrings
+	{
+		"itemGroup.name.planks",
+		"itemGroup.name.walls",
+		"itemGroup.name.fence",
+		"itemGroup.name.fenceGate",
+		"itemGroup.name.stairs",
+		"itemGroup.name.door",
+		"itemGroup.name.trapdoor",
+		"itemGroup.name.element",
+		"itemGroup.name.glass",
+		"itemGroup.name.glassPane",
+		"itemGroup.name.slab",
+		"itemGroup.name.stoneBrick",
+		"itemGroup.name.sandstone",
+		"itemGroup.name.copper",
+		"itemGroup.name.wool",
+		"itemGroup.name.woolCarpet",
+		"itemGroup.name.concretePowder",
+		"itemGroup.name.concrete",
+		"itemGroup.name.stainedClay",
+		"itemGroup.name.glazedTerracotta",
+		"itemGroup.name.ore",
+		"itemGroup.name.stone",
+		"itemGroup.name.log",
+		"itemGroup.name.wood",
+		"itemGroup.name.leaves",
+		"itemGroup.name.sapling",
+		"itemGroup.name.seed",
+		"itemGroup.name.crop",
+		"itemGroup.name.grass",
+		"itemGroup.name.coral_decorations",
+		"itemGroup.name.flower",
+		"itemGroup.name.dye",
+		"itemGroup.name.rawFood",
+		"itemGroup.name.mushroom",
+		"itemGroup.name.monsterStoneEgg",
+		"itemGroup.name.mobEgg",
+		"itemGroup.name.coral",
+		"itemGroup.name.sculk",
+		"itemGroup.name.helmet",
+		"itemGroup.name.chestplate",
+		"itemGroup.name.leggings",
+		"itemGroup.name.boots",
+		"itemGroup.name.sword",
+		"itemGroup.name.axe",
+		"itemGroup.name.pickaxe",
+		"itemGroup.name.shovel",
+		"itemGroup.name.hoe",
+		"itemGroup.name.arrow",
+		"itemGroup.name.cookedFood",
+		"itemGroup.name.miscFood",
+		"itemGroup.name.goatHorn",
+		"itemGroup.name.horseArmor",
+		"itemGroup.name.potion",
+		"itemGroup.name.splashPotion",
+		"itemGroup.name.lingeringPotion",
+		"itemGroup.name.bed",
+		"itemGroup.name.candles",
+		"itemGroup.name.chemistrytable",
+		"itemGroup.name.anvil",
+		"itemGroup.name.chest",
+		"itemGroup.name.shulkerBox",
+		"itemGroup.name.record",
+		"itemGroup.name.sign",
+		"itemGroup.name.hanging_sign",
+		"itemGroup.name.skull",
+		"itemGroup.name.enchantedBook",
+		"itemGroup.name.boat",
+		"itemGroup.name.chestboat",
+		"itemGroup.name.rail",
+		"itemGroup.name.minecart",
+		"itemGroup.name.buttons",
+		"itemGroup.name.pressurePlate",
+		"itemGroup.name.banner",
+		"itemGroup.name.banner_pattern",
+		"itemGroup.name.potterySherds",
+		"itemGroup.name.smithing_templates",
+		"itemGroup.name.firework",
+		"itemGroup.name.fireworkStars",
+		"itemGroup.name.dirt",
+		"itemGroup.name.cobblestone",
+		"itemGroup.name.natureBuildingBlocks",
+		"itemGroup.name.sand",
+		"itemGroup.name.gravel",
+		"itemGroup.name.oreBlocks",
+		"itemGroup.name.redstoneContainers",
+		"itemGroup.name.musicBlocks",
+		"itemGroup.name.pistons",
+		"itemGroup.name.natureMisc",
+		"itemGroup.name.greenery",
+		"itemGroup.name.brick",
+		"itemGroup.name.tnt",
+		"itemGroup.name.enchantingTable",
+		"itemGroup.name.constructionMisc",
+		"itemGroup.name.torch",
+		"itemGroup.name.craftingTables",
+		"itemGroup.name.furnaces",
+		"itemGroup.name.climbing",
+		"itemGroup.name.redstoneProducers",
+		"itemGroup.name.redstone",
+		"itemGroup.name.ice",
+		"itemGroup.name.cactus",
+		"itemGroup.name.clay",
+		"itemGroup.name.glowstone",
+		"itemGroup.name.pumpkins",
+		"itemGroup.name.ironFence",
+		"itemGroup.name.beacon",
+		"itemGroup.name.endPortalFrame",
+		"itemGroup.name.eggBlocks",
+		"itemGroup.name.lights",
+		"itemGroup.name.purpur",
+		"itemGroup.name.endRod",
+		"itemGroup.name.permission",
+		"itemGroup.name.camera",
+		"itemGroup.name.lectern",
+		"itemGroup.name.grindStone",
+		"itemGroup.name.bell",
+		"itemGroup.name.composter",
+		"itemGroup.name.chiseledBookshelf",
+		""
+	};
 
-    static const std::string& GetCurrentWorkingDirectory()
-    {
-        thread_local static std::string cwd = std::filesystem::current_path().string();
-        return cwd;
-    }
+	inline const std::string& GetItemGroupString(ItemGroup group)
+	{
+		return ItemGroupStrings[static_cast<size_t>(group)];
+	}
+	class MenuCategory
+	{
+	private:
+		bool mIsHiddenInCommands = false;
+		ItemGroup mItemGroup = ItemGroup::itemGroup_name_planks;
+		std::string mCategory = "construction";
+	public:
+		MenuCategory() = default;
+		MenuCategory(const std::string& category, ItemGroup itemGroup = ItemGroup::itemGroup_name_none, bool isHiddenInCommands = false) : mItemGroup(itemGroup), mCategory(category), mIsHiddenInCommands(isHiddenInCommands) {}
+		void SetItemGroup(ItemGroup group) { mItemGroup = group; }
+		void SetCategory(const std::string& category) { mCategory = category; }
+		void SetHiddenInCommands(bool hidden) { mIsHiddenInCommands = hidden; }
+		const auto& GetItemGroup() const { return mItemGroup; }
+		const auto& GetCategory() const { return mCategory; }
+		const auto& IsHiddenInCommands() const { return mIsHiddenInCommands; }
+		void WriteToJson(JsonProxy proxy);
+	};
+
+	template<typename T>
+	struct GenericBounds
+	{
+		T min, max;
+		GenericBounds() : min(0), max(0) {}
+		GenericBounds(T min, T max) : min(min), max(max) {}
+		GenericBounds(const GenericBounds<T>& other) : min(other.min), max(other.max) {}
+		GenericBounds(GenericBounds<T>&& other) noexcept : min(std::move(other.min)), max(std::move(other.max)) {}
+		GenericBounds<T>& operator=(const GenericBounds<T>& other) { min = other.min; max = other.max; return *this; }
+		GenericBounds<T>& operator=(GenericBounds<T>&& other) noexcept { min = std::move(other.min); max = std::move(other.max); return *this; }
+
+		bool operator==(const GenericBounds<T>& other) const { return min == other.min && max == other.max; }
+		bool operator!=(const GenericBounds<T>& other) const { return min != other.min || max != other.max; }
+		bool operator<(const GenericBounds<T>& other) const { return min < other.min && max < other.max; }
+		bool operator>(const GenericBounds<T>& other) const { return min > other.min && max > other.max; }
+		bool operator<=(const GenericBounds<T>& other) const { return min <= other.min && max <= other.max; }
+		bool operator>=(const GenericBounds<T>& other) const { return min >= other.min && max >= other.max; }
+	};
+
+	using BlockBounds = GenericBounds<FVec3>;
+
+
+	static std::string GetUUIDString()
+	{
+		thread_local static UUIDv4::UUIDGenerator<std::mt19937_64> generator;
+		return generator.getUUID().str();
+
+	}
+
+	static const std::string& GetCurrentWorkingDirectory()
+	{
+		thread_local static std::string cwd = std::filesystem::current_path().string();
+		return cwd;
+	}
 
 
 };
 
 namespace rapidjson
 {
-    template<>
-    struct TypeTranslation<AgeAPI::Identifier, false>
-    {
-        static void WriteToJson(const AgeAPI::Identifier& value, rapidjson::Value& jsonValue, rapidjson::Document::AllocatorType& allocator)
-        {
-            jsonValue.SetString(value.GetFullNamespace(), allocator);
-        }
+	template<>
+	struct TypeTranslation<AgeAPI::Identifier, false>
+	{
+		static void WriteToJson(const AgeAPI::Identifier& value, rapidjson::Value& jsonValue, rapidjson::Document::AllocatorType& allocator)
+		{
+			jsonValue.SetString(value.GetFullNamespace(), allocator);
+		}
 
-        static AgeAPI::Identifier ReadFromJson(const rapidjson::Value& jsonValue)
-        {
-            return AgeAPI::Identifier(jsonValue.GetString());
-        }
-    };
+		static AgeAPI::Identifier ReadFromJson(const rapidjson::Value& jsonValue)
+		{
+			return AgeAPI::Identifier(jsonValue.GetString());
+		}
+	};
 
-    template<>
-    struct TypeTranslation<AgeAPI::SemanticVersion, false>
-    {
-        static void WriteToJson(const AgeAPI::SemanticVersion value, rapidjson::Value& jsonValue, rapidjson::Document::AllocatorType& allocator)
-        {
-            jsonValue.SetString(std::format("{}.{}.{}", value.GetMajor(), value.GetMinor(), value.GetPatch()), allocator);
-        }
+	template<>
+	struct TypeTranslation<AgeAPI::SemanticVersion, false>
+	{
+		static void WriteToJson(const AgeAPI::SemanticVersion value, rapidjson::Value& jsonValue, rapidjson::Document::AllocatorType& allocator)
+		{
+			jsonValue.SetString(std::format("{}.{}.{}", value.GetMajor(), value.GetMinor(), value.GetPatch()), allocator);
+		}
 
-        static AgeAPI::SemanticVersion ReadFromJson(const rapidjson::Value& jsonValue)
-        {
-            using namespace AgeAPI;
-            if (jsonValue.IsArray())
-            {
-                auto arr = jsonValue.GetArray();
-                std::array<u8, 3> version;
-                for (int i = 0; i < arr.Capacity(); i++)
-                {
-                    auto& arrVal = arr[i];
-                    if (!arrVal.IsInt()) [[unlikely]]
-                        throw std::runtime_error("Value Is Not In The expected Format");
+		static AgeAPI::SemanticVersion ReadFromJson(const rapidjson::Value& jsonValue)
+		{
+			using namespace AgeAPI;
+			if (jsonValue.IsArray())
+			{
+				auto arr = jsonValue.GetArray();
+				std::array<u8, 3> version;
+				for (int i = 0; i < arr.Capacity(); i++)
+				{
+					auto& arrVal = arr[i];
+					if (!arrVal.IsInt()) [[unlikely]]
+						throw std::runtime_error("Value Is Not In The expected Format");
 
-                        u8 section = (u8)arrVal.GetInt();
-                        version[i] = section;
-                }
-            }
-            else if (jsonValue.IsString())
-            {
-                auto str = jsonValue.GetString();
-                auto parts = AgeAPI::ExplodeString(str, ".");
-                if (parts.size() != 3) [[unlikely]]
-                    throw std::runtime_error("Value Is Not In The expected Format");
+						u8 section = (u8)arrVal.GetInt();
+						version[i] = section;
+				}
+			}
+			else if (jsonValue.IsString())
+			{
+				auto str = jsonValue.GetString();
+				auto parts = AgeAPI::ExplodeString(str, ".");
+				if (parts.size() != 3) [[unlikely]]
+					throw std::runtime_error("Value Is Not In The expected Format");
 
-                    std::array<u8, 3> version;
-                    for (int i = 0; i < 3; i++)
-                        if (auto fromChar = std::from_chars(parts[i].data(), parts[i].data() + parts[i].size(), version[i]); fromChar.ec != std::errc())
-                            throw std::runtime_error("Value Is Not In The expected Format");
-            }
-            else [[unlikely]]
-                throw std::runtime_error("Value Is Not In The expected Format");
-        }
-    };
+					std::array<u8, 3> version;
+					for (int i = 0; i < 3; i++)
+						if (auto fromChar = std::from_chars(parts[i].data(), parts[i].data() + parts[i].size(), version[i]); fromChar.ec != std::errc())
+							throw std::runtime_error("Value Is Not In The expected Format");
+			}
+			else [[unlikely]]
+				throw std::runtime_error("Value Is Not In The expected Format");
+		}
+	};
 
 }
 
 namespace std
 {
 
-    template<>
-    struct hash<AgeAPI::Identifier>
-    {
-        std::size_t operator()(const AgeAPI::Identifier& id) const
-        {
-            return std::hash<std::string>{}(id.GetFullNamespace());
-        }
-    };
+	template<>
+	struct hash<AgeAPI::Identifier>
+	{
+		std::size_t operator()(const AgeAPI::Identifier& id) const
+		{
+			return std::hash<std::string>{}(id.GetFullNamespace());
+		}
+	};
 
-    template<>
-    struct hash<AgeAPI::SemanticVersion>
-    {
-        std::size_t operator()(const AgeAPI::SemanticVersion& version) const
-        {
-            return std::hash<AgeAPI::u32>{}(version.GetVersion());
-        }
-    };
+	template<>
+	struct hash<AgeAPI::SemanticVersion>
+	{
+		std::size_t operator()(const AgeAPI::SemanticVersion& version) const
+		{
+			return std::hash<AgeAPI::u32>{}(version.GetVersion());
+		}
+	};
 
-    template<typename T>
-    struct hash<AgeAPI::Vec2T<T>>
-    {
-        std::size_t operator()(const AgeAPI::Vec2T<T>& vec) const
-        {
-            return std::hash<T>{}(vec.x) ^ std::hash<T>{}(vec.y);
-        }
-    };
+	template<typename T>
+	struct hash<AgeAPI::Vec2T<T>>
+	{
+		std::size_t operator()(const AgeAPI::Vec2T<T>& vec) const
+		{
+			return std::hash<T>{}(vec.x) ^ std::hash<T>{}(vec.y);
+		}
+	};
 
-    template<typename T>
-    struct hash<AgeAPI::Vec3T<T>>
-    {
-        std::size_t operator()(const AgeAPI::Vec3T<T>& vec) const
-        {
-            return std::hash<T>{}(vec.x) ^ std::hash<T>{}(vec.y) ^ std::hash<T>{}(vec.z);
-        }
-    };
+	template<typename T>
+	struct hash<AgeAPI::Vec3T<T>>
+	{
+		std::size_t operator()(const AgeAPI::Vec3T<T>& vec) const
+		{
+			return std::hash<T>{}(vec.x) ^ std::hash<T>{}(vec.y) ^ std::hash<T>{}(vec.z);
+		}
+	};
 
-    template<typename T>
-    struct hash<AgeAPI::Vec4T<T>>
-    {
-        std::size_t operator()(const AgeAPI::Vec4T<T>& vec) const
-        {
-            return std::hash<T>{}(vec.x) ^ std::hash<T>{}(vec.y) ^ std::hash<T>{}(vec.z) ^ std::hash<T>{}(vec.w);
-        }
-    };
+	template<typename T>
+	struct hash<AgeAPI::Vec4T<T>>
+	{
+		std::size_t operator()(const AgeAPI::Vec4T<T>& vec) const
+		{
+			return std::hash<T>{}(vec.x) ^ std::hash<T>{}(vec.y) ^ std::hash<T>{}(vec.z) ^ std::hash<T>{}(vec.w);
+		}
+	};
 
-    template<typename T>
-    struct hash<AgeAPI::BoundingBox<T>>
-    {
-        std::size_t operator()(const AgeAPI::BoundingBox<T>& box) const
-        {
-            return std::hash<T>{}(box.min) ^ std::hash<T>{}(box.max);
-        }
-    };
+	template<typename T>
+	struct hash<AgeAPI::BoundingBox<T>>
+	{
+		std::size_t operator()(const AgeAPI::BoundingBox<T>& box) const
+		{
+			return std::hash<T>{}(box.min) ^ std::hash<T>{}(box.max);
+		}
+	};
 
-    template<>
-    struct hash<AgeAPI::Color>
-    {
-        std::size_t operator()(const AgeAPI::Color& color) const
-        {
-            return std::hash<float>{}(color.x) ^ std::hash<float>{}(color.y) ^ std::hash<float>{}(color.z) ^ std::hash<float>{}(color.w);
-        }
-    };
+	template<>
+	struct hash<AgeAPI::Color>
+	{
+		std::size_t operator()(const AgeAPI::Color& color) const
+		{
+			return std::hash<float>{}(color.x) ^ std::hash<float>{}(color.y) ^ std::hash<float>{}(color.z) ^ std::hash<float>{}(color.w);
+		}
+	};
 }
 #endif // !AGE_API_TYPES_H
