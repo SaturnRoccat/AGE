@@ -25,8 +25,5 @@ namespace AgeAPI::Backend::Bp
 
 		BehaviourPack& AddBlockBehaviour(BlockBehaviour&& blockBehaviour) { mBlockBehaviours.push_back(std::move(blockBehaviour)); return *this; }
 		BehaviourPack& AddBlockBehaviour(BlockBehaviour& blockBehaviour) { mBlockBehaviours.push_back(std::move(blockBehaviour)); return  *this; }
-
-		
-
 	};
 }
