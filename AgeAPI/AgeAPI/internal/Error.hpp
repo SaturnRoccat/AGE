@@ -26,18 +26,38 @@ namespace AgeAPI
 		std::string mError{};
 	};
 
-	class ErrorInt : public Error
+	template <typename T>
+	concept IntegralLike = std::integral<T> || std::is_enum<T>().value;
+
+
+	template<IntegralLike T= int>
+	class ErrorIntegralLike : public Error
 	{
 		public:
-		ErrorInt() = default;
-		ErrorInt(int error) : mErrorCode(error) {}
+		ErrorIntegralLike() = default;
+		ErrorIntegralLike(T error) : mErrorCode(error) {}
 		std::string GetAsString() override { return std::to_string(mErrorCode); }
 		int GetErrorCode() { return mErrorCode; }
 		bool ContainsError() override { return mErrorCode != 0; }
 	private:
-		int mErrorCode{};
+		T mErrorCode{};
 	};
 
+
+	using ErrorInt = ErrorIntegralLike<int>;
 	using ConstructionError = ErrorString;
 	using SmallError = ErrorInt;
+
+	enum SyntaxErr : int
+	{
+		InvalidDotIdentifier,
+	};
+
+	using SyntaxError = ErrorIntegralLike<SyntaxErr>;
+
+
+
+
+
+
 }

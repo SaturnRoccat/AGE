@@ -27,9 +27,10 @@ namespace AgeAPI
 
 		Manifest& GetBehaviourManifest() { return mBp.GetManifest(); }
 		Manifest& GetResourceManifest() { return mRp.GetManifest(); }
+	    Backend::Rp::ResourcePack & GetResourcePack() { return mRp; }
+
 
 		void AddBlock(std::unique_ptr<AddonFeatures::IBlock> block) { mBlocks.push_back(std::move(block)); }
-
 		void OutputAddon(const std::pair<std::string, std::string>& outputPath, const std::string& folderName, bool ClearExistingData = true, bool cacheManifest = true);
 	private:
 

@@ -13,10 +13,11 @@ namespace AgeData::BlockComponents
             "minecraft:crafting_table"
         ), mTableName(name), mCraftingTags(craftingTags) {}
 
+        bool IsValid() const;
         AgeAPI::ErrorString WriteToJson(AgeAPI::NonOwningPtr<AgeAPI::Addon> addon, AgeAPI::JsonProxy proxy, AgeAPI::NonOwningPtr<AgeAPI::Backend::Bp::BlockBehaviour> blk) const override;
         
         void AddCraftingTag(const std::string& tag) { mCraftingTags.push_back(tag); }
-
+        
         const auto& GetCraftingTags() const { return mCraftingTags; }
     private:
         std::vector<std::string> mCraftingTags{};

@@ -43,7 +43,16 @@ float RandomFloat(float min, float max)
 int main(int argc, char** argv)
 {
 	Addon addon({ 1, 21, 0 }, { 0, 0, 1 }, "Custom Block Test", "A Test for custom blocks");
-	TextureLayer core("./leaves_oak_opaque.png", false);
+
+	// Testing Language
+
+	addon.GetResourcePack().AddNewLanguage("en_US", "US English",std::nullopt);
+	LocalizationEntry entry("Test Block", "This is a test comment");
+
+	addon.GetResourcePack().AddNewLocalization("custom_block_testing.custom:block_0", entry,"en_US");
+
+
+    TextureLayer core("./leaves_oak_opaque.png", false);
 	core.SetColorType(PNG_COLOR_TYPE_RGBA);
 	Color col { 1.f, 1.f, 1.f, 1.f };
 	Color AdditionColor {0.01f, 0.01f, 0.01f, 1.f};
@@ -66,7 +75,7 @@ int main(int argc, char** argv)
 		block.SetCategory("nature");
 		auto blkPtr = std::make_unique<AddonFeatures::Block>(std::move(block));
 		addon.AddBlock(std::move(blkPtr));
-
+        
 		col = { RandomFloat(0.1f, 1.f), RandomFloat(0.1f, 1.f), RandomFloat(0.1f, 1.f), 1.f };
 		//AdditionColor = { RandomFloat(0.3f, 1.f), RandomFloat(0.3f, 1.f), RandomFloat(0.3f, 1.f), 1.f };
 	}
@@ -77,3 +86,4 @@ int main(int argc, char** argv)
 		}, "custom_block_testing");
 	return 0;
 }
+

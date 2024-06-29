@@ -116,7 +116,6 @@ namespace rapidjson
 			return jsonValue.GetString();
 		}
 	};
-	
 
 	template<typename T>
 	struct TypeTranslation<T, true>
