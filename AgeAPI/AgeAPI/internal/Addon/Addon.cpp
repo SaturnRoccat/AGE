@@ -86,4 +86,56 @@ namespace AgeAPI
 		mBp.buildBehaviourPack(bpOutput, generateBehaviourManifest);
 		mRp.buildResourcePack(rpOutput, generateResourceManifest);
 	}
+
+	/*
+	* Steps to get the path to the development behaviour pack:
+	* 1. Fetch %localappdata%/Packages/Microsoft.MinecraftUWP_8wekyb3d8bbwe/LocalState/games/com.mojang/
+	* 2. Check if the folder contains a folder named "development_behavior_packs"
+	* 3. If it does, return the path to the folder
+	* 4. If it doesn't, create the folder and return the path to the folder
+	* 5. If the folder can't be created, return an empty string
+	* 
+	* Same steps for resource packs, but with "development_resource_packs" instead of "development_behavior_packs"
+	*/
+
+	const std::string& Addon::GetDevelopmentBehaviourPackPath()
+	{
+		static std::string path;
+		if (path.empty())
+		{
+			std::filesystem::path localAppData = std::getenv("LOCALAPPDATA");
+			std::filesystem::path minecraftPath = localAppData / "Packages" / "Microsoft.MinecraftUWP_8wekyb3d8bbwe" / "LocalState" / "games" / "com.mojang";
+			std::filesystem::path devBehPath = minecraftPath / "development_behavior_packs";
+
+			if (!std::filesystem::exists(devBehPath))
+			{
+				if (!std::filesystem::create_directory(devBehPath))
+					return path;
+			}
+
+			path = devBehPath.string();
+		}
+
+		return path;
+	}
+	const std::string& Addon::GetDevelopmentResourcePackPath()
+	{
+		static std::string path;
+		if (path.empty())
+		{
+			std::filesystem::path localAppData = std::getenv("LOCALAPPDATA");
+			std::filesystem::path minecraftPath = localAppData / "Packages" / "Microsoft.MinecraftUWP_8wekyb3d8bbwe" / "LocalState" / "games" / "com.mojang";
+			std::filesystem::path devResPath = minecraftPath / "development_resource_packs";
+
+			if (!std::filesystem::exists(devResPath))
+			{
+				if (!std::filesystem::create_directory(devResPath))
+					return path;
+			}
+
+			path = devResPath.string();
+		}
+
+		return path;
+	}
 }

@@ -29,7 +29,8 @@ namespace AgeAPI::Backend::Bp
 				return ErrorString("Component already exists");
 			else if (component->CanBeDoublePushed() && it != mBlockComponents.end())
 				return it->second->MergeDoublePush(addon, this, component);
-			if (auto error = component->OnComponentAdded(addon, this); error.ContainsError())
+			auto error = component->OnComponentAdded(addon, this);
+			if (error.ContainsError())
 				return error;
 			mBlockComponents[component->GetComponentID().GetFullNamespace()] = std::move(component);
 			return ErrorString();

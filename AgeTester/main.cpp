@@ -52,7 +52,7 @@ int main(int argc, char** argv)
 	).AddComponentChain(
 		&addon,
 		PC<BlockComponentBase, CraftingTable, CraftingTable::CraftingTableData>(
-			{ 
+			{
 				"custom table",
 				{
 					"crafting_table"
@@ -64,13 +64,20 @@ int main(int argc, char** argv)
 		PC<BlockComponentBase, DestructibleByExplosion>(
 			200000
 		)
+	).AddComponentChain(
+		&addon,
+		PC<BlockComponentBase, Flammable, Flammable::FlammableData>(
+			{
+				10, 100
+			}
+		)
 	);
 	addon.AddBlock(std::move(block));
 	
 	addon.OutputAddon(
 		{
-			"C:\\Users\\Duckos\\AppData\\Roaming\\.minecraft_bedrock\\installations\\Duckos\\Latest Release\\packageData\\development_behavior_packs\\",
-			"C:\\Users\\Duckos\\AppData\\Roaming\\.minecraft_bedrock\\installations\\Duckos\\Latest Release\\packageData\\development_resource_packs\\"
+			Addon::GetDevelopmentBehaviourPackPath(),
+			Addon::GetDevelopmentResourcePackPath()
 		}, "custom_block_testing");
 	return 0;
 }

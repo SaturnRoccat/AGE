@@ -31,6 +31,9 @@ namespace AgeAPI
 		void AddBlock(std::unique_ptr<AddonFeatures::IBlock> block) { mBlocks.push_back(std::move(block)); }
 
 		void OutputAddon(const std::pair<std::string, std::string>& outputPath, const std::string& folderName, bool ClearExistingData = true, bool cacheManifest = true);
+
+		static const std::string& GetDevelopmentBehaviourPackPath();
+		static const std::string& GetDevelopmentResourcePackPath();
 	private:
 
 	private:

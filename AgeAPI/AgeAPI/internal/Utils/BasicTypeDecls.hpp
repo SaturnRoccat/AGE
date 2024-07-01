@@ -114,4 +114,10 @@ namespace AgeAPI
 	{
 		return PollyCast<T, U>(std::forward<Args>(args)...);
 	}
+	template<typename T, typename U> requires std::is_copy_assignable_v<U>
+	std::unique_ptr<T> PC(const U& data)
+	{
+		auto* ptr = new U(data);
+		return std::unique_ptr<T>{static_cast<T*>(ptr)};
+	}
 }
