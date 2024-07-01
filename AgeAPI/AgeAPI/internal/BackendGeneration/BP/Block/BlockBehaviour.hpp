@@ -63,7 +63,7 @@ namespace AgeAPI::Backend::Bp
 		std::unordered_map<std::string, std::unique_ptr<Components::BlockComponentBase>> mBlockComponents{};
 		std::vector<std::unique_ptr<AState>> mStates{};
 		std::vector<Permutation> mPermutations{};
-		MenuCategory mCategory{}; // This should be an enum but i cant remember the values so its a string for now 
+		MenuCategory mCategory{};
 		// TODO: Add custom components and block traits
 
 		Identifier mBlockIdentifier{};

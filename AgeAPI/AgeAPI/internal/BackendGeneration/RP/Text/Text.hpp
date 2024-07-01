@@ -12,11 +12,7 @@ namespace AgeAPI::Backend::RP
 
 
 
-    class LocalizationString:std::string 
-    {
-        
-    }; 
-
+    using LocalizationString = std::string;
 
 
 

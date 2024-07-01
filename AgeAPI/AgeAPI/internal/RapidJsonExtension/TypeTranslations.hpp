@@ -29,17 +29,17 @@ namespace rapidjson
 {
 
 	template<typename T, typename = void>
-	struct IsContainer : std::false_type {};
+	struct InformationIndex :  std::integral_constant<int, 0> {};
 
 	template<typename T>
-	struct IsContainer<T, std::void_t<
+	struct InformationIndex<T, std::void_t<
 		decltype(std::declval<T>().size()),
 		decltype(std::declval<T>().begin()),
 		decltype(std::declval<T>().end()),
 		typename T::value_type,
-		typename T::size_type>> : std::true_type {};
+		typename T::size_type>> : std::integral_constant<int, 1> {};
 
-	template<typename T, bool = IsContainer<T>::value>
+	template<typename T, int = InformationIndex<T>::value>
 	struct TypeTranslation
 	{
 		static void WriteToJson(const T& value, rapidjson::Value& jsonValue, rapidjson::Document::AllocatorType& allocator)
@@ -56,7 +56,7 @@ namespace rapidjson
 	};
 
 	template<>
-	struct TypeTranslation<bool, false>
+	struct TypeTranslation<bool, 0>
 	{
 		static void WriteToJson(const bool& value, rapidjson::Value& jsonValue, rapidjson::Document::AllocatorType& allocator)
 		{
@@ -70,7 +70,7 @@ namespace rapidjson
 	};
 
 	template<std::integral T>
-	struct TypeTranslation<T, false>
+	struct TypeTranslation<T, 0>
 	{
 		static void WriteToJson(const T& value, rapidjson::Value& jsonValue, rapidjson::Document::AllocatorType& allocator)
 		{
@@ -90,7 +90,7 @@ namespace rapidjson
 	};
 
 	template<std::floating_point T>
-	struct TypeTranslation<T, false>
+	struct TypeTranslation<T, 0>
 	{
 		static void WriteToJson(const T& value, rapidjson::Value& jsonValue, rapidjson::Document::AllocatorType& allocator)
 		{
@@ -104,7 +104,7 @@ namespace rapidjson
 	};
 
 	template<>
-	struct TypeTranslation<std::string, true> // So string technically matches out container specialization
+	struct TypeTranslation<std::string, 1> // So string technically matches out container specialization
 	{
 		static void WriteToJson(const std::string& value, rapidjson::Value& jsonValue, rapidjson::Document::AllocatorType& allocator)
 		{
@@ -119,7 +119,7 @@ namespace rapidjson
 	
 
 	template<typename T>
-	struct TypeTranslation<T, true>
+	struct TypeTranslation<T, 1>
 	{
 		static void WriteToJson(const T& value, rapidjson::Value& jsonValue, rapidjson::Document::AllocatorType& allocator)
 		{

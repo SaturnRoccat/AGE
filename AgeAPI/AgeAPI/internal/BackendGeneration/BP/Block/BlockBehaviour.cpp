@@ -30,14 +30,16 @@ namespace AgeAPI::Backend::Bp
         rapidjson::Value components(rapidjson::kObjectType);
         for (const auto& [keyRawString, component] : this->mBlockComponents)
 		{
-            rapidjson::Value key(keyRawString, allocator);
             rapidjson::Value value(rapidjson::kObjectType);
             JsonProxy proxy(value, allocator);
             auto err = component->WriteToJson(addon, proxy, this);
             if (err.ContainsError() == true)
 				return err;
             if (!component->IsTransient())
+            {
+                rapidjson::Value key(keyRawString, allocator);
                 components.AddMember(key, value, allocator);
+            }
 		}
 		location.AddMember("components", components, allocator);
         return ErrorString();
