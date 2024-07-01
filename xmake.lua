@@ -59,7 +59,7 @@ target("AgeTester")
     add_files("AgeTester/**.cpp")
     add_includedirs("AgeTester/", {public = false})
     -- add_headerfiles("AgeTester/**.hpp")
-    add_deps("AgeAPI", "AgeSharedUtils")
+    add_deps("AgeAPI", "AgeSharedUtils", "AgeData")
     
 target("AgeData")
     set_symbols("debug")

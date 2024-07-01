@@ -77,10 +77,41 @@ namespace AgeAPI
 	{
 		return std::unique_ptr<T>{static_cast<T*>(p.release())};
 	}
+	template <typename T, typename U>
+	std::unique_ptr<T> StaticUniquePointerCast(std::unique_ptr<U> p)
+	{
+		return std::unique_ptr<T>{static_cast<T*>(p.release())};
+	}
+	template <typename T, typename U> requires std::is_base_of_v<T, U>
+	std::unique_ptr<T> ChildToParentUniquePointerCast(std::unique_ptr<U>&& p)
+	{
+		return std::unique_ptr<T>{static_cast<T*>(p.release())};
+	}
+	template <typename T, typename U> requires std::is_base_of_v<T, U>
+	std::unique_ptr<T> ChildToParentUniquePointerCast(std::unique_ptr<U> p)
+	{
+		return std::unique_ptr<T>{static_cast<T*>(p.release())};
+	}
+	template <typename T> 
+	std::unique_ptr<T> NoCheckVoidUniqueCast(void* memory)
+	{
+		return std::unique_ptr<T>{static_cast<T*>(memory)};
+	}
 
 	template <typename T, typename U>
-	std::unique_ptr<T> PollymorphicUniquePointerCast(std::unique_ptr<U>&& p)
+	std::unique_ptr<T> NCUC(U* p)
 	{
-
+		return std::unique_ptr<T>{static_cast<T*>(p)};
+	}
+	template<typename T, typename U, typename ...Args>
+	std::unique_ptr<T> PollyCast(Args&&... args)
+	{
+		auto* ptr = new U(std::forward<Args>(args)...);
+		return std::unique_ptr<T>{static_cast<T*>(ptr)};
+	}
+	template<typename T, typename U, typename ...Args>
+	std::unique_ptr<T> PC(Args&&... args)
+	{
+		return PollyCast<T, U>(std::forward<Args>(args)...);
 	}
 }

@@ -4,23 +4,23 @@
 
 namespace AgeData::BlockComponents
 {
-    class DestructibleByExplosion : public AgeAPI::Components::BlockComponentBase
+    class DestructibleByMining : public AgeAPI::Components::BlockComponentBase
     {
     public:
-        DestructibleByExplosion(int explosionResistance) : AgeAPI::Components::BlockComponentBase(
+        DestructibleByMining(float secondsToMine) : AgeAPI::Components::BlockComponentBase(
             0,
             { 1, 16, 100 },
-            "minecraft:destructible_by_explosion"
-        ), mValue({ explosionResistance }) {}
+            "minecraft:destructible_by_mining"
+        ), mValue({ secondsToMine }) {}
 
-        DestructibleByExplosion(bool value = true) : AgeAPI::Components::BlockComponentBase(
+        DestructibleByMining(bool value = true) : AgeAPI::Components::BlockComponentBase(
             0,
             { 1, 16, 100 },
-            "minecraft:destructible_by_explosion"
+            "minecraft:destructible_by_mining"
         ), mValue(value) {}
 
         AgeAPI::ErrorString WriteToJson(AgeAPI::NonOwningPtr<AgeAPI::Addon> addon, AgeAPI::JsonProxy proxy, AgeAPI::NonOwningPtr<AgeAPI::Backend::Bp::BlockBehaviour> blk) const override;
     private:
-        ToggleOrData<int, true> mValue;
+        ToggleOrData<float, true> mValue;
     };
 }

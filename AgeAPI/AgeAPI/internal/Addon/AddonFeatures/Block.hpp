@@ -41,6 +41,13 @@ namespace AgeAPI::AddonFeatures
 			return mBlockBehaviour.AddBlockComponent(addon, component); 
 		}
 
+		Block& AddComponentChain(NonOwningPtr<Addon> addon, std::unique_ptr<Components::BlockComponentBase> component) {
+			auto err = AddComponent(addon, std::move(component));
+			if (err.ContainsError())
+				throw std::runtime_error(std::format("Failed to add component: {}", err.GetAsString()));
+			return *this;
+		}
+
 		void AddState(std::unique_ptr<Backend::AState> state) override { mBlockBehaviour.AddState(std::move(state)); }
 		void AddPermutation(Backend::Permutation&& permutation) override { mBlockBehaviour.AddPermutation(std::move(permutation)); }
 		void SetResource(Backend::Rp::BlockResource&& resource) override { mBlockResource = std::move(resource); }
