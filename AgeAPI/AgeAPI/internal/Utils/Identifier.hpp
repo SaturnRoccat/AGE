@@ -37,3 +37,35 @@ namespace AgeAPI
 		u32 mColonPos{ 0 };
 	};
 }
+
+
+namespace rapidjson
+{
+	template<>
+	struct TypeTranslation<AgeAPI::Identifier, false>
+	{
+		static void WriteToJson(const AgeAPI::Identifier& value, rapidjson::Value& jsonValue, rapidjson::Document::AllocatorType& allocator)
+		{
+			jsonValue.SetString(value.GetFullNamespace(), allocator);
+		}
+
+		static AgeAPI::Identifier ReadFromJson(const rapidjson::Value& jsonValue)
+		{
+			return AgeAPI::Identifier(jsonValue.GetString());
+		}
+	};
+}
+
+
+namespace std
+{
+
+	template<>
+	struct hash<AgeAPI::Identifier>
+	{
+		std::size_t operator()(const AgeAPI::Identifier& id) const
+		{
+			return std::hash<std::string>{}(id.GetFullNamespace());
+		}
+	};
+}
