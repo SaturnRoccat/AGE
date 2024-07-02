@@ -1,5 +1,6 @@
 #pragma once
 #include <AgeAPI/internal/NBT/Tags.hpp>
+#include <filesystem>
 #include <concepts>
 
 
@@ -18,6 +19,11 @@ namespace AgeAPI::NBT
 		TagCompound mRootTag{};
 		std::string mRootName{};
 		CompressionType mCompressionType{ CompressionType::None};
+		bool mHasBedrockHeader{ false };
+		static constexpr std::array<u8, 11> mBedrockHeader = {
+			0x0A, 0x00, 0x00, 0x00, 0xEF, 0x0A, 0x00, 0x00, 0x0A,0x00, 0x00
+		};
+
 	public:
 		NBTFile() {};
 		NBTFile(const std::string& path);
@@ -33,6 +39,7 @@ namespace AgeAPI::NBT
 		CompressionType GetCompressionType() const { return mCompressionType; }
 		CompressionType SetCompressionType(CompressionType type) { return mCompressionType = type; }
 
+		void WriteToFile(const std::string& path);
 	
 
 		template<typename T>

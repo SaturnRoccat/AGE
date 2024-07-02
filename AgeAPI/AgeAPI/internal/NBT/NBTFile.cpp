@@ -11,6 +11,27 @@ namespace AgeAPI::NBT
 	{
 		readFromBuffer(stream);
 	}
+	void NBTFile::WriteToFile(const std::string& path)
+	{
+		// Make parent directories if they don't exist
+		std::filesystem::create_directories(std::filesystem::path(path).parent_path());
+
+		std::ofstream file(path);
+		if (!file.is_open())
+			throw std::runtime_error("Failed to open file");
+
+		BinaryStream<u8> stream;
+		if (!mHasBedrockHeader)
+		{
+			stream.Write<u8>(10); // NBT file type
+			stream.WriteBuff(std::span<u8>{(u8*)this->mRootName.data(), mRootName.size()});
+		}
+		else
+		{
+			stream.Write({ (u8*)mBedrockHeader.data(), sizeof(mBedrockHeader)});
+		}
+		this->mRootTag.WriteTag(stream);
+	}
 	void NBTFile::readFromFile(const std::string& path)
 	{
 		std::ifstream file(path, std::ios::binary);
@@ -48,6 +69,8 @@ namespace AgeAPI::NBT
 		{
 			stream.GoTo(11); // Skip the bedrock header and read the first index this should only happen on level.dat from bedrock?
 			this->mRootTag = TagCompound().ReadTag(stream);
+			if (mRootTag.size() != 0)
+				mHasBedrockHeader = true;
 		}
 
 	}
