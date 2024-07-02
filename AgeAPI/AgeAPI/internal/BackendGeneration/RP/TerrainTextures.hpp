@@ -17,14 +17,7 @@ namespace AgeAPI::Backend::Rp
 		TerrainTexture(const std::string& atlasName, const std::string& resourcePackName)
 			: mAtlasName(atlasName), mResourcePackName(resourcePackName) {}
 		TerrainTexture(const TerrainTexture& other) = delete;
-		TerrainTexture(TerrainTexture&& other) noexcept
-		{
-			mMipMapLevels = other.mMipMapLevels;
-			mPadding = other.mPadding;
-			mAtlasName = std::move(other.mAtlasName);
-			mResourcePackName = std::move(other.mResourcePackName);
-			mTextureData = std::move(other.mTextureData);
-		}
+		TerrainTexture(TerrainTexture&& other) noexcept;
 
 		const std::string& GetAtlasName() const { return mAtlasName; }
 		const std::string& GetResourcePackName() const { return mResourcePackName; }
@@ -34,41 +27,12 @@ namespace AgeAPI::Backend::Rp
 		void SetMipMapLevels(u8 mipMapLevels) { mMipMapLevels = mipMapLevels; }
 		void SetPadding(u8 padding) { mPadding = padding; }
 
-		ErrorString AddTexture(const BlockResource& texture)
-		{
-			auto it = mTextureData.find(texture.GetTextureShortName());
-			if (it != mTextureData.end())
-				return "Texture with the same name already exists";
-			mTextureData[texture.GetTextureShortName()] = texture;
-			return ErrorString();
-		}
+		ErrorString AddTexture(const BlockResource& texture);
 
-		ErrorString AddTexture(BlockResource&& texture)
-		{
-			auto it = mTextureData.find(texture.GetTextureShortName());
-			if (it != mTextureData.end())
-				return "Texture with the same name already exists";
-			mTextureData[texture.GetTextureShortName()] = std::move(texture);
-			return ErrorString();
-		}
+		ErrorString AddTexture(BlockResource&& texture);
 
-		void Write(const std::filesystem::path& base) const
-		{
-			for (const auto& [name, texture] : mTextureData)
-				texture.Write(base);
-			return;
-		}
+		void Write(const std::filesystem::path& base) const;
 		ErrorString WriteToJson(JsonProxy proxy) const;
-		std::expected<rapidjson::Document, ErrorString> WriteToDocument() const
-		{
-			rapidjson::Document doc;
-			doc.SetObject();
-			JsonProxy proxy{ doc, doc.GetAllocator() };
-			auto err = WriteToJson(proxy);
-			if (err.ContainsError())
-				return std::unexpected(err);
-			return doc;
-
-		}
+		std::expected<rapidjson::Document, ErrorString> WriteToDocument() const;
 	};
 }
