@@ -20,21 +20,7 @@ namespace AgeAPI::Backend::Bp
 			const SemanticVersion& formatVersion
 		) : mBlockIdentifier(blockIdentifier), mFormatVersion(formatVersion) {}
 
-		ErrorString AddBlockComponent(NonOwningPtr<Addon> addon, std::unique_ptr<Components::BlockComponentBase>& component) 
-		{ 
-			/*if (component->GetFormatVersion().GetVersion() < mFormatVersion.GetVersion())
-				return ErrorString("Component version is higher than the block behaviour version");*/
-			auto it = mBlockComponents.find(component->GetComponentID().GetFullNamespace());
-			if (it != mBlockComponents.end() && !component->CanBeDoublePushed())
-				return ErrorString("Component already exists");
-			else if (component->CanBeDoublePushed() && it != mBlockComponents.end())
-				return it->second->MergeDoublePush(addon, this, component);
-			auto error = component->OnComponentAdded(addon, this);
-			if (error.ContainsError())
-				return error;
-			mBlockComponents[component->GetComponentID().GetFullNamespace()] = std::move(component);
-			return ErrorString();
-		}
+		ErrorString AddBlockComponent(NonOwningPtr<Addon> addon, std::unique_ptr<Components::BlockComponentBase>& component);
 		void AddState(std::unique_ptr<AState> state) { mStates.emplace_back(std::move(state)); }
 		void AddPermutation(Permutation&& permutation) { mPermutations.emplace_back(std::move(permutation)); }
 		void SetIdentifier(const Identifier& identifier) { mBlockIdentifier = identifier; }
@@ -46,16 +32,7 @@ namespace AgeAPI::Backend::Bp
 		const auto& GetIdentifier() const { return mBlockIdentifier; }
 
 		ErrorString BuildBlockBehaviourJson(NonOwningPtr<Addon> addon, rapidjson::Value& location, rapidjson::Document::AllocatorType& allocator) ;
-		inline std::expected<rapidjson::Document, ErrorString> BuildBlockBehaviourDocument(NonOwningPtr<Addon> addon) 
-		{
-			auto doc = rapidjson::Document{};
-			doc.SetObject();
-			auto& allocator = doc.GetAllocator();
-			auto err = BuildBlockBehaviourJson(addon, doc, allocator);
-			if (err.ContainsError())
-				return std::unexpected(err);
-			return doc;
-		}
+		inline std::expected<rapidjson::Document, ErrorString> BuildBlockBehaviourDocument(NonOwningPtr<Addon> addon);
 	private:
 		ErrorString WriteComponents(NonOwningPtr<Addon> addon, rapidjson::Value& location, rapidjson::Document::AllocatorType& allocator) ;
 		ErrorString WritePermutations(NonOwningPtr<Addon> addon, rapidjson::Value& location, rapidjson::Document::AllocatorType& allocator) ;
