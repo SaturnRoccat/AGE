@@ -17,13 +17,9 @@ using namespace AgeAPI::NBT;
 int main(int argc, char** argv)
 {
 
-	NBTFile file("level.dat");
+	NBTFile file("goobah.mcstructure");
+	file.WriteToFile("goobah2.mcstructure");
 	
-	i32 version = file.GetTag<TagInt>(TagString("functioncommandlimit")).GetValue();
-	std::println("functioncommandlimit: {}", version);
-	file[TagString("functioncommandlimit")] = TagInt(32000);
-	version = file.GetTag<TagInt>(TagString("functioncommandlimit")).GetValue();
-	std::println("functioncommandlimit: {}", version);
 
 
 

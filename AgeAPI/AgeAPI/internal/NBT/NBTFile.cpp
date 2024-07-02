@@ -13,17 +13,16 @@ namespace AgeAPI::NBT
 	}
 	void NBTFile::WriteToFile(const std::string& path)
 	{
-		// Make parent directories if they don't exist
-		std::filesystem::create_directories(std::filesystem::path(path).parent_path());
-
-		std::ofstream file(path);
+		std::ofstream file(path, std::ios::binary);
 		if (!file.is_open())
 			throw std::runtime_error("Failed to open file");
 
-		BinaryStream<u8> stream;
+		std::vector<u8> buffer(1024 * 1024 * 5);
+		BinaryStream<u8> stream(buffer);
 		if (!mHasBedrockHeader)
 		{
 			stream.Write<u8>(10); // NBT file type
+			stream.Write<u16>(mRootName.size());
 			stream.WriteBuff(std::span<u8>{(u8*)this->mRootName.data(), mRootName.size()});
 		}
 		else
@@ -31,6 +30,9 @@ namespace AgeAPI::NBT
 			stream.Write({ (u8*)mBedrockHeader.data(), sizeof(mBedrockHeader)});
 		}
 		this->mRootTag.WriteTag(stream);
+		// Write in binary mode
+		file.write(reinterpret_cast<char*>(buffer.data()), stream.GetOffset());
+
 	}
 	void NBTFile::readFromFile(const std::string& path)
 	{

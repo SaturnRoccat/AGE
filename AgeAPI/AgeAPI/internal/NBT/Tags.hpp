@@ -109,7 +109,6 @@ namespace AgeAPI::NBT
 
 		void WriteTag(BinaryStream<u8>& stream) const
 		{
-			stream.Write<u8>(12);
 			stream.Write<i32>(mValue.size());
 			stream.WriteBuff<i64>(std::span<i64>((i64*)mValue.data(), mValue.size()));
 		}
@@ -161,7 +160,6 @@ namespace AgeAPI::NBT
 
 		void WriteTag(BinaryStream<u8>& stream) const
 		{
-			stream.Write<u8>(11);
 			stream.Write<i32>(mValue.size());
 			stream.WriteBuff<u8>(std::span<u8>((u8*)mValue.data(), mValue.size() * sizeof(i32)));
 		}
@@ -215,7 +213,6 @@ namespace AgeAPI::NBT
 
 		void WriteTag(BinaryStream<u8>& stream) const
 		{
-			stream.Write<u8>(8);
 			stream.Write<i16>(mValue.size());
 			stream.Write(std::span<u8>((u8*)(mValue.data()), mValue.size())); //Evil
 		}
@@ -289,7 +286,6 @@ namespace AgeAPI::NBT
 		}
 		void WriteTag(BinaryStream<u8>& stream) const
 		{
-			stream.Write<u8>(7);
 			stream.Write<i32>(mValue.size());
 			stream.Write(mValue);
 		}
@@ -339,7 +335,6 @@ namespace AgeAPI::NBT
 
 		void WriteTag(BinaryStream<u8>& stream) const
 		{
-			stream.Write<u8>(6);
 			stream.Write(mValue);
 		}
 
@@ -384,7 +379,6 @@ namespace AgeAPI::NBT
 
 		void WriteTag(BinaryStream<u8>& stream) const
 		{
-			stream.Write<u8>(5);
 			stream.Write(mValue);
 		}
 
@@ -428,7 +422,6 @@ namespace AgeAPI::NBT
 
 		void WriteTag(BinaryStream<u8>& stream) const
 		{
-			stream.Write<u8>(4);
 			stream.Write(mValue);
 		}
 
@@ -472,7 +465,6 @@ namespace AgeAPI::NBT
 
 		void WriteTag(BinaryStream<u8>& stream) const
 		{
-			stream.Write<u8>(3);
 			stream.Write(mValue);
 		}
 
@@ -516,7 +508,6 @@ namespace AgeAPI::NBT
 
 		void WriteTag(BinaryStream<u8>& stream) const
 		{
-			stream.Write<u8>(2);
 			stream.Write(mValue);
 		}
 
@@ -561,7 +552,6 @@ namespace AgeAPI::NBT
 
 		void WriteTag(BinaryStream<u8>& stream) const
 		{
-			stream.Write<u8>(1);
 			stream.Write(mValue);
 		}
 
@@ -605,7 +595,6 @@ namespace AgeAPI::NBT
 
 		void WriteTag(BinaryStream<u8>& stream) const
 		{
-			stream.Write<u8>(0);
 		}
 
 		u8 GetTagId() const
@@ -671,7 +660,6 @@ namespace AgeAPI::NBT
 
 		void WriteTag(BinaryStream<u8>& stream) const
 		{
-			stream.Write<u8>(9);
 			std::visit([&](auto& value)
 				{
 					if (value.size() == 0)
@@ -752,9 +740,10 @@ namespace AgeAPI::NBT
 		{
 			for (auto& [key, tag] : mValue)
 			{
-				key.WriteTag(stream);
 				std::visit([&](auto& value)
 					{
+						stream.Write<u8>(value.GetTagId());
+						key.WriteTag(stream);
 						value.WriteTag(stream);
 					}, tag);
 			}
