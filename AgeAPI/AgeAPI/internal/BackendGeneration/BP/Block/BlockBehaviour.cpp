@@ -4,6 +4,21 @@
 
 namespace AgeAPI::Backend::Bp
 {
+    inline ErrorString BlockBehaviour::AddBlockComponent(NonOwningPtr<Addon> addon, std::unique_ptr<Components::BlockComponentBase>& component)
+    {
+        /*if (component->GetFormatVersion().GetVersion() < mFormatVersion.GetVersion())
+        return ErrorString("Component version is higher than the block behaviour version");*/
+        auto it = mBlockComponents.find(component->GetComponentID().GetFullNamespace());
+        if (it != mBlockComponents.end() && !component->CanBeDoublePushed())
+            return ErrorString("Component already exists");
+        else if (component->CanBeDoublePushed() && it != mBlockComponents.end())
+            return it->second->MergeDoublePush(addon, this, component);
+        auto error = component->OnComponentAdded(addon, this);
+        if (error.ContainsError())
+            return error;
+        mBlockComponents[component->GetComponentID().GetFullNamespace()] = std::move(component);
+        return ErrorString();
+    }
     ErrorString BlockBehaviour::BuildBlockBehaviourJson(NonOwningPtr<Addon> addon, rapidjson::Value& location, rapidjson::Document::AllocatorType& allocator)
     {
         rapidjson::ValueWriteWithKey<std::string>::WriteToJsonValue("format_version", this->mFormatVersion.GetString(), location, allocator);
@@ -23,6 +38,17 @@ namespace AgeAPI::Backend::Bp
 
         location.AddMember("minecraft:block", minecraftBlock, allocator);
         return ErrorString();
+    }
+
+    inline std::expected<rapidjson::Document, ErrorString> BlockBehaviour::BuildBlockBehaviourDocument(NonOwningPtr<Addon> addon)
+    {
+        auto doc = rapidjson::Document{};
+        doc.SetObject();
+        auto& allocator = doc.GetAllocator();
+        auto err = BuildBlockBehaviourJson(addon, doc, allocator);
+        if (err.ContainsError())
+            return std::unexpected(err);
+        return doc;
     }
 
     ErrorString BlockBehaviour::WriteComponents(NonOwningPtr<Addon> addon, rapidjson::Value& location, rapidjson::Document::AllocatorType& allocator)

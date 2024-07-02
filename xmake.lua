@@ -1,7 +1,7 @@
 add_rules("mode.debug", "mode.release")
 set_languages("c++23")
 
-add_requires("rapidjson", "fmt", "angelscript", "uuid_v4", "libpng", "spdlog", "simde")
+add_requires("rapidjson", "fmt", "angelscript", "uuid_v4", "libpng", "spdlog", "simde", "zlib")
 
 
 target("AgeAPI")
@@ -9,7 +9,7 @@ target("AgeAPI")
     add_files("AgeAPI/**.cpp")
     add_includedirs("AgeAPI/", {public = true})
     add_headerfiles("AgeAPI/**.hpp")
-    add_packages("rapidjson", "fmt", "angelscript", "uuid_v4", "libpng", "spdlog", "AgeSharedUtils", {public = true})
+    add_packages("rapidjson", "fmt", "angelscript", "uuid_v4", "libpng", "spdlog", "AgeSharedUtils", "zlib", {public = true})
     set_symbols("debug")
 
 target("AgeRuntime")
