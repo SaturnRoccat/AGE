@@ -29,6 +29,9 @@ namespace AgeAPI::NBT
 		NBTFile(const std::string& path);
 		NBTFile(std::vector<u8>& stream);
 
+		NBTFile(const TagCompound& rootTag, const std::string& rootName = "") : mRootTag(rootTag), mRootName(rootName) {}
+		NBTFile(TagCompound&& rootTag, const std::string& rootName = "") : mRootTag(std::move(rootTag)), mRootName(rootName) {}
+
 
 		void SetRootName(const std::string& name) { mRootName = name; }
 		const std::string& GetRootName() const { return mRootName; }

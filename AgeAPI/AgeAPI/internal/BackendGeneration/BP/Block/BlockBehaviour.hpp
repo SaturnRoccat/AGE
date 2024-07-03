@@ -32,7 +32,7 @@ namespace AgeAPI::Backend::Bp
 		const auto& GetIdentifier() const { return mBlockIdentifier; }
 
 		ErrorString BuildBlockBehaviourJson(NonOwningPtr<Addon> addon, rapidjson::Value& location, rapidjson::Document::AllocatorType& allocator) ;
-		inline std::expected<rapidjson::Document, ErrorString> BuildBlockBehaviourDocument(NonOwningPtr<Addon> addon);
+		std::expected<rapidjson::Document, ErrorString> BuildBlockBehaviourDocument(NonOwningPtr<Addon> addon);
 	private:
 		ErrorString WriteComponents(NonOwningPtr<Addon> addon, rapidjson::Value& location, rapidjson::Document::AllocatorType& allocator) ;
 		ErrorString WritePermutations(NonOwningPtr<Addon> addon, rapidjson::Value& location, rapidjson::Document::AllocatorType& allocator) ;
