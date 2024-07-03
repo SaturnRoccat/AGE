@@ -33,7 +33,7 @@ namespace AgeAPI::NBT
 		case 12:
 			return TagLongArray{};
 		default:
-			break;
+			throw std::runtime_error("Invalid tag type");
 		}
 	}
 	TagList& TagList::ReadTag(BinaryStream<u8>& stream)

@@ -6,6 +6,19 @@
 
 namespace AgeAPI
 {
+	static std::vector<std::string_view> ExplodeString(std::string_view str, std::string_view delimiter)
+	{
+		std::vector<std::string_view> result;
+		size_t pos = 0;
+		size_t nextPos = 0;
+		while ((nextPos = str.find(delimiter, pos)) != std::string::npos)
+		{
+			result.push_back(str.substr(pos, nextPos - pos));
+			pos = nextPos + delimiter.size();
+		}
+		result.push_back(str.substr(pos));
+		return result;
+	}
 	class SemanticVersion
 	{
 	public:
@@ -44,4 +57,68 @@ namespace AgeAPI
 		};
 	};
 
+}
+
+
+namespace rapidjson
+{
+
+
+	template<>
+	struct TypeTranslation<AgeAPI::SemanticVersion, false>
+	{
+		static void WriteToJson(const AgeAPI::SemanticVersion value, rapidjson::Value& jsonValue, rapidjson::Document::AllocatorType& allocator)
+		{
+			jsonValue.SetString(std::format("{}.{}.{}", value.GetMajor(), value.GetMinor(), value.GetPatch()), allocator);
+		}
+
+		static AgeAPI::SemanticVersion ReadFromJson(const rapidjson::Value& jsonValue)
+		{
+			using namespace AgeAPI;
+			if (jsonValue.IsArray())
+			{
+				auto arr = jsonValue.GetArray();
+				std::array<u8, 3> version;
+				for (int i = 0; i < arr.Capacity(); i++)
+				{
+					auto& arrVal = arr[i];
+					if (!arrVal.IsInt()) [[unlikely]]
+						throw std::runtime_error("Value Is Not In The expected Format");
+
+						u8 section = (u8)arrVal.GetInt();
+						version[i] = section;
+				}
+			}
+			else if (jsonValue.IsString())
+			{
+				auto str = jsonValue.GetString();
+				auto parts = AgeAPI::ExplodeString(str, ".");
+				if (parts.size() != 3) [[unlikely]]
+					throw std::runtime_error("Value Is Not In The expected Format");
+
+					std::array<u8, 3> version;
+					for (int i = 0; i < 3; i++)
+						if (auto fromChar = std::from_chars(parts[i].data(), parts[i].data() + parts[i].size(), version[i]); fromChar.ec != std::errc())
+							throw std::runtime_error("Value Is Not In The expected Format");
+			}
+			else [[unlikely]]
+				throw std::runtime_error("Value Is Not In The expected Format");
+		}
+	};
+
+}
+
+
+namespace std
+{
+
+
+	template<>
+	struct hash<AgeAPI::SemanticVersion>
+	{
+		std::size_t operator()(const AgeAPI::SemanticVersion& version) const
+		{
+			return std::hash<AgeAPI::u32>{}(version.GetVersion());
+		}
+	};
 }

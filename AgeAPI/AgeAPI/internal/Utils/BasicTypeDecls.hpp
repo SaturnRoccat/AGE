@@ -1,6 +1,7 @@
 #pragma once
 #include <memory>
 #include <stdexcept>
+#include <AgeAPI/internal/RapidJsonExtension/TypeTranslations.hpp>
 
 namespace AgeAPI
 {
