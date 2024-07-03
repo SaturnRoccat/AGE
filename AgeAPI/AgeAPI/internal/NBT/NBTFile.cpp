@@ -11,6 +11,8 @@ namespace AgeAPI::NBT
 	{
 		readFromBuffer(stream);
 	}
+	
+	
 	void NBTFile::WriteToFile(const std::string& path)
 	{
 		std::ofstream file(path, std::ios::binary);
@@ -31,7 +33,7 @@ namespace AgeAPI::NBT
 		}
 		this->mRootTag.WriteTag(stream);
 		// Write in binary mode
-		file.write(reinterpret_cast<char*>(buffer.data()), stream.GetOffset());
+		file.write(reinterpret_cast<char*>(stream.GetBuffer().data()), stream.GetOffset());
 
 	}
 	void NBTFile::readFromFile(const std::string& path)

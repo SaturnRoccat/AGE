@@ -14,11 +14,7 @@ namespace AgeData::BlockComponents
         ), mLocalisationKey( tanslationKey ) {}
 
 
-        AgeAPI::ErrorString WriteToJson(AgeAPI::NonOwningPtr<AgeAPI::Addon> addon, AgeAPI::JsonProxy proxy, AgeAPI::NonOwningPtr<AgeAPI::Backend::Bp::BlockBehaviour> blk) const override
-        {
-            auto& [value, alloc] = proxy;
-            value.SetString(mLocalisationKey, alloc);
-        }
+        AgeAPI::ErrorString WriteToJson(AgeAPI::NonOwningPtr<AgeAPI::Addon> addon, AgeAPI::JsonProxy proxy, AgeAPI::NonOwningPtr<AgeAPI::Backend::Bp::BlockBehaviour> blk) const override;
     private:
         std::string mLocalisationKey{};
     };

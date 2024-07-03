@@ -40,7 +40,7 @@ namespace AgeAPI::Backend::Bp
         return ErrorString();
     }
 
-    inline std::expected<rapidjson::Document, ErrorString> BlockBehaviour::BuildBlockBehaviourDocument(NonOwningPtr<Addon> addon)
+    std::expected<rapidjson::Document, ErrorString> BlockBehaviour::BuildBlockBehaviourDocument(NonOwningPtr<Addon> addon)
     {
         auto doc = rapidjson::Document{};
         doc.SetObject();

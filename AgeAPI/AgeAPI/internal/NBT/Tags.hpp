@@ -13,19 +13,23 @@ namespace AgeAPI::NBT
 	class BinaryStream
 	{
 	private:
-		std::span<T> mBuffer;
+		std::vector<T> mBuffer;
 		size_t mOffset;
 	public:
-		BinaryStream(std::span<T> buffer = {}) : mBuffer(buffer), mOffset(0) {}
+		BinaryStream(std::vector<T> buffer = {}) : mBuffer(buffer), mOffset(0) {}
 
+		std::vector<T>& GetBuffer() { return mBuffer; }
 
 		void Write(const T& value)
 		{
+			ResizeOnInvalidation();
 			mBuffer[mOffset++] = value;
 		}
 
 		T Read()
 		{
+
+
 			return mBuffer[mOffset++];
 		}
 
@@ -62,7 +66,8 @@ namespace AgeAPI::NBT
 
 		std::span<T> Read(size_t count)
 		{
-			std::span<T> buffer = mBuffer.subspan(mOffset, count);
+			std::span<T> self(mBuffer.data(), mBuffer.size() - mOffset);
+			std::span<T> buffer = self.subspan(0, count);
 			mOffset += count;
 			return buffer;
 		}
@@ -76,6 +81,12 @@ namespace AgeAPI::NBT
 
 		void GoTo(size_t offset) { mOffset = offset; }
 		size_t GetOffset() const { return mOffset; }
+	private:
+		void ResizeOnInvalidation()
+		{
+			if (mOffset >= mBuffer.size())
+				mBuffer.resize(mBuffer.size() * 2);
+		}
 	};
 
 	template<typename T>
@@ -202,6 +213,7 @@ namespace AgeAPI::NBT
 		std::string mValue;
 	public:
 		TagString(std::string value = "") : mValue(value) {}
+		TagString(const char* value) : mValue(value) {}
 
 		TagString& ReadTag(BinaryStream<u8>& stream)
 		{
@@ -648,6 +660,17 @@ namespace AgeAPI::NBT
 	using TagMap = std::unordered_map<TagString, AnyTag>;
 
 	AnyTag ConstructBasedOnID(u8 id);
+	// Little hack to get around the fact that we can't have a recursive type
+	class TagListType
+	{
+	public:
+		TagListType() = default;
+	};
+	class TagCompoundType
+	{
+	public:
+		TagCompoundType() = default;
+	};
 
 	class TagList
 	{
@@ -655,8 +678,49 @@ namespace AgeAPI::NBT
 		TagArray mValue;
 	public:
 		TagList(TagArray value = {}) : mValue(value) {}
+		/*TagList(TagByte value) : mValue(std::vector<TagByte>{}) {}
+		TagList(TagShort value) : mValue(std::vector<TagShort>{}) {}
+		TagList(TagInt value) : mValue(std::vector<TagInt>{}) {}
+		TagList(TagLong value) : mValue(std::vector<TagLong>{}) {}
+		TagList(TagFloat value) : mValue(std::vector<TagFloat>{}) {}
+		TagList(TagDouble value) : mValue(std::vector<TagDouble>{}) {}
+		TagList(TagByteArray value) : mValue(std::vector<TagByteArray>{}) {}
+		TagList(TagString value) : mValue(std::vector<TagString>{}) {}
+		TagList(TagListType value) : mValue(std::vector<TagList>{}) {}
+		TagList(TagCompoundType value) : mValue(std::vector<TagCompound>{}) {}
+		TagList(TagIntArray value) : mValue(std::vector<TagIntArray>{}) {}
+		TagList(TagLongArray value) : mValue(std::vector<TagLongArray>{}) {}*/
+
+		void SetType(TagListType)
+		{
+			mValue = std::vector<TagList>{};
+		}
+
 
 		TagList& ReadTag(BinaryStream<u8>& stream);
+
+		/*void PushBack(const AnyTag& tag)
+		{
+			std::visit([&](auto& value)
+				{
+					using VecType = typename std::remove_reference_t<decltype(value)>::value_type;
+					value.push_back
+					(
+						std::get<VecType>(tag)
+					);
+				}, mValue);
+		}
+		*/
+		template<typename T>
+		void PushBack(const T& value)
+		{
+			std::get<std::vector<T>>(mValue).push_back(value);
+		}
+		template<typename T>
+		void EmplaceBack(T&& value)
+		{
+			std::get<std::vector<T>>(mValue).emplace_back(std::move(value));
+		}
 
 		void WriteTag(BinaryStream<u8>& stream) const
 		{
@@ -704,7 +768,10 @@ namespace AgeAPI::NBT
 			static std::string str = "TAG_List";
 			return str;
 		}
-
+		void AbsorbTagArray(TagArray&& other)
+		{
+			mValue = std::move(other);
+		}
 	};
 
 	class TagCompound
