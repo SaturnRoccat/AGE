@@ -18,6 +18,16 @@ namespace AgeData::BlockComponents
                 mValue = 0;
         }
 
+        void SetDampening(int val) {
+            if (val > 15)
+                mValue = 15;
+            else if (val < 0)
+                mValue = 0;
+            else
+                mValue = val;
+        }
+        int GetDampening() const { return mValue; }
+
 
 
         AgeAPI::ErrorString WriteToJson(AgeAPI::NonOwningPtr<AgeAPI::Addon> addon, AgeAPI::JsonProxy proxy, AgeAPI::NonOwningPtr<AgeAPI::Backend::Bp::BlockBehaviour> blk) const override

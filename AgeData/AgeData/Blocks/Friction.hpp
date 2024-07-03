@@ -13,6 +13,16 @@ namespace AgeData::BlockComponents
             "minecraft:friction"
         ), mValue(friction) {}
 
+        void SetFriction(float friction) {
+            if (friction > 1.0)
+                mValue = 1.0;
+            else if (friction < 0.0)
+                mValue = 0.0;
+            else
+                mValue = friction;
+        }
+        float GetFriction() const { return mValue; }
+
 
 
         AgeAPI::ErrorString WriteToJson(AgeAPI::NonOwningPtr<AgeAPI::Addon> addon, AgeAPI::JsonProxy proxy, AgeAPI::NonOwningPtr<AgeAPI::Backend::Bp::BlockBehaviour> blk) const override

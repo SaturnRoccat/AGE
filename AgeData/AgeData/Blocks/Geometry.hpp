@@ -20,6 +20,8 @@ namespace AgeData::BlockComponents
 
         };
     public:
+        // TODO: Add ctor to bind to geometry file @Duckos-Mods
+
         Geometry(const std::string& geometry = "minecraft:pig") : AgeAPI::Components::BlockComponentBase(
             0,
             { 1, 19, 50 },
@@ -30,6 +32,12 @@ namespace AgeData::BlockComponents
             { 1, 19, 50 },
             "minecraft:geometry"
         ), mValue({geometry}) {}
+
+        void SetGeometry(const std::string& geometry) { mValue = geometry; }
+        void SetGeometry(const GeometryWithData& geometry) { mValue = geometry; }
+        bool IsGeometryString() const { return std::holds_alternative<std::string>(mValue); }
+        std::string GetGeometry() const { return std::get<std::string>(mValue); }
+        GeometryWithData GetGeometryData() const { return std::get<GeometryWithData>(mValue); }
 
 
 
