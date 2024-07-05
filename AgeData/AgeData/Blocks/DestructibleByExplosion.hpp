@@ -19,6 +19,12 @@ namespace AgeData::BlockComponents
             "minecraft:destructible_by_explosion"
         ), mValue(value) {}
 
+        void SetDestructibleByExplosion(int explosionResistance) { mValue = explosionResistance; }
+        void SetDestructibleByExplosion(bool value) { mValue = value; }
+        int GetDestructibleByExplosion() const { return mValue; }
+        bool GetDestructibleByExplosionBool() const { return mValue; }
+        bool IsData() const { return std::holds_alternative<int>(mValue); }
+
         AgeAPI::ErrorString WriteToJson(AgeAPI::NonOwningPtr<AgeAPI::Addon> addon, AgeAPI::JsonProxy proxy, AgeAPI::NonOwningPtr<AgeAPI::Backend::Bp::BlockBehaviour> blk) const override;
     private:
         ToggleOrData<int, true> mValue;

@@ -20,6 +20,13 @@ namespace AgeData::BlockComponents
             "minecraft:collision_box"
         ), mValue(value) {}
 
+        void SetCollisionBox(const AgeAPI::IVec3& origin, const AgeAPI::IVec3& size) { mValue = { origin, size }; }
+        void SetCollisionBox(bool value) { mValue = value; }
+        AgeAPI::IVec3 GetCollisionBoxOrigin() const { return mValue.first; }
+        AgeAPI::IVec3 GetCollisionBoxSize() const { return mValue.second; }
+        bool GetCollisionBoxBool() const { return mValue; }
+        bool IsData() const { return std::holds_alternative<AgeAPI::IVec3>(mValue); }
+
         AgeAPI::ErrorString WriteToJson(AgeAPI::NonOwningPtr<AgeAPI::Addon> addon, AgeAPI::JsonProxy proxy, AgeAPI::NonOwningPtr<AgeAPI::Backend::Bp::BlockBehaviour> blk) const override;
     private:
         ToggleOrData<BlockBounds, true> mValue;
