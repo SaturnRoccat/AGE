@@ -11,6 +11,7 @@ namespace AgeAPI::Structure
 				for (int z = 0; z < std::min(mSize.z, newSize.z); ++z)
 					newStructure[{x, y, z}] = getBlockAt({x, y, z});
 		this->mBlockIndices = std::move(newStructure.mBlockIndices);
+		this->mSize = newSize;
 		// Kinda troll method to resize but it works :3
 	}
 	void MCStructure::SetSpecialBlock(const IVec3& position, int specialIndex)
