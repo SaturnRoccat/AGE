@@ -16,8 +16,6 @@ namespace AgeAPI
 	using f32 = float;
 	using f64 = double;
 
-    
-
 	template<typename T>
 	class NonOwningPtr
 	{
@@ -73,6 +71,18 @@ namespace AgeAPI
 		T* mPtr{ nullptr };
 	};
 
+	template<typename T> requires std::is_copy_constructible_v<T>
+	std::shared_ptr<T> ConstRefToShared(const T& data)
+	{
+		return std::make_shared<T>(data);
+	}
+
+	template<typename T> requires std::is_move_assignable_v<T>
+	std::shared_ptr<T> MoveToShared(T&& data)
+	{
+		return std::make_shared<T>(std::move(data));
+	}
+
 	template <typename T, typename U>
 	std::unique_ptr<T> StaticUniquePointerCast(std::unique_ptr<U>&& p)
 	{
@@ -115,7 +125,7 @@ namespace AgeAPI
 	{
 		return PollyCast<T, U>(std::forward<Args>(args)...);
 	}
-	template<typename T, typename U> requires std::is_copy_assignable_v<U>
+	template<typename T, typename U> requires std::is_copy_constructible_v<U>
 	std::unique_ptr<T> PC(const U& data)
 	{
 		auto* ptr = new U(data);

@@ -185,6 +185,7 @@ namespace AgeAPI
 	};
 
 	using IVec2 = Vec2T<i32>;
+	using I16Vec2 = Vec2T<i16>;
 	using IVec3 = Vec3T<i32>;
 	using IVec4 = Vec4T<i32>;
 	using UVec2 = Vec2T<u32>;
