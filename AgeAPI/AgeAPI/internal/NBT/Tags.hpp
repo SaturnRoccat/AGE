@@ -677,7 +677,7 @@ namespace AgeAPI::NBT
 	private:
 		TagArray mValue;
 	public:
-		TagList(TagArray value = {}) : mValue(value) {}
+		TagList(const TagArray& value = {}) : mValue(value) {}
 		/*TagList(TagByte value) : mValue(std::vector<TagByte>{}) {}
 		TagList(TagShort value) : mValue(std::vector<TagShort>{}) {}
 		TagList(TagInt value) : mValue(std::vector<TagInt>{}) {}
@@ -779,7 +779,7 @@ namespace AgeAPI::NBT
 	private:
 		TagMap mValue;
 	public:
-		TagCompound(TagMap value = {}) : mValue(value) {}
+		TagCompound(const TagMap& value = {}) : mValue(value) {}
 
 		TagCompound& ReadTag(BinaryStream<u8>& stream)
 		{
