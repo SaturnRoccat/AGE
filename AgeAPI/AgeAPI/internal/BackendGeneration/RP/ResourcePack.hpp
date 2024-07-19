@@ -9,6 +9,18 @@
 
 namespace AgeAPI::Backend::Rp
 {
+	enum class BlockRegistrationError
+	{
+		NONE,
+		MODEL_ALREADY_EXISTS,
+		MODEL_DOES_NOT_EXIST,
+		TEXTURE_DOES_NOT_EXIST,
+		TEXTURE_ALREADY_EXISTS,
+		BLOCK_ALREADY_EXISTS,
+		BLOCK_DOES_NOT_EXIST
+
+	};
+
 	class ResourcePack
 	{
 	private:
@@ -31,7 +43,7 @@ namespace AgeAPI::Backend::Rp
 		const Manifest& GetManifest() const { return mManifest; }
 		Manifest& GetManifest() { return mManifest; }
 
-		void BindBlockResource(const BlockResource& blkResource);
+		BlockRegistrationError BindBlockResource(const BlockResource& blkResource, bool sanityCheck = true);
 
 	};
 }

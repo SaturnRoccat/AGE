@@ -40,32 +40,70 @@ namespace AgeAPI::Backend::Rp
 
 	}
 
-	void ResourcePack::BindBlockResource(const BlockResource& blkResource)
+	static BlockRegistrationError constexpr BlockJsonErrorToBlockRegistrationError(BlockJsonError error)
+	{
+		switch (error)
+		{
+		case BlockJsonError::ALREADY_EXISTS:
+			return BlockRegistrationError::BLOCK_ALREADY_EXISTS;
+		case BlockJsonError::NOT_FOUND:
+			return BlockRegistrationError::BLOCK_DOES_NOT_EXIST;
+		case BlockJsonError::NONE:
+			return BlockRegistrationError::NONE;
+		}
+	}
+
+	static BlockRegistrationError constexpr TextureErrorToBlockRegistrationError(TextureError error)
+	{
+		switch (error)
+		{
+		case TextureError::TEXTURE_ALREADY_EXISTS:
+			return BlockRegistrationError::TEXTURE_ALREADY_EXISTS;
+		case TextureError::TEXTURE_DOES_NOT_EXIST:
+			return BlockRegistrationError::TEXTURE_DOES_NOT_EXIST;
+		case TextureError::NONE:
+			return BlockRegistrationError::NONE;
+		}
+	}
+
+	BlockRegistrationError ResourcePack::BindBlockResource(const BlockResource& blkResource, bool sanityCheck)
 	{
 		if (blkResource.HasGeo())
 		{
 			if (blkResource.GetGeo().mGeometry.has_value())
-				mModelManager.AddModel(blkResource.GetGeo().mGeoName, blkResource.GetGeo().mGeometry.value());
-		}
-
-		if (blkResource.HoldsSingleTexture())
-		{
-			auto& texture = std::get<BlockResourceElement>(blkResource.mTextures);
-			mTerrainTextureManager.BindBlockResourceElement(texture);
+				if (mModelManager.AddModel(blkResource.GetGeo().mGeoName, blkResource.GetGeo().mGeometry.value(), !sanityCheck) != ModelError::NONE)
+					return BlockRegistrationError::MODEL_ALREADY_EXISTS;
+			if (!blkResource.mSound.empty())
+				// TODO: Add sound manager registeration
+				if (mBlockJson.AddBlock(blkResource.mBlockName, "", blkResource.mSound, !sanityCheck) != BlockJsonError::NONE)
+					return BlockJsonErrorToBlockRegistrationError(BlockJsonError::ALREADY_EXISTS);
 		}
 		else
 		{
-			auto& textureStore = std::get<std::vector<std::pair<TextureSide, BlockResourceElement>>>(blkResource.mTextures);
-			for (auto& texture : textureStore)
-				mTerrainTextureManager.BindBlockResourceElement(texture.second);
+			if (blkResource.HoldsSingleTexture())
+			{
+				mBlockJson.AddBlock(
+					blkResource.mBlockName,
+					blkResource.mTextures.begin()->second.mTextureAlias,
+					blkResource.mSound,
+					!sanityCheck 
+				);
+			}
+			else
+			{
+				BlockJsonStorageImpl element;
+				element.mSoundID = blkResource.mSound;
+				element.mTextures.resize(blkResource.mTextures.size());
+				for (const auto& [side, texture] : blkResource.mTextures)
+					element.mTextures.push_back({ side, texture.mTextureAlias });
+				if (mBlockJson.AddBlock(blkResource.mBlockName, element, !sanityCheck) != BlockJsonError::NONE)
+					return BlockRegistrationError::BLOCK_ALREADY_EXISTS;
+				
+			}
 		}
 
-		// Manage Case For BlockJson
-		if (!blkResource.HasGeo())
-		{
-
-		}
-
-
+		for (const auto& [side, texture] : blkResource.mTextures)
+			if (mTerrainTextureManager.BindBlockResourceElement(texture) != TextureError::NONE)
+				return BlockRegistrationError::TEXTURE_ALREADY_EXISTS;
 	}
 }

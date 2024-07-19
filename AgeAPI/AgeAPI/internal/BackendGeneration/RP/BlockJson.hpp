@@ -10,10 +10,11 @@ namespace AgeAPI::Backend::Rp
 {
 	struct BlockJsonStorageImpl
 	{
-		std::string mTextureName{"AGENULL"};
-		std::string mSoundID{"AGENULL"};
+		SmallVector<std::pair<TextureSide, std::string>, 1> mTextures{""};
+
+		std::string mSoundID{""};
 		BlockJsonStorageImpl() = default;
-		BlockJsonStorageImpl(const std::string& textureName, const std::string& soundID) : mTextureName(textureName), mSoundID(soundID) {}
+		BlockJsonStorageImpl(const SmallVector<std::pair<TextureSide, std::string>, 1>& textureName, const std::string& soundID) : mTextures(textureName), mSoundID(soundID) {}
 	};
 
 	enum class BlockJsonError
@@ -34,9 +35,9 @@ namespace AgeAPI::Backend::Rp
 		BlockJson() = default;
 		BlockJson(NonOwningPtr<TerrainTexture> terrainTexture) : mTerrainTexture(terrainTexture) {}
 
-		ErrorString WriteToFile(const std::filesystem::path& basePath);
+		ErrorString writeToFile(const std::filesystem::path& basePath);
 	public:
-		BlockJsonError AddBlock(const Identifier& blockID, const std::string& textureName = "AGENULL", const std::string& soundID = "AGENULL", bool override = false);
+		BlockJsonError AddBlock(const Identifier& blockID, const std::string& textureName = "", const std::string& soundID = "", bool override = false);
 		BlockJsonError AddBlock(const Identifier& blockID, const BlockJsonStorageImpl& blockJsonStorage, bool override = false);
 		BlockJsonError RemoveBlock(const Identifier& blockID);
 

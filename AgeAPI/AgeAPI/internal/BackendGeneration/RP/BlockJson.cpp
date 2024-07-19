@@ -1,7 +1,7 @@
 #include "BlockJson.hpp"
 namespace AgeAPI::Backend::Rp
 {
-	ErrorString BlockJson::WriteToFile(const std::filesystem::path& basePath)
+	ErrorString BlockJson::writeToFile(const std::filesystem::path& basePath)
 	{
 		return "Not implemented yet";
 	}
@@ -10,7 +10,7 @@ namespace AgeAPI::Backend::Rp
 		if (!override && mBlockJsonStorage.find(blockID) != mBlockJsonStorage.end())
 			return BlockJsonError::ALREADY_EXISTS;
 
-		mBlockJsonStorage[blockID] = BlockJsonStorageImpl(textureName, soundID);
+		mBlockJsonStorage[blockID] = BlockJsonStorageImpl({ {TextureSide::ALL, textureName} }, soundID);
 		return BlockJsonError::NONE;
 	}
 	BlockJsonError BlockJson::AddBlock(const Identifier& blockID, const BlockJsonStorageImpl& blockJsonStorage, bool override)

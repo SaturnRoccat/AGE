@@ -38,8 +38,8 @@ namespace AgeAPI::Backend::Rp
 			std::string mGeoName{};
 			std::optional<Geometry> mGeometry{};
 		};
-		using MultiTextureStore = std::vector<std::pair<TextureSide, BlockResourceElement>>;
-		using TextureStore = std::variant<BlockResourceElement, MultiTextureStore>;
+		using MultiTextureStore = SmallVector<std::pair<TextureSide, BlockResourceElement>, 1>;
+		using TextureStore = SmallVector<std::pair<TextureSide, BlockResourceElement>, 1>;
 		using GeoType = std::optional<Geo>;
 		using SoundType = std::string; // TODO: Change to a sound class or a sound ref after SoundManager is implemented
 	private:
@@ -60,19 +60,21 @@ namespace AgeAPI::Backend::Rp
 
 
 
-		void SetOverallTexture(const BlockResourceElement& texture) { mTextures = texture; }
-		void SetOverallTexture(BlockResourceElement&& texture) { mTextures = std::move(texture); }
+		void SetOverallTexture(const BlockResourceElement& texture) { mTextures.clear(); mTextures.push_back({ TextureSide::ALL, texture }); }
+		void SetOverallTexture(BlockResourceElement&& texture) { mTextures.clear(); mTextures.push_back({ TextureSide::ALL, std::move(texture) }); }
 
 		void AddTexture(TextureSide side, const BlockResourceElement& texture);
 
 		bool HasGeo() const { return mGeo.has_value(); }
-		bool HoldsSingleTexture() const { return std::holds_alternative<BlockResourceElement>(mTextures); }
+		bool HoldsSingleTexture() const {
+			return mTextures.isSmall();
+		}
 
 
 		const GeoType::value_type& GetGeo() const { return mGeo.value(); }
 		const TextureStore& GetTextures() const { return mTextures; }
-		const BlockResourceElement& GetOverallTexture() const { return std::get<BlockResourceElement>(mTextures); }
-		const auto& GetSideTextures() const { return std::get<MultiTextureStore>(mTextures); }
+		const BlockResourceElement& GetOverallTexture() const { return mTextures[0].second; }
+		const MultiTextureStore& GetMultiTextures() const { return mTextures; }
 	};
 
 }
