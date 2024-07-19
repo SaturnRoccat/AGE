@@ -8,6 +8,7 @@ namespace AgeAPI::Backend::Bp
     {
         /*if (component->GetFormatVersion().GetVersion() < mFormatVersion.GetVersion())
         return ErrorString("Component version is higher than the block behaviour version");*/
+        // FIXME: ADD VERSION CHECK
         auto it = mBlockComponents.find(component->GetComponentID().GetFullNamespace());
         if (it != mBlockComponents.end() && !component->CanBeDoublePushed())
             return ErrorString("Component already exists");

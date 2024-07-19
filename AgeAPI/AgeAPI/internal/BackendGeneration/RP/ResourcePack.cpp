@@ -32,40 +32,40 @@ namespace AgeAPI::Backend::Rp
 	}
 	void ResourcePack::writeTerrainTextures(const std::filesystem::path& outputBase) const
 	{
-		std::filesystem::path TexturesPath = outputBase / "textures";
-		std::filesystem::create_directories(TexturesPath);
-
-		auto TerrainTexturesDocumentExpected = mTerrainTextureManager.WriteToDocument();
-		if (!TerrainTexturesDocumentExpected.has_value())
-			throw std::runtime_error(TerrainTexturesDocumentExpected.error().GetAsString());
-		rapidjson::Document& TerrainTexturesDocument = TerrainTexturesDocumentExpected.value();
-		std::filesystem::path TerrainTexturesPath = TexturesPath / "terrain_texture.json";
-		std::ofstream TerrainTexturesFile(TerrainTexturesPath);
-		if (!TerrainTexturesFile.is_open())
-			throw std::runtime_error("Failed to open terrain texture file for writing");
-		rapidjson::OStreamWrapper TerrainTexturesStream(TerrainTexturesFile);
-		rapidjson::Writer<rapidjson::OStreamWrapper> TerrainTexturesWriter(TerrainTexturesStream);
-		TerrainTexturesDocument.Accept(TerrainTexturesWriter);
-		TerrainTexturesStream.Flush();
-		TerrainTexturesFile.close();
-		mTerrainTextureManager.Write(outputBase);
 
 
 	}
 	void ResourcePack::writeBlockJson(const std::filesystem::path& outputBase) const
 	{
-		std::filesystem::path BlockJsonPath = outputBase / "blocks.json";
-		std::ofstream BlockJsonFile(BlockJsonPath);
-		if (!BlockJsonFile.is_open())
-			throw std::runtime_error("Failed to open block json file for writing");
-		rapidjson::OStreamWrapper BlockJsonStream(BlockJsonFile);
-		rapidjson::Writer<rapidjson::OStreamWrapper> BlockJsonWriter(BlockJsonStream);
-		auto BlockJsonDocumentExpected = mBlockJson.BuildBlockJsonDocument();
-		if (!BlockJsonDocumentExpected.has_value())
-			throw std::runtime_error(BlockJsonDocumentExpected.error().GetAsString());
-		BlockJsonDocumentExpected.value().Accept(BlockJsonWriter);
-		BlockJsonStream.Flush();
-		BlockJsonFile.close();
+
+	}
+
+	void ResourcePack::BindBlockResource(const BlockResource& blkResource)
+	{
+		if (blkResource.HasGeo())
+		{
+			if (blkResource.GetGeo().mGeometry.has_value())
+				mModelManager.AddModel(blkResource.GetGeo().mGeoName, blkResource.GetGeo().mGeometry.value());
+		}
+
+		if (blkResource.HoldsSingleTexture())
+		{
+			auto& texture = std::get<BlockResourceElement>(blkResource.mTextures);
+			mTerrainTextureManager.BindBlockResourceElement(texture);
+		}
+		else
+		{
+			auto& textureStore = std::get<std::vector<std::pair<TextureSide, BlockResourceElement>>>(blkResource.mTextures);
+			for (auto& texture : textureStore)
+				mTerrainTextureManager.BindBlockResourceElement(texture.second);
+		}
+
+		// Manage Case For BlockJson
+		if (!blkResource.HasGeo())
+		{
+
+		}
+
 
 	}
 }

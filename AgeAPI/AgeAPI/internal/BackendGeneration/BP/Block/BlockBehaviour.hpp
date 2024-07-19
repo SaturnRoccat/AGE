@@ -42,7 +42,7 @@ namespace AgeAPI::Backend::Bp
 		std::vector<std::unique_ptr<AState>> mStates{};
 		std::vector<Permutation> mPermutations{};
 		MenuCategory mCategory{};
-		// TODO: Add custom components and block traits
+		// TODO: Add custom components and block traits and tags
 
 		Identifier mBlockIdentifier{};
 		SemanticVersion mFormatVersion{};

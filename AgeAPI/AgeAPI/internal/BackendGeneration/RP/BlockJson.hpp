@@ -3,43 +3,44 @@
 
 #include <AgeAPI/internal/Types.hpp>
 #include <AgeAPI/internal/RapidJsonExtension/TypeTranslations.hpp>
+#include <AgeAPI/internal/BackendGeneration/RP/TerrainTextures.hpp>
+#include <AgeAPI/internal/BackendGeneration/RP/Block/BlockResource.hpp>
 #include <fstream>
 namespace AgeAPI::Backend::Rp
 {
-	class BlockJsonEntry
+	struct BlockJsonStorageImpl
 	{
-	public:
-		BlockJsonEntry() = default;
-		BlockJsonEntry(const std::string& singleTextureEntry) : mEntry(singleTextureEntry) {}
-		BlockJsonEntry(const std::vector<std::pair<std::string, std::string>>& multiTextureEntry) : mEntry(multiTextureEntry) {}
+		std::string mTextureName{"AGENULL"};
+		std::string mSoundID{"AGENULL"};
+		BlockJsonStorageImpl() = default;
+		BlockJsonStorageImpl(const std::string& textureName, const std::string& soundID) : mTextureName(textureName), mSoundID(soundID) {}
+	};
 
-		inline void WriteToJson(JsonProxy json) const;
-
-
-	private:
-		std::variant<std::string, std::vector<std::pair<std::string, std::string>>> mEntry;
-
+	enum class BlockJsonError
+	{
+		NONE,
+		ALREADY_EXISTS,
+		NOT_FOUND
 	};
 
 	class BlockJson
 	{
 	private:
 		SemanticVersion mFormatVersion{ 1, 1, 0 };
-		std::unordered_map<std::string, BlockJsonEntry> mEntries{};
-	public:
+		NonOwningPtr<TerrainTexture> mTerrainTexture{ nullptr };
+		std::unordered_map<Identifier, BlockJsonStorageImpl> mBlockJsonStorage;
+		friend class ResourcePack;
+	private:
 		BlockJson() = default;
+		BlockJson(NonOwningPtr<TerrainTexture> terrainTexture) : mTerrainTexture(terrainTexture) {}
 
-		ErrorString AddEntry(const std::string& key, const std::string& value);
+		ErrorString WriteToFile(const std::filesystem::path& basePath);
+	public:
+		BlockJsonError AddBlock(const Identifier& blockID, const std::string& textureName = "AGENULL", const std::string& soundID = "AGENULL", bool override = false);
+		BlockJsonError AddBlock(const Identifier& blockID, const BlockJsonStorageImpl& blockJsonStorage, bool override = false);
+		BlockJsonError RemoveBlock(const Identifier& blockID);
 
-		ErrorString AddEntry(const std::string& key, const std::vector<std::pair<std::string, std::string>>& value);
-
-		ErrorString AddEntry(const std::string& key, const BlockJsonEntry& value);
-
-		ErrorString WriteToJson(JsonProxy json) const;
-		std::expected<rapidjson::Document, ErrorString> BuildBlockJsonDocument() const;
-
-		ErrorString WriteToFile(const std::filesystem::path& BasePath) const;
-
-
+		// WARNING: This function probably should not be used by the user
+		void SetFormatVersion(const SemanticVersion& version) { mFormatVersion = version; } 
 	};
 }

@@ -16,7 +16,7 @@ namespace AgeAPI::Backend
 	public:
 		Permutation() = default;
 		Permutation(std::string_view condition) : mCondition(condition) {}
-		Permutation(const Permutation& other) = delete;
+		Permutation(const Permutation& other) = default;
 		Permutation(Permutation&& other) noexcept
 		{
 			mCondition = std::move(other.mCondition);

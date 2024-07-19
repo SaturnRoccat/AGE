@@ -19,8 +19,6 @@ namespace AgeAPI::Backend::Rp
 		// TODO: Add error as value
 		if (bottom.mSize != Top.mSize)
 			throw std::runtime_error("Texture sizes do not match");
-		if (bottom.mBitDepth != Top.mBitDepth)
-			throw std::runtime_error("Texture bit depths do not match");
 
 		mSize = bottom.mSize;
 		mBitDepth = bottom.mBitDepth;
@@ -31,8 +29,8 @@ namespace AgeAPI::Backend::Rp
 
 		mData.resize(mSize.x * mSize.y); 
 
-		for (int y = 0; y < mSize.y; y++)
-			for (int x = 0; x < mSize.x; x++)
+		for (i16 y = 0; y < mSize.y; y++)
+			for (i16 x = 0; x < mSize.x; x++)
 			{
 				auto bottomColor = bottom[{x, y}];
 				auto topColor = Top[{x, y}];
@@ -128,8 +126,8 @@ namespace AgeAPI::Backend::Rp
 	{
 		handleLazyWrite();
 
-		for (int y = 0; y < mSize.y; y++)
-			for (int x = 0; x < mSize.x; x++)
+		for (i16 y = 0; y < mSize.y; y++)
+			for (i16 x = 0; x < mSize.x; x++)
 			{
 				auto bottomColor = At({ x, y });
 				auto topColor = other[{x, y}];
@@ -149,14 +147,14 @@ namespace AgeAPI::Backend::Rp
 			}
 		return *this;
 	}
-	TextureLayer& TextureLayer::Resize(IVec2 newSize)
+	TextureLayer& TextureLayer::Resize(I16Vec2 newSize)
 	{
 		handleLazyWrite();
 		TextureLayer newSelf(newSize, mBitDepth, {0.f, 0.f, 0.f, 0.f}, mColorType, mInterlacing, mFilterType, mCompressionType);
 		auto newY = std::min(mSize.y, newSize.y);
 		auto newX = std::min(mSize.x, newSize.x);
-		for (int y = 0; y < newY; y++)
-			for (int x = 0; x < newX; x++)
+		for (i16 y = 0; y < newY; y++)
+			for (i16 x = 0; x < newX; x++)
 				newSelf[{x, y}] = (*this)[{x, y}];
 		*this = std::move(newSelf);
 		return *this;
@@ -218,7 +216,7 @@ namespace AgeAPI::Backend::Rp
 		png_read_update_info(png, info);
 
 		std::vector<std::unique_ptr<u8[]>> data(mSize.y);
-		for (int i = 0; i < mSize.y; i++)
+		for (i32 i = 0; i < mSize.y; i++)
 			data[i] = std::unique_ptr<u8[]>(new u8[png_get_rowbytes(png, info)]);
 
 		png_read_image(png, (u8**)data.data()); // A little hacky but it works :3
@@ -235,6 +233,7 @@ namespace AgeAPI::Backend::Rp
 		}
 
 		png_destroy_read_struct(&png, &info, nullptr);
+
 
 
 	}

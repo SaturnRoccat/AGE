@@ -1,67 +1,78 @@
-#pragma once
+ #pragma once
 #include <AgeAPI/internal/Types.hpp>
 #include <AgeAPI/internal/BackendGeneration/RP/Textures/Texture.hpp>
 #include <filesystem>
+#include <AgeAPI/internal/BackendGeneration/RP/ModelManager.hpp>
+#include <variant>
 #include <AgeAPI/internal/RapidJsonExtension/TypeTranslations.hpp>
 
 namespace AgeAPI::Backend::Rp
 {
-	class BlockResourceElement
+	struct BlockResourceElement
 	{
-	public:
+		Texture mTexture{};
+		std::string mTextureAlias{};
 		BlockResourceElement() = default;
-		BlockResourceElement(const std::string& outputPathFromBase, const Texture& blockTexture)
-			: mOutputPathFromBase(outputPathFromBase), mBlockTexture(blockTexture) {}
-		BlockResourceElement(const std::string& outputPathFromBase, Texture&& blockTexture)
-			: mOutputPathFromBase(outputPathFromBase), mBlockTexture(std::move(blockTexture)) {}
+		BlockResourceElement(const Texture& texture, const std::string& textureAlias)
+			: mTexture(texture), mTextureAlias(textureAlias) {}
 
-		const std::string& GetOutputPathFromBase() const { return mOutputPathFromBase; }
-		const Texture& GetBlockTexture() const { return mBlockTexture; }
-		Texture& GetBlockTexture() { return mBlockTexture; }
-		IVec2 GetTextureSize() const { return mBlockTexture.GetSize(); }
-		i32 GetTextureWidth() const { return mBlockTexture.GetSize().x; }
-		i32 GetTextureHeight() const { return mBlockTexture.GetSize().y; }
 
-		void Write(const std::filesystem::path& base) const;
-	private:
-		std::string mOutputPathFromBase{};
-		Texture mBlockTexture{};
 	};
+	
+	enum class TextureSide
+	{
+		TOP,
+		BOTTOM,
+		LEFT,
+		RIGHT,
+		FRONT,
+		BACK,
+		ALL
+	};
+
 	class BlockResource
 	{
+	public:
+		struct Geo
+		{
+			std::string mGeoName{};
+			std::optional<Geometry> mGeometry{};
+		};
+		using MultiTextureStore = std::vector<std::pair<TextureSide, BlockResourceElement>>;
+		using TextureStore = std::variant<BlockResourceElement, MultiTextureStore>;
+		using GeoType = std::optional<Geo>;
+		using SoundType = std::string; // TODO: Change to a sound class or a sound ref after SoundManager is implemented
 	private:
-		std::vector<BlockResourceElement> mTextures{};
-		std::string mTextureShortName{};
+		TextureStore mTextures{};
+		GeoType mGeo{};
+		Identifier mBlockName{};
+		SoundType mSound{};
+		friend class ResourcePack;
 	public:
 		BlockResource() = default;
-		BlockResource(const std::string& textureShortName, const std::vector<BlockResourceElement>& resources = {}) : mTextureShortName(textureShortName), mTextures(resources) {}
 
-		const std::string& GetTextureShortName() const { return mTextureShortName; }
-		const auto& GetTextures() const { return mTextures; }
-		auto& GetTextures() { return mTextures; }
+		BlockResource(const TextureStore& textures, const Identifier& blockName, const GeoType& geo = {}, const SoundType& sound = {})
+			: mTextures(textures), mGeo(geo), mBlockName(blockName), mSound(sound) {}
+		BlockResource(TextureStore&& textures, Identifier&& blockName, GeoType&& geo = {}, SoundType&& sound = {})
+			: mTextures(std::move(textures)), mGeo(std::move(geo)), mBlockName(std::move(blockName)), mSound(std::move(sound)) {}
+		BlockResource(TextureStore&& textures, const Identifier& blockName, GeoType&& geo = {}, SoundType&& sound = {})
+			: mTextures(std::move(textures)), mGeo(std::move(geo)), mBlockName(blockName), mSound(std::move(sound)) {}
 
-		void AddTexture(const BlockResourceElement& texture) { mTextures.push_back(texture); }
-		void AddTexture(BlockResourceElement&& texture) { mTextures.push_back(std::move(texture)); }
-		void Write(const std::filesystem::path& base) const { for (const auto& texture : mTextures) texture.Write(base); }
 
-		ErrorString WriteToJson(JsonProxy proxy) const;
+
+		void SetOverallTexture(const BlockResourceElement& texture) { mTextures = texture; }
+		void SetOverallTexture(BlockResourceElement&& texture) { mTextures = std::move(texture); }
+
+		void AddTexture(TextureSide side, const BlockResourceElement& texture);
+
+		bool HasGeo() const { return mGeo.has_value(); }
+		bool HoldsSingleTexture() const { return std::holds_alternative<BlockResourceElement>(mTextures); }
+
+
+		const GeoType::value_type& GetGeo() const { return mGeo.value(); }
+		const TextureStore& GetTextures() const { return mTextures; }
+		const BlockResourceElement& GetOverallTexture() const { return std::get<BlockResourceElement>(mTextures); }
+		const auto& GetSideTextures() const { return std::get<MultiTextureStore>(mTextures); }
 	};
-}
 
-namespace rapidjson
-{
-
-	template<>
-	struct TypeTranslation<AgeAPI::Backend::Rp::BlockResourceElement, false>
-	{
-		static void WriteToJson(const AgeAPI::Backend::Rp::BlockResourceElement& value, rapidjson::Value& jsonValue, rapidjson::Document::AllocatorType& allocator)
-		{
-			jsonValue.SetString(value.GetOutputPathFromBase(), allocator);
-		}
-
-		static AgeAPI::Backend::Rp::BlockResourceElement ReadFromJson(const rapidjson::Value& jsonValue)
-		{
-			return AgeAPI::Backend::Rp::BlockResourceElement(jsonValue.GetString(), {});
-		}
-	};
 }

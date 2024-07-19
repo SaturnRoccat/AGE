@@ -1,9 +1,12 @@
 #pragma once
 #include <AgeAPI/internal/BackendGeneration/RP/Block/BlockResource.hpp>
+#include <AgeAPI/internal/BackendGeneration/RP/Textures/TextureRegistry.hpp>
 
 
 namespace AgeAPI::Backend::Rp
 {
+
+
 	class TerrainTexture
 	{
 	private:
@@ -11,28 +14,24 @@ namespace AgeAPI::Backend::Rp
 		u8 mPadding{ 8 };
 		std::string mAtlasName{"atlas.terrain"};
 		std::string mResourcePackName{};
-		std::unordered_map<std::string, BlockResource> mTextureData{};
-	public:
+		TextureRegistry<BlockResourceElement> mTextureData{};
+		friend class ResourcePack;
+	private:
 		TerrainTexture() = default;
 		TerrainTexture(const std::string& atlasName, const std::string& resourcePackName)
 			: mAtlasName(atlasName), mResourcePackName(resourcePackName) {}
 		TerrainTexture(const TerrainTexture& other) = delete;
 		TerrainTexture(TerrainTexture&& other) noexcept;
+		TerrainTexture& operator=(const TerrainTexture& other) = delete;
+		TerrainTexture& operator=(TerrainTexture&& other) noexcept  = default;
+	public:
 
-		const std::string& GetAtlasName() const { return mAtlasName; }
-		const std::string& GetResourcePackName() const { return mResourcePackName; }
-		const auto& GetTextureData() const { return mTextureData; }
-		auto& GetTextureData() { return mTextureData; }
+		TextureError BindBlockResourceElement(const BlockResourceElement& blkResourceElement)
+		{
+			return mTextureData.AddTexture(blkResourceElement.mTextureAlias, blkResourceElement);
+		}
 
-		void SetMipMapLevels(u8 mipMapLevels) { mMipMapLevels = mipMapLevels; }
-		void SetPadding(u8 padding) { mPadding = padding; }
 
-		ErrorString AddTexture(const BlockResource& texture);
 
-		ErrorString AddTexture(BlockResource&& texture);
-
-		void Write(const std::filesystem::path& base) const;
-		ErrorString WriteToJson(JsonProxy proxy) const;
-		std::expected<rapidjson::Document, ErrorString> WriteToDocument() const;
 	};
 }

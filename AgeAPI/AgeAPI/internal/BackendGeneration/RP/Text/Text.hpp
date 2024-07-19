@@ -5,17 +5,6 @@ namespace AgeAPI::Backend::RP
 {
 
 
-    class Text
-    {
-        
-    };
-
-
-
-    using LocalizationString = std::string;
-
-
-
 
 
 

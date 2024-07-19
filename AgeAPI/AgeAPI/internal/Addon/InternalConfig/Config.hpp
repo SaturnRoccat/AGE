@@ -14,6 +14,8 @@ namespace AgeAPI
 		std::string mBehaviorPath;
 		std::string mResourcePath;
 		std::string mArchiveOutputPath;
+
+		bool mAllowTextureOverwrite{ false }; 
 	};
 
 }

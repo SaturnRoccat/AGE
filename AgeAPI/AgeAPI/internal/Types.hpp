@@ -16,6 +16,7 @@
 #include <AgeAPI/internal/Utils/JsonProxy.hpp>
 #include <AgeAPI/internal/Utils/Color.hpp>
 #include <AgeAPI/internal/Utils/BoundingBox.hpp>
+#include <AgeAPI/internal/Utils/Reference.hpp>
 #include <AgeAPI/internal/Utils/ItemGroup.hpp>
 #include <AgeAPI/internal/Utils/MenuCategory.hpp>
 #include <AgeAPI/internal/Utils/UUID.hpp>
