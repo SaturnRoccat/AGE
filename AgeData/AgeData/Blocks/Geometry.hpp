@@ -33,6 +33,12 @@ namespace AgeData::BlockComponents
             "minecraft:geometry"
         ), mValue({geometry}) {}
 
+        Geometry(GeometryWithData&& geo) : AgeAPI::Components::BlockComponentBase(
+			0,
+			{ 1, 19, 50 },
+			"minecraft:geometry"
+		), mValue({std::move(geo)}) {}
+
         void SetGeometry(const std::string& geometry) { mValue = geometry; }
         void SetGeometry(const GeometryWithData& geometry) { mValue = geometry; }
         bool IsGeometryString() const { return std::holds_alternative<std::string>(mValue); }
