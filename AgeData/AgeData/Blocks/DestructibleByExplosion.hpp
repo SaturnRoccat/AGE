@@ -23,7 +23,7 @@ namespace AgeData::BlockComponents
         void SetDestructibleByExplosion(bool value) { mValue = value; }
         int GetDestructibleByExplosion() const { return mValue; }
         bool GetDestructibleByExplosionBool() const { return mValue; }
-        bool IsData() const { return std::holds_alternative<int>(mValue); }
+        bool IsData() const { return !mValue.IsToggle(); }
 
         AgeAPI::ErrorString WriteToJson(AgeAPI::NonOwningPtr<AgeAPI::Addon> addon, AgeAPI::JsonProxy proxy, AgeAPI::NonOwningPtr<AgeAPI::Backend::Bp::BlockBehaviour> blk) const override;
     private:

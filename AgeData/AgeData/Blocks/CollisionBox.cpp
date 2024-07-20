@@ -3,7 +3,7 @@
 
 namespace AgeData::BlockComponents
 {
-    AgeAPI::ErrorString CollisionBox::WriteToJson(AgeAPI::NonOwningPtr<AgeAPI::Addon> addon,
+   AgeAPI::ErrorString CollisionBox::WriteToJson(AgeAPI::NonOwningPtr<AgeAPI::Addon> addon,
         AgeAPI::JsonProxy proxy, AgeAPI::NonOwningPtr<AgeAPI::Backend::Bp::BlockBehaviour> blk) const
     {
 

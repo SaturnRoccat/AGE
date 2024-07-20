@@ -5,8 +5,8 @@
 
 namespace AgeData::BlockComponents
 {
-    class CollisionBox : public AgeAPI::Components::BlockComponentBase
-    {
+   class CollisionBox : public AgeAPI::Components::BlockComponentBase
+   {
     public:
         CollisionBox(const AgeAPI::IVec3& origin, const AgeAPI::IVec3& size) : AgeAPI::Components::BlockComponentBase(
             0,
@@ -22,15 +22,15 @@ namespace AgeData::BlockComponents
 
         void SetCollisionBox(const AgeAPI::IVec3& origin, const AgeAPI::IVec3& size) { mValue = { origin, size }; }
         void SetCollisionBox(bool value) { mValue = value; }
-        AgeAPI::IVec3 GetCollisionBoxOrigin() const { return mValue.first; }
-        AgeAPI::IVec3 GetCollisionBoxSize() const { return mValue.second; }
+        AgeAPI::IVec3 GetCollisionBoxOrigin() const { return mValue.GetData().GetOrigin(); }
+        AgeAPI::IVec3 GetCollisionBoxSize() const { return mValue.GetData().GetSize(); }
         bool GetCollisionBoxBool() const { return mValue; }
-        bool IsData() const { return std::holds_alternative<AgeAPI::IVec3>(mValue); }
+        bool IsData() const { return !mValue.IsToggle(); }
 
         AgeAPI::ErrorString WriteToJson(AgeAPI::NonOwningPtr<AgeAPI::Addon> addon, AgeAPI::JsonProxy proxy, AgeAPI::NonOwningPtr<AgeAPI::Backend::Bp::BlockBehaviour> blk) const override;
-    private:
+   private:
         ToggleOrData<BlockBounds, true> mValue;
-    };
+   };
 
     
 }

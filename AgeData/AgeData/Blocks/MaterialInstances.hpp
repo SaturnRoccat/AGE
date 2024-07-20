@@ -65,6 +65,10 @@ namespace AgeData::BlockComponents
                     Instance,
                     InstanceReference
             >> mInstances{};
+            MaterialInstancesWithData() = default;
+            MaterialInstancesWithData(const Instance& instance) : mInstances{ instance } {}
+            MaterialInstancesWithData(const InstanceReference& instance) : mInstances{ instance } {}
+
 
         };
     public:

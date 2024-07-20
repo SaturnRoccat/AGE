@@ -21,6 +21,15 @@ namespace AgeData
 
         bool GetToggle() const { return std::get<bool>(mValue); }
         void SetToggle(bool value) { mValue = value; }
+        // Implicit conversion to T
+        operator T() const { return GetData(); }
+        // Implicit conversion from T
+        ToggleOrData& operator=(const T& value) { SetData(value); return *this; }
+        // Implicit conversion from bool
+        ToggleOrData& operator=(bool value) { SetToggle(value); return *this; }
+        // Implicit conversion to bool
+        operator bool() const { return IsToggle() ? GetToggle() : Default; }
+        
 
         const T& GetData() const
         {
