@@ -87,6 +87,7 @@ namespace AgeAPI
 		T x, y, z;
 	public:        
 		Vec3T() : x(0), y(0), z(0) {}
+		Vec3T(T x) : x(x), y(x), z(x) {}
 		Vec3T(T x, T y, T z) : x(x), y(y), z(z) {}
 		Vec3T(const Vec3T<T>& other) : x(other.x), y(other.y), z(other.z) {}
 		Vec3T(Vec3T<T>&& other) noexcept : x(std::move(other.x)), y(std::move(other.y)), z(std::move(other.z)) {}
@@ -259,25 +260,25 @@ namespace rapidjson
 	struct TypeTranslation<T, 2>
 	{
 		using Vec = T::Vec;
-		static void WriteToJsonValue(const Vec& vector, rapidjson::Value& jsonValue, rapidjson::Document::AllocatorType& allocator)
+		static void WriteToJson(const Vec& vector, rapidjson::Value& jsonValue, rapidjson::Document::AllocatorType& allocator)
 		{
 			if (jsonValue.IsObject())
 			{
 				rapidjson::Value xValue;
-				TypeTranslation::WriteToJsonValue<T::Type>(vector.x, xValue, allocator);
+				TypeTranslation<T::Type>::WriteToJson(vector.x, xValue, allocator);
 				jsonValue.AddMember("x", xValue, allocator);
 				rapidjson::Value yValue;
-				TypeTranslation::WriteToJsonValue<T::Type>(vector.y, yValue, allocator);
+				TypeTranslation<T::Type>::WriteToJson(vector.y, yValue, allocator);
 				jsonValue.AddMember("y", yValue, allocator);
 			}
 			else
 			{
 				jsonValue.SetArray();
 				rapidjson::Value xValue;
-				TypeTranslation::WriteToJsonValue<T::Type>(vector.x, xValue, allocator);
+				TypeTranslation<T::Type>::WriteToJson(vector.x, xValue, allocator);
 				jsonValue.PushBack(xValue, allocator);
 				rapidjson::Value yValue;
-				TypeTranslation::WriteToJsonValue<T::Type>(vector.y, yValue, allocator);
+				TypeTranslation<T::Type>::WriteToJson(vector.y, yValue, allocator);
 				jsonValue.PushBack(yValue, allocator);
 			}
 		}
@@ -307,31 +308,35 @@ namespace rapidjson
 	struct TypeTranslation<T, 3>
 	{
 		using Vec = T::Vec;
-		static void WriteToJsonValue(const Vec& vector, rapidjson::Value& jsonValue, rapidjson::Document::AllocatorType& allocator)
+		static void WriteToJson(const T& vector, rapidjson::Value& jsonValue, rapidjson::Document::AllocatorType& allocator)
 		{
+			using u8 = decltype(T::x);
+			auto vecx = vector.x;
+			auto vecy = vector.y;
+			auto vecz = vector.z;
 			if (jsonValue.IsObject())
 			{
 				rapidjson::Value xValue;
-				TypeTranslation::WriteToJsonValue<T::Type>(vector.x, xValue, allocator);
+				TypeTranslation<u8>::WriteToJson(vecx, xValue, allocator);
 				jsonValue.AddMember("x", xValue, allocator);
 				rapidjson::Value yValue;
-				TypeTranslation::WriteToJsonValue<T::Type>(vector.y, yValue, allocator);
+				TypeTranslation<u8>::WriteToJson(vecy, yValue, allocator);
 				jsonValue.AddMember("y", yValue, allocator);
 				rapidjson::Value zValue;
-				TypeTranslation::WriteToJsonValue<T::Type>(vector.z, zValue, allocator);
+				TypeTranslation<u8>::WriteToJson(vecz, zValue, allocator);
 				jsonValue.AddMember("z", zValue, allocator);
 			}
 			else
 			{
 				jsonValue.SetArray();
 				rapidjson::Value xValue;
-				TypeTranslation::WriteToJsonValue<T::Type>(vector.x, xValue, allocator);
+				TypeTranslation<u8>::WriteToJson(vecx, xValue, allocator);
 				jsonValue.PushBack(xValue, allocator);
 				rapidjson::Value yValue;
-				TypeTranslation::WriteToJsonValue<T::Type>(vector.y, yValue, allocator);
+				TypeTranslation<u8>::WriteToJson(vecy, yValue, allocator);
 				jsonValue.PushBack(yValue, allocator);
 				rapidjson::Value zValue;
-				TypeTranslation::WriteToJsonValue<T::Type>(vector.z, zValue, allocator);
+				TypeTranslation<u8>::WriteToJson(vecz, zValue, allocator);
 				jsonValue.PushBack(zValue, allocator);
 			}
 		}
@@ -358,37 +363,37 @@ namespace rapidjson
 	struct TypeTranslation<T, 4>
 	{
 		using Vec = T::Vec;
-		static void WriteToJsonValue(const Vec& vector, rapidjson::Value& jsonValue, rapidjson::Document::AllocatorType& allocator)
+		static void WriteToJson(const Vec& vector, rapidjson::Value& jsonValue, rapidjson::Document::AllocatorType& allocator)
 		{
 			if (jsonValue.IsObject())
 			{
 				rapidjson::Value xValue;
-				TypeTranslation::WriteToJsonValue<T::Type>(vector.x, xValue, allocator);
+				TypeTranslation<T::Type>::WriteToJson(vector.x, xValue, allocator);
 				jsonValue.AddMember("x", xValue, allocator);
 				rapidjson::Value yValue;
-				TypeTranslation::WriteToJsonValue<T::Type>(vector.y, yValue, allocator);
+				TypeTranslation<T::Type>::WriteToJson(vector.y, yValue, allocator);
 				jsonValue.AddMember("y", yValue, allocator);
 				rapidjson::Value zValue;
-				TypeTranslation::WriteToJsonValue<T::Type>(vector.z, zValue, allocator);
+				TypeTranslation<T::Type>::WriteToJson(vector.z, zValue, allocator);
 				jsonValue.AddMember("z", zValue, allocator);
 				rapidjson::Value wValue;
-				TypeTranslation::WriteToJsonValue<T::Type>(vector.w, wValue, allocator);
+				TypeTranslation<T::Type>::WriteToJson(vector.w, wValue, allocator);
 				jsonValue.AddMember("w", wValue, allocator);
 			}
 			else
 			{
 				jsonValue.SetArray();
 				rapidjson::Value xValue;
-				TypeTranslation::WriteToJsonValue<T::Type>(vector.x, xValue, allocator);
+				TypeTranslation<T::Type>::WriteToJson(vector.x, xValue, allocator);
 				jsonValue.PushBack(xValue, allocator);
 				rapidjson::Value yValue;
-				TypeTranslation::WriteToJsonValue<T::Type>(vector.y, yValue, allocator);
+				TypeTranslation<T::Type>::WriteToJson(vector.y, yValue, allocator);
 				jsonValue.PushBack(yValue, allocator);
 				rapidjson::Value zValue;
-				TypeTranslation::WriteToJsonValue<T::Type>(vector.z, zValue, allocator);
+				TypeTranslation<T::Type>::WriteToJson(vector.z, zValue, allocator);
 				jsonValue.PushBack(zValue, allocator);
 				rapidjson::Value wValue;
-				TypeTranslation::WriteToJsonValue<T::Type>(vector.w, wValue, allocator);
+				TypeTranslation<T::Type>::WriteToJson(vector.w, wValue, allocator);
 				jsonValue.PushBack(wValue, allocator);
 			}
 		}
