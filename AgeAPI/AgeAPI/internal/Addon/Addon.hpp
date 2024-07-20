@@ -12,10 +12,10 @@ namespace AgeAPI
 	{
 	public:
 		Addon(
-			const SemanticVersion& minEngineVersion,
-			const SemanticVersion& addonVersion,
-			const std::string& name,
-			const std::string& description,
+			const SemanticVersion& minEngineVersion = {1, 21, 0},
+			const SemanticVersion& addonVersion = {0, 0, 0},
+			const std::string& name = "My Addon Made With AGE",
+			const std::string& description = "This add-on was generated using the AGE API",
 			bool AutoRegisterBehAndResAsDeps = true,
 			ExperimentalSettings experimentalSettings = {0},
 			const std::string& basePath = GetCurrentWorkingDirectory(),

@@ -32,9 +32,9 @@ namespace AgeAPI::Backend::Rp
 			return *this;
 		}
 
-		TextureError AddTexture(const std::string& name, const T& texture)
+		TextureError AddTexture(const std::string& name, const T& texture, bool override = false)
 		{
-			if (mTextures.find(name) != mTextures.end())
+			if (!override && mTextures.find(name) != mTextures.end())
 				return TextureError::TEXTURE_ALREADY_EXISTS;
 			mTextures[name] = texture;
 			return TextureError::NONE;

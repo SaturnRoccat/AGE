@@ -15,6 +15,13 @@ namespace AgeAPI::Backend::Rp
 		BlockResourceElement() = default;
 		BlockResourceElement(const Texture& texture, const std::string& textureAlias)
 			: mTexture(texture), mTextureAlias(textureAlias) {}
+		BlockResourceElement(Texture&& texture, std::string&& textureAlias) noexcept
+			: mTexture(std::move(texture)), mTextureAlias(std::move(textureAlias)) {}
+		BlockResourceElement(Texture&& texture, const std::string& textureAlias) noexcept
+			: mTexture(std::move(texture)), mTextureAlias(textureAlias) {}
+		BlockResourceElement& ReasignAlias(const std::string& alias) { mTextureAlias = alias; return *this; }
+		BlockResourceElement& ReasignAlias(std::string&& alias) { mTextureAlias = std::move(alias); return *this; }
+
 
 
 	};
@@ -53,6 +60,10 @@ namespace AgeAPI::Backend::Rp
 
 		BlockResource(const TextureStore& textures, const Identifier& blockName, const GeoType& geo = {}, const SoundType& sound = {})
 			: mTextures(textures), mGeo(geo), mBlockName(blockName), mSound(sound) {}
+		BlockResource(const BlockResourceElement& textures, const Identifier& blockName, const GeoType& geo = {}, const SoundType& sound = {})
+			: mTextures({ {TextureSide::ALL, textures} }), mGeo(geo), mBlockName(blockName), mSound(sound) {}
+		BlockResource(BlockResourceElement&& textures, const Identifier& blockName, const GeoType& geo = {}, const SoundType& sound = {})
+			: mTextures({ {TextureSide::ALL, std::move(textures)} }), mGeo(geo), mBlockName(blockName), mSound(sound) {}
 		BlockResource(TextureStore&& textures, Identifier&& blockName, GeoType&& geo = {}, SoundType&& sound = {})
 			: mTextures(std::move(textures)), mGeo(std::move(geo)), mBlockName(std::move(blockName)), mSound(std::move(sound)) {}
 		BlockResource(TextureStore&& textures, const Identifier& blockName, GeoType&& geo = {}, SoundType&& sound = {})
@@ -67,7 +78,7 @@ namespace AgeAPI::Backend::Rp
 
 		bool HasGeo() const { return mGeo.has_value(); }
 		bool HoldsSingleTexture() const {
-			return mTextures.isSmall();
+			return mTextures.IsSmall();
 		}
 
 

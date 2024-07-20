@@ -10,7 +10,7 @@ namespace AgeAPI::Backend::Rp
 {
 	struct BlockJsonStorageImpl
 	{
-		SmallVector<std::pair<TextureSide, std::string>, 1> mTextures{""};
+		SmallVector<std::pair<TextureSide, std::string>, 1> mTextures{};
 
 		std::string mSoundID{""};
 		BlockJsonStorageImpl() = default;

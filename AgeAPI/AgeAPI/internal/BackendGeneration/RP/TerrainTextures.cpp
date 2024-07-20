@@ -13,4 +13,8 @@ namespace AgeAPI::Backend::Rp
 		mResourcePackName = std::move(other.mResourcePackName);
 		mTextureData = std::move(other.mTextureData);
 	}
+	TextureError TerrainTexture::BindBlockResourceElement(const BlockResourceElement& blkResourceElement, bool override)
+	{
+		return mTextureData.AddTexture(blkResourceElement.mTextureAlias, blkResourceElement, override);
+	}
 }

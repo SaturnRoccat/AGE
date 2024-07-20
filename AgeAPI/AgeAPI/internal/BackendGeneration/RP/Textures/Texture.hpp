@@ -3,7 +3,7 @@
 #include <AgeAPI/internal/Types.hpp>
 #include <AgeAPI/internal/Math/BresenhamLine.hpp>
 #include <algorithm>
-
+#include <print>
 namespace AgeAPI::Backend::Rp
 {
 
@@ -25,6 +25,7 @@ namespace AgeAPI::Backend::Rp
 			Fill(fillColor);
 		}
 		TextureLayer(const TextureLayer& bottom, const TextureLayer& Top, float alpha);
+
 
 		TextureLayer() = default;
 
@@ -505,7 +506,7 @@ namespace AgeAPI::Backend::Rp
 
 
 		};
-		std::vector<TextureInternalLayer> mLayers{4};
+		std::vector<TextureInternalLayer> mLayers{};
 		I16Vec2 mSize{};
 		u8 mBitDepth{};
 		u8 mColorType{};
@@ -518,6 +519,7 @@ namespace AgeAPI::Backend::Rp
 			Color fillColor = { 0.f, 0.f, 0.f, 0.f }
 		) : mSize(size), mBitDepth(bitDepth), mColorType(colorType)
 		{
+			mLayers.reserve(4); // Reserve 4 layers for the user
 			mLayers.push_back(TextureInternalLayer(TextureLayer(size, bitDepth, fillColor, colorType, mInterlacing, mFilterType, mCompressionType)));
 		}
 		Texture() = default; 

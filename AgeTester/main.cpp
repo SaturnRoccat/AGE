@@ -3,20 +3,21 @@
 	
 using namespace AgeAPI;
 using namespace AgeAPI::NBT;
+using namespace AgeAPI::Backend::Rp;
 
 int main(int argc, char** argv)
 {
-	Structure::MCBlock block("minecraft:stone");
-	Structure::MCBlock block2("minecraft:water");
+	Texture texture(I16Vec2{ 16, 16 });
 
-	Structure::MCStructure structure({ 16 * 10, 128, 16 * 10}, "gregery");
-	int StoneIndex = structure.RegisterBlock(block);
-	int AirIndex = structure.RegisterBlock(block2);
-	for (auto& block : structure)
-		block = StoneIndex;
-	structure.WriteToFile(Addon::GetDevelopmentBehaviourPackPath() + "/custom_block_testingBp/structures/");
-
-
+	BlockResourceElement block{std::move(texture), "custom:texture" };
+	Identifier id("custom:block");
+	Geometry geo("e", "a", "geometry.goober");
+	BlockResource resource(
+		{ {TextureSide::BOTTOM, block}, {TextureSide::ALL, block.ReasignAlias("custom:texture_main")} }, id, BlockResource::Geo{ geo.GetGeoName(), geo });
+	Addon addon;
+	auto& rp = addon.GetResourcePack();
+	if (rp.BindBlockResource(resource) != BlockRegistrationError::NONE)
+		return 1;
 
 
 

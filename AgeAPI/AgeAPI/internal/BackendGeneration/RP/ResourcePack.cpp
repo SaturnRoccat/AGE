@@ -76,7 +76,7 @@ namespace AgeAPI::Backend::Rp
 			if (!blkResource.mSound.empty())
 				// TODO: Add sound manager registeration
 				if (mBlockJson.AddBlock(blkResource.mBlockName, "", blkResource.mSound, !sanityCheck) != BlockJsonError::NONE)
-					return BlockJsonErrorToBlockRegistrationError(BlockJsonError::ALREADY_EXISTS);
+					return BlockRegistrationError::BLOCK_ALREADY_EXISTS;
 		}
 		else
 		{
@@ -93,7 +93,7 @@ namespace AgeAPI::Backend::Rp
 			{
 				BlockJsonStorageImpl element;
 				element.mSoundID = blkResource.mSound;
-				element.mTextures.resize(blkResource.mTextures.size());
+				element.mTextures.reserve(blkResource.mTextures.size());
 				for (const auto& [side, texture] : blkResource.mTextures)
 					element.mTextures.push_back({ side, texture.mTextureAlias });
 				if (mBlockJson.AddBlock(blkResource.mBlockName, element, !sanityCheck) != BlockJsonError::NONE)
@@ -103,7 +103,10 @@ namespace AgeAPI::Backend::Rp
 		}
 
 		for (const auto& [side, texture] : blkResource.mTextures)
-			if (mTerrainTextureManager.BindBlockResourceElement(texture) != TextureError::NONE)
+			if (mTerrainTextureManager.BindBlockResourceElement(texture, !sanityCheck) != TextureError::NONE)
+			{
 				return BlockRegistrationError::TEXTURE_ALREADY_EXISTS;
+			}
+		return BlockRegistrationError::NONE;
 	}
 }

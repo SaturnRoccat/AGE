@@ -15,15 +15,17 @@ namespace AgeAPI::AddonFeatures
 		virtual ErrorString AddComponent(NonOwningPtr<Addon> addon, std::unique_ptr<Components::BlockComponentBase> component) = 0;
 		virtual void AddState(std::unique_ptr<Backend::AState> state) = 0;
 		virtual void AddPermutation(Backend::Permutation&& permutation) = 0;
+		virtual void AddPermutation(const Backend::Permutation& permutation) = 0;
 		virtual void SetResource(Backend::Rp::BlockResource&& resource) = 0;
 		virtual void WriteToPacks(Backend::Bp::BehaviourPack& behaviourPack, Backend::Rp::ResourcePack& resourcePack) = 0;
 		virtual void SetIdentifier(const Identifier& identifier) = 0;
-		virtual void SetCategory(const std::string& category) = 0;
+		virtual void SetCategory(const MenuCategory& category) = 0;
 	};
 
 	class Block : public IBlock
 	{
 	private:
+
 	public:
 	};
 }

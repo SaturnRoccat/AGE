@@ -1,6 +1,7 @@
 #pragma once
 #include <AgeAPI/internal/BackendGeneration/RP/Block/BlockResource.hpp>
 #include <AgeAPI/internal/BackendGeneration/RP/Textures/TextureRegistry.hpp>
+#include <filesystem>
 
 
 namespace AgeAPI::Backend::Rp
@@ -24,14 +25,10 @@ namespace AgeAPI::Backend::Rp
 		TerrainTexture(TerrainTexture&& other) noexcept;
 		TerrainTexture& operator=(const TerrainTexture& other) = delete;
 		TerrainTexture& operator=(TerrainTexture&& other) noexcept  = default;
+
+		// TODO: Implement
+		ErrorString writeTextureData(const std::filesystem::path& base) { return "Not Implemented"; };
 	public:
-
-		TextureError BindBlockResourceElement(const BlockResourceElement& blkResourceElement)
-		{
-			return mTextureData.AddTexture(blkResourceElement.mTextureAlias, blkResourceElement);
-		}
-
-
-
+		TextureError BindBlockResourceElement(const BlockResourceElement& blkResourceElement, bool override = false);
 	};
 }

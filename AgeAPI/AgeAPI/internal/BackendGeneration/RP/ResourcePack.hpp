@@ -18,10 +18,9 @@ namespace AgeAPI::Backend::Rp
 		TEXTURE_ALREADY_EXISTS,
 		BLOCK_ALREADY_EXISTS,
 		BLOCK_DOES_NOT_EXIST
-
 	};
 
-	class ResourcePack
+	class ResourcePack 
 	{
 	private:
 		Manifest mManifest{};
