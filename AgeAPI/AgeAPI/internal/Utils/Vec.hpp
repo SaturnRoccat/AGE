@@ -289,14 +289,14 @@ namespace rapidjson
 			{
 				if (!jsonValue.HasMember("x") || !jsonValue.HasMember("y"))
 					throw std::runtime_error("Invalid JSON object for Vec2");
-				return T(TypeTranslation::ReadFromJson<T::Type>(jsonValue["x"]), TypeTranslation::ReadFromJson<T::Type>(jsonValue["y"]));
+				return T(TypeTranslation<T::Type>::ReadFromJson(jsonValue["x"]), TypeTranslation<T::Type>::ReadFromJson(jsonValue["y"]));
 
 			}
 			else if (jsonValue.IsArray())
 			{
 				if (jsonValue.Size() != 2)
 					throw std::runtime_error("Invalid JSON array for Vec2");
-				return T(TypeTranslation::ReadFromJson<T::Type>(jsonValue[0]), TypeTranslation::ReadFromJson<T::Type>(jsonValue[1]));
+				return T(TypeTranslation<T::Type>::ReadFromJson(jsonValue[0]), TypeTranslation<T::Type>::ReadFromJson(jsonValue[1]));
 			}
 			else
 				throw std::runtime_error("Invalid JSON value for Vec2");
@@ -346,13 +346,13 @@ namespace rapidjson
 			{
 				if (!jsonValue.HasMember("x") || !jsonValue.HasMember("y") || !jsonValue.HasMember("z"))
 					throw std::runtime_error("Invalid JSON object for Vec3");
-				return T(TypeTranslation::ReadFromJson<T::Type>(jsonValue["x"]), TypeTranslation::ReadFromJson<T::Type>(jsonValue["y"]), TypeTranslation::ReadFromJson<T::Type>(jsonValue["z"]));
+				return T(TypeTranslation<T::Type>::ReadFromJson(jsonValue["x"]), TypeTranslation<T::Type>::ReadFromJson(jsonValue["y"]), TypeTranslation<T::Type>::ReadFromJson(jsonValue["z"]));
 			}
 			else if (jsonValue.IsArray())
 			{
 				if (jsonValue.Size() != 3)
 					throw std::runtime_error("Invalid JSON array for Vec3");
-				return T(TypeTranslation::ReadFromJson<T::Type>(jsonValue[0]), TypeTranslation::ReadFromJson<T::Type>(jsonValue[1]), TypeTranslation::ReadFromJson<T::Type>(jsonValue[2]));
+				return T(TypeTranslation<T::Type>::ReadFromJson(jsonValue[0]), TypeTranslation<T::Type>::ReadFromJson(jsonValue[1]), TypeTranslation<T::Type>::ReadFromJson(jsonValue[2]));
 			}
 			else
 				throw std::runtime_error("Invalid JSON value for Vec3");
@@ -403,13 +403,13 @@ namespace rapidjson
 			{
 				if (!jsonValue.HasMember("x") || !jsonValue.HasMember("y") || !jsonValue.HasMember("z") || !jsonValue.HasMember("w"))
 					throw std::runtime_error("Invalid JSON object for Vec4");
-				return T(TypeTranslation::ReadFromJson<T::Type>(jsonValue["x"]), TypeTranslation::ReadFromJson<T::Type>(jsonValue["y"]), TypeTranslation::ReadFromJson<T::Type>(jsonValue["z"]), TypeTranslation::ReadFromJson<T::Type>(jsonValue["w"]));
+				return T(TypeTranslation<T::Type>::ReadFromJson(jsonValue["x"]), TypeTranslation<T::Type>::ReadFromJson(jsonValue["y"]), TypeTranslation<T::Type>::ReadFromJson(jsonValue["z"]), TypeTranslation<T::Type>::ReadFromJson(jsonValue["w"]));
 			}
 			else if (jsonValue.IsArray())
 			{
 				if (jsonValue.Size() != 4)
 					throw std::runtime_error("Invalid JSON array for Vec4");
-				return T(TypeTranslation::ReadFromJson<T::Type>(jsonValue[0]), TypeTranslation::ReadFromJson<T::Type>(jsonValue[1]), TypeTranslation::ReadFromJson<T::Type>(jsonValue[2]), TypeTranslation::ReadFromJson<T::Type>(jsonValue[3]));
+				return T(TypeTranslation<T::Type>::ReadFromJson(jsonValue[0]), TypeTranslation<T::Type>::ReadFromJson(jsonValue[1]), TypeTranslation<T::Type>::ReadFromJson(jsonValue[2]), TypeTranslation<T::Type>::ReadFromJson(jsonValue[3]));
 			}
 			else
 				throw std::runtime_error("Invalid JSON value for Vec4");
