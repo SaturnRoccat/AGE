@@ -2,6 +2,8 @@
 #include <memory>
 #include <stdexcept>
 #include <vector>
+#include <array>
+#include <variant>
 #include <AgeAPI/internal/RapidJsonExtension/TypeTranslations.hpp>
 
 namespace AgeAPI
@@ -141,315 +143,607 @@ namespace AgeAPI
 	class SmallVector
 	{
 	public:
-		SmallVector() {} // Have to do this because of the union :<
-		SmallVector(std::initializer_list<T> list)
+		using value_type = T;
+		using reference = T&;
+		using const_reference = const T&;
+		using pointer = T*;
+		using const_pointer = const T*;
+		using iterator = T*;
+		using const_iterator = const T*;
+		using reverse_iterator = std::reverse_iterator<iterator>;
+		using const_reverse_iterator = std::reverse_iterator<const_iterator>;
+		using size_type = size_t;
+		using difference_type = ptrdiff_t;
+		using vec = std::vector<T>;
+		using arr = std::array<T, Size>;
+	public:
+		SmallVector() = default;
+		SmallVector(const SmallVector& other)
 		{
-			if (list.size() > Size)
-				mBigData = std::vector<T>(list);
+			if (other.IsSmall())
+				mData = std::get<arr>(other.mData);
 			else
-			{
-				std::copy(list.begin(), list.end(), mSmallData.begin());
-				mIndex = list.size();
-			}
+				mData = std::get<vec>(other.mData);
+			mIndex = other.mIndex;
 		}
-		SmallVector(const std::vector<T>& other)
+		SmallVector& operator=(const SmallVector& other)
 		{
-			if (other.size() > Size)
-				mBigData = other;
+			if (other.IsSmall())
+				mData = std::get<arr>(other.mData);
 			else
-			{
-				std::copy(other.begin(), other.end(), mSmallData.begin());
-				mIndex = other.size();
-			}
+				mData = std::get<vec>(other.mData);
+			mIndex = other.mIndex;
+			return *this;
 		}
-		SmallVector(std::vector<T>&& other)
+		SmallVector(SmallVector&& other) noexcept
 		{
-			if (other.size() > Size)
-				mBigData = std::move(other);
+			if (other.IsSmall())
+				mData = std::get<arr>(std::move(other.mData));
 			else
-			{
-				std::memmove(mSmallData.begin(), other.begin(), sizeof(T) * other.size());
-				mIndex = other.size();
-			}
+				mData = std::get<vec>(std::move(other.mData));
+			mIndex = other.mIndex;
 		}
-		SmallVector(const SmallVector<T, Size>& other)
+		SmallVector& operator=(SmallVector&& other) noexcept
 		{
-			if (other.size() > Size)
-				mBigData = other.mBigData;
+			if (other.IsSmall())
+				mData = std::get<arr>(std::move(other.mData));
 			else
-			{
-				std::copy(other.mSmallData.begin(), other.mSmallData.begin() + other.mIndex, mSmallData.begin());
-				mIndex = other.mIndex;
-			}
+				mData = std::get<vec>(std::move(other.mData));
+			mIndex = other.mIndex;
+			return *this;
+		}
+		SmallVector(const vec& data)
+		{
+			reasignData(data);
+		}
+		SmallVector(vec&& data)
+		{
+			reasignData(std::move(data));
+		}
+		SmallVector(const arr& data)
+		{
+			reasignData(data);
+		}
+		SmallVector(arr&& data)
+		{
+			reasignData(std::move(data));
+		}
+		SmallVector(std::initializer_list<T> data)
+		{
+			reasignData(data);
+		}
+		SmallVector& operator=(const vec& data)
+		{
+			reasignData(data);
+			return *this;
+		}
+		SmallVector& operator=(vec&& data)
+		{
+			reasignData(std::move(data));
+			return *this;
+		}
+		SmallVector& operator=(const arr& data)
+		{
+			reasignData(data);
+			return *this;
+		}
+		SmallVector& operator=(arr&& data)
+		{
+			reasignData(std::move(data));
+			return *this;
+		}
+		SmallVector& operator=(std::initializer_list<T> data)
+		{
+			reasignData(data);
+			return *this;
+		}
+		reference operator[](size_type index)
+		{
+			if (IsSmall())
+				return std::get<arr>(mData)[index];
+			return std::get<vec>(mData)[index];
+		}
+		const_reference operator[](size_type index) const
+		{
+			if (index >= mIndex)
+				throw std::out_of_range("Index Out Of Range");
+			if (IsSmall())
+				return std::get<arr>(mData)[index];
+			return std::get<vec>(mData)[index];
+		}
+		reference at(size_type index)
+		{
+			if (index >= mIndex)
+				throw std::out_of_range("Index Out Of Range");
+			if (IsSmall())
+				return std::get<arr>(mData)[index];
+			return std::get<vec>(mData)[index];
+		}
+		const_reference at(size_type index) const
+		{
+			if (index >= mIndex)
+				throw std::out_of_range("Index Out Of Range");
+			if (IsSmall())
+				return std::get<arr>(mData)[index];
+			return std::get<vec>(mData)[index];
+		}
+		reference front()
+		{
+			if (mIndex == 0)
+				throw std::out_of_range("Index Out Of Range");
+			if (IsSmall())
+				return std::get<arr>(mData).front();
+			return std::get<vec>(mData).front();
+		}
+		const_reference front() const
+		{
+			if (mIndex == 0)
+				throw std::out_of_range("Index Out Of Range");
+			if (IsSmall())
+				return std::get<arr>(mData).front();
+			return std::get<vec>(mData).front();
+		}
+		reference back()
+		{
+			if (mIndex == 0)
+				throw std::out_of_range("Index Out Of Range");
+			if (IsSmall())
+				return std::get<arr>(mData).back();
+			return std::get<vec>(mData).back();
+		}
+		const_reference back() const
+		{
+			if (mIndex == 0)
+				throw std::out_of_range("Index Out Of Range");
+			if (IsSmall())
+				return std::get<arr>(mData).back();
+			return std::get<vec>(mData).back();
+		}
+		iterator begin()
+		{
+			if (IsSmall())
+				return std::get<arr>(mData).begin();
+			return std::get<vec>(mData).begin();
+		}
+		const_iterator begin() const
+		{
+			if (IsSmall())
+				return std::get<arr>(mData).data();
+			return std::get<vec>(mData).data();
 
 		}
-		SmallVector(SmallVector<T, Size>&& other) noexcept
+		const_iterator cbegin() const
 		{
-			if (other.size() > Size)
-				mBigData = std::move(other.mBigData);
-			else
-			{
-				std::memmove(mSmallData.data(), other.mSmallData.data(), sizeof(T) * other.size());
-				mIndex = other.mIndex;
-			}
+			if (IsSmall())
+				return std::get<arr>(mData).cbegin();
+			return std::get<vec>(mData).cbegin();
 		}
-		SmallVector<T, Size>& operator=(const SmallVector<T, Size>& other)
+		iterator end()
 		{
-			if (other.size() > Size)
-				mBigData = other.mBigData;
-			else
-			{
-				std::copy(other.mSmallData.begin(), other.mSmallData.end(), mSmallData.begin());
-				mIndex = other.mIndex;
-			}
-			return *this;
+			if (IsSmall())
+				return std::get<arr>(mData).begin() + mIndex;
+			return std::get<vec>(mData).end();
 		}
-		SmallVector<T, Size>& operator=(SmallVector<T, Size>&& other) noexcept
+		const_iterator end() const
 		{
-			if (other.size() > Size)
-				mBigData = std::move(other.mBigData);
-			else
-			{
-				std::memmove(mSmallData.begin(), other.mSmallData.begin(), sizeof(T) * other.size());
-				mIndex = other.mIndex;
-			}
-			return *this;
+			if (IsSmall())
+				return std::get<arr>(mData).data() + mIndex;
+			return std::get<vec>(mData).data() + std::get<vec>(mData).size();
 		}
-		SmallVector<T, Size>& operator=(const std::vector<T>& other)
+		const_iterator cend() const
 		{
-			if (other.size() > Size)
-				mBigData = other;
-			else
-			{
-				std::copy(other.begin(), other.end(), mSmallData.begin());
-				mIndex = other.size();
-			}
-			return *this;
+			if (IsSmall())
+				return std::get<arr>(mData).cbegin() + mIndex;
+			return std::get<vec>(mData).cend();
 		}
-		SmallVector<T, Size>& operator=(std::vector<T>&& other)
+		reverse_iterator rbegin()
 		{
-			if (other.size() > Size)
-				mBigData = std::move(other);
-			else
-			{
-				std::memmove(mSmallData.begin(), other.begin(), sizeof(T) * other.size());
-				mIndex = other.size();
-			}
-			return *this;
+			if (IsSmall())
+				return std::get<arr>(mData).rbegin();
+			return std::get<vec>(mData).rbegin();
 		}
-		~SmallVector()
+		const_reverse_iterator rbegin() const
 		{
-			if (!mIsSmall)
-				mBigData.~vector(); // Have to explicitly call the destructor due to the union
-			mIndex = 0;
-
+			if (IsSmall())
+				return std::get<arr>(mData).rbegin();
+			return std::get<vec>(mData).rbegin();
 		}
-		size_t size() const
+		const_reverse_iterator crbegin() const
 		{
-			return mIsSmall ? mIndex : mBigData.size();
+			if (IsSmall())
+				return std::get<arr>(mData).crbegin();
+			return std::get<vec>(mData).crbegin();
 		}
-		T& operator[](i64 index)
+		reverse_iterator rend()
 		{
-			return readData(index);
+			if (IsSmall())
+				return std::get<arr>(mData).rbegin() + mIndex;
+			return std::get<vec>(mData).rend();
 		}
-		const T& operator[](i64 index) const
+		const_reverse_iterator rend() const
 		{
-			return readData(index);
+			if (IsSmall())
+				return std::get<arr>(mData).rbegin() + mIndex;
+			return std::get<vec>(mData).rend();
 		}
-		void push_back(const T& data)
+		const_reverse_iterator crend() const
 		{
-			checkAndMoveData(size());
-			writeDataBack(data);
-			if (mIsSmall)
-				++mIndex;
-		}
-		void push_back(T&& data)
-		{
-			checkAndMoveData(size());
-			writeDataBack(std::move(data));
-			if (mIsSmall)
-				++mIndex;
-		}
-		void pop_back()
-		{
-			if (mIsSmall)
-				--mIndex;
-			else
-				mBigData.pop_back();
-		}
-		void clear()
-		{
-			if (mIsSmall)
-				mIndex = 0;
-			else
-				mBigData.clear();
+			if (IsSmall())
+				return std::get<arr>(mData).crbegin() + mIndex;
+			return std::get<vec>(mData).crend();
 		}
 		bool empty() const
 		{
-			return mIsSmall ? mIndex == 0 : mBigData.empty();
+			return mIndex == 0;
 		}
-		void resize(size_t size)
+		size_type size() const
 		{
-			if (willStillBeSmall(size))
+			if (IsSmall())
+				return mIndex;
+			return std::get<vec>(mData).size();
+		}
+		size_type max_size() const
+		{
+			return std::numeric_limits<size_type>::max();
+		}
+		void reserve(size_type new_cap)
+		{
+			if (doesSizeFitInSmall(new_cap))
+				return;
+			if (IsSmall())
 			{
-				if (!mIsSmall)
+				auto& array = std::get<arr>(mData);
+				mData = vec(array.begin(), array.begin() + mIndex);
+			}
+			std::get<vec>(mData).reserve(new_cap);
+		}
+		size_type capacity() const
+		{
+			if (IsSmall())
+				return Size;
+			return std::get<vec>(mData).capacity();
+		}
+		void shrink_to_fit()
+		{
+			if (IsSmall())
+				return;
+			std::get<vec>(mData).shrink_to_fit();
+		}
+		void clear()
+		{
+			if (IsSmall())
+			{
+				for (auto& elem : std::get<arr>(mData))
+					elem.~T();
+				mIndex = 0;
+				return;
+			}
+			std::get<vec>(mData).clear();
+		}
+		iterator insert(const_iterator pos, const T& value)
+		{
+			if (mIndex == Size)
+			{
+				moveDataToVec();
+			}
+			if (IsSmall())
+			{
+				auto& array = std::get<arr>(mData);
+				auto index = pos - array.begin();
+				for (size_t i = mIndex; i > index; --i)
+					array[i] = array[i - 1];
+				array[index] = value;
+				++mIndex;
+				return array.begin() + index;
+			}
+			return std::get<vec>(mData).insert(pos, value);
+		}
+		iterator insert(const_iterator pos, T&& value)
+		{
+			if (mIndex == Size)
+			{
+				moveDataToVec();
+			}
+			if (IsSmall())
+			{
+				auto& array = std::get<arr>(mData);
+				auto index = pos - array.begin();
+				for (size_t i = mIndex; i > index; --i)
+					array[i] = array[i - 1];
+				array[index] = std::move(value);
+				++mIndex;
+				return array.begin() + index;
+			}
+			return std::get<vec>(mData).insert(pos, std::move(value));
+		}
+		iterator insert(const_iterator pos, size_type count, const T& value)
+		{
+			if (mIndex + count > Size)
+			{
+				moveDataToVec();
+			}
+			if (IsSmall())
+			{
+				auto& array = std::get<arr>(mData);
+				auto index = pos - array.begin();
+				for (size_t i = mIndex; i > index; --i)
+					array[i + count - 1] = array[i - 1];
+				for (size_t i = 0; i < count; ++i)
+					array[index + i] = value;
+				mIndex += count;
+				return array.begin() + index;
+			}
+			return std::get<vec>(mData).insert(pos, count, value);
+		}
+		template<typename InputIt>
+		iterator insert(const_iterator pos, InputIt first, InputIt last)
+		{
+			auto count = std::distance(first, last);
+			if (mIndex + count > Size)
+			{
+				moveDataToVec();
+			}
+			if (IsSmall())
+			{
+				auto& array = std::get<arr>(mData);
+				auto index = pos - array.begin();
+				for (size_t i = mIndex; i > index; --i)
+					array[i + count - 1] = array[i - 1];
+				for (size_t i = 0; i < count; ++i)
+					array[index + i] = *first++;
+				mIndex += count;
+				return array.begin() + index;
+			}
+			return std::get<vec>(mData).insert(pos, first, last);
+		}
+		iterator insert(const_iterator pos, std::initializer_list<T> ilist)
+		{
+			auto count = ilist.size();
+			if (mIndex + count > Size)
+			{
+				moveDataToVec();
+			}
+			if (IsSmall())
+			{
+				auto& array = std::get<arr>(mData);
+				auto index = pos - array.begin();
+				for (size_t i = mIndex; i > index; --i)
+					array[i + count - 1] = array[i - 1];
+				for (size_t i = 0; i < count; ++i)
+					array[index + i] = ilist.begin()[i];
+				mIndex += count;
+				return array.begin() + index;
+			}
+			return std::get<vec>(mData).insert(pos, ilist);
+		}
+		template<typename... Args>
+		iterator emplace(const_iterator pos, Args&&... args)
+		{
+			if (mIndex == Size)
+			{
+				moveDataToVec();
+			}
+			if (IsSmall())
+			{
+				auto& array = std::get<arr>(mData);
+				auto index = pos - array.begin();
+				for (size_t i = mIndex; i > index; --i)
+					array[i] = array[i - 1];
+				array[index] = T(std::forward<Args>(args)...);
+				++mIndex;
+				return array.begin() + index;
+			}
+			return std::get<vec>(mData).emplace(pos, std::forward<Args>(args)...);
+		}
+		iterator erase(const_iterator pos)
+		{
+			if (IsSmall())
+			{
+				auto& array = std::get<arr>(mData);
+				auto index = pos - array.begin();
+				for (size_t i = index; i < mIndex - 1; ++i)
+					array[i] = array[i + 1];
+				--mIndex;
+				return array.begin() + index;
+			}
+			return std::get<vec>(mData).erase(pos);
+		}
+		iterator erase(const_iterator first, const_iterator last)
+		{
+			if (IsSmall())
+			{
+				auto& array = std::get<arr>(mData);
+				auto index = first - array.begin();
+				auto count = last - first;
+				for (size_t i = index; i < mIndex - count; ++i)
+					array[i] = array[i + count];
+				mIndex -= count;
+				return array.begin() + index;
+			}
+			return std::get<vec>(mData).erase(first, last);
+		}
+		void push_back(const T& value)
+		{
+			if (mIndex == Size)
+			{
+				moveDataToVec();
+			}
+			if (IsSmall())
+			{
+				std::get<arr>(mData)[mIndex++] = value;
+				return;
+			}
+			mIndex++;
+			std::get<vec>(mData).push_back(value);
+		}
+		void push_back(T&& value)
+		{
+			if (mIndex == Size)
+			{
+				moveDataToVec();
+			}
+			if (IsSmall())
+			{
+				std::get<arr>(mData)[mIndex++] = std::move(value);
+				return;
+			}
+			std::get<vec>(mData).push_back(std::move(value));
+		}
+		template<typename... Args>
+		reference emplace_back(Args&&... args)
+		{
+			if (mIndex == Size)
+			{
+				moveDataToVec();
+			}
+			if (IsSmall())
+			{
+				auto& array = std::get<arr>(mData);
+				array[mIndex] = T(std::forward<Args>(args)...);
+				return array[mIndex++];
+			}
+			mIndex++;
+			return std::get<vec>(mData).emplace_back(std::forward<Args>(args)...);
+		}
+		void pop_back()
+		{
+			if (mIndex == 0)
+				throw std::out_of_range("Index Out Of Range");
+			if (IsSmall())
+			{
+				--mIndex;
+				return;
+			}
+			--mIndex;
+			std::get<vec>(mData).pop_back();
+		}
+		void resize(size_type count)
+		{
+			if (count > Size)
+			{
+				moveDataToVec();
+			}
+			if (IsSmall())
+			{
+				auto& array = std::get<arr>(mData);
+				if (count > mIndex)
 				{
-					for (size_t i = 0; i < size; ++i)
-						mSmallData[i] = mBigData[i];
+					for (size_t i = mIndex; i < count; ++i)
+						array[i] = T();
 				}
-				mIndex = size;
+				mIndex = count;
+				return;
 			}
-			else
-			{
-				mBigData.resize(size);
-				checkAndMoveData(size);
-				mIsSmall = false;
-			}
+			mIndex = count;
+			std::get<vec>(mData).resize(count);
 		}
-		std::vector<T> ToVector() const
+		void resize(size_type count, const T& value)
 		{
-			if (mIsSmall)
-				return std::vector<T>(mSmallData.begin(), mSmallData.begin() + mIndex);
-			else
-				return mBigData;
+			if (count > Size)
+			{
+				moveDataToVec();
+			}
+			if (IsSmall())
+			{
+				auto& array = std::get<arr>(mData);
+				if (count > mIndex)
+				{
+					for (size_t i = mIndex; i < count; ++i)
+						array[i] = value;
+				}
+				mIndex = count;
+				return;
+			}
+			std::get<vec>(mData).resize(count, value);
 		}
+		void swap(SmallVector& other)
+		{
+			std::swap(mData, other.mData);
+			std::swap(mIndex, other.mIndex);
+		}
+		~SmallVector() = default;
 
-		// Have to use an iterator class since we have different types of data that we need to iterate over
-		class Iterator
+		T& Get(size_t index)
 		{
-		public:
-			using value_type = T;
-			using pointer = T*;
-			using reference = T&;
-
-			Iterator(pointer ptr, i64 index) : mPtr(ptr), mIndex(index) {}
-			Iterator(const Iterator& other) : mPtr(other.mPtr), mIndex(other.mIndex) {}
-			Iterator(Iterator&& other) noexcept : mPtr(std::move(other.mPtr)), mIndex(other.mIndex) {}
-			Iterator& operator=(const Iterator& other)
-			{
-				mPtr = other.mPtr;
-				mIndex = other.mIndex;
-				return *this;
-			}
-			Iterator& operator=(Iterator&& other) noexcept
-			{
-				mPtr = std::move(other.mPtr);
-				mIndex = other.mIndex;
-				return *this;
-			}
-			reference operator*()
-			{
-				return *mPtr;
-			}
-			pointer operator->()
-			{
-				return mPtr;
-			}
-			Iterator& operator++()
-			{
-				++mIndex;
-				++mPtr;
-				return *this;
-			}
-			Iterator operator++(int)
-			{
-				Iterator temp = *this;
-				++mIndex;
-				++mPtr;
-				return temp;
-			}
-			Iterator& operator--()
-			{
-				--mIndex;
-				--mPtr;
-				return *this;
-			}
-			Iterator operator--(int)
-			{
-				Iterator temp = *this;
-				--mIndex;
-				--mPtr;
-				return temp;
-			}
-		private:
-			pointer mPtr{ nullptr };
-			i64 mIndex;
-
-		};
-		bool isSmall() const
-		{
-			return mIsSmall;
+			return get(index);
 		}
-
-		T* begin()
+		const T& Get(size_t index) const
 		{
-			return mIsSmall ? mSmallData.data() : mBigData.data();
+			return get(index);
 		}
-		T* end()
+		T& At(size_t index)
 		{
-			return mIsSmall ? mSmallData.data() + mIndex : mBigData.data() + mBigData.size();
+			if (index >= mIndex)
+				throw std::out_of_range("Index Out Of Range");
+			return get(index);
 		}
-		const T* begin() const
+		const T& At(size_t index) const
 		{
-			return mIsSmall ? mSmallData.data() : mBigData.data();
-		}
-		const T* end() const
-		{
-			return mIsSmall ? mSmallData.data() + mIndex : mBigData.data() + mBigData.size();
+			if (index >= mIndex)
+				throw std::out_of_range("Index Out Of Range");
+			return get(index);
 		}
 
 
-
-	private:
-		void writeDataBack(const T& data)
+		bool IsSmall() const
 		{
-			if (mIsSmall)
-				mSmallData[mIndex++] = data;
-			else
-				mBigData.push_back(data);
-		}
-		void writeDataBack(T&& data)
-		{
-			if (mIsSmall)
-				mSmallData[mIndex++] = std::move(data);
-			else
-				mBigData.push_back(std::move(data));
-		}
-		void checkAndMoveData(i64 index)
-		{
-			if (index >= Size && mIsSmall)
-			{
-				mBigData = std::vector<T>(mSmallData.begin(), mSmallData.end());
-				mIsSmall = false;
-			}
-
-		}
-		const T& readData(i64 index) const
-		{
-			return mIsSmall ? mSmallData[index] : mBigData[index];
-		}
-		T& readData(i64 index)
-		{
-			return mIsSmall ? mSmallData[index] : mBigData[index];
-		}
-		bool willStillBeSmall(size_t newSize) const
-		{
-			return newSize <= Size;
-		}
-		size_t fetchNextIndex() const
-		{
-			return mIsSmall ? mIndex : mBigData.size();
+			return std::holds_alternative<arr>(mData);
 		}
 	private:
-		union
+		bool doesSizeFitInSmall(size_t size)
 		{
-			struct
+			return size <= Size;
+		}
+		void moveDataToVec()
+		{
+			if (IsSmall())
 			{
-				std::array<T, Size> mSmallData;
-				int mIndex;
-			};
-			std::vector<T> mBigData;
-		};
-		bool mIsSmall{ true };
+				auto& array = std::get<arr>(mData);
+				mData = vec(array.begin(), array.begin() + mIndex);
+			}
+		}
+		template<typename ContainerType>
+		void reasignData(ContainerType&& data)
+		{
+			if (doesSizeFitInSmall(data.size()))
+			{
+				mData = std::array<T, Size>{};
+				std::copy(data.begin(), data.end(), std::get<arr>(mData).begin());
+			}
+			else
+			{
+				mData = std::vector<T>(data.begin(), data.end());
+			}
+			mIndex = data.size();
+		}
+		T& get(size_t index)
+		{
+			if (IsSmall())
+				return std::get<arr>(mData)[index];
+			return std::get<vec>(mData)[index];
+		}
+		const T& get(size_t index) const
+		{
+			if (IsSmall())
+				return std::get<arr>(mData)[index];
+			return std::get<vec>(mData)[index];
+		}
+		template<typename ContainerType>
+		void reasignData(const ContainerType& data)
+		{
+			if (doesSizeFitInSmall(data.size()))
+			{
+				mData = std::array<T, Size>{};
+				std::copy(data.begin(), data.end(), std::get<arr>(mData).begin());
+			}
+			else
+			{
+				mData = std::vector<T>(data.begin(), data.end());
+			}
+			mIndex = data.size();
+		}
+	private:
+		std::variant<arr,vec> mData{};
+		int mIndex{0};
 	};
 }
