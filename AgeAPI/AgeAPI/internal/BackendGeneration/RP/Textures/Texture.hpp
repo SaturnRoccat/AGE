@@ -29,7 +29,7 @@ namespace AgeAPI::Backend::Rp
 
 		TextureLayer() = default;
 
-		TextureLayer& Write(const std::string& path);
+		TextureLayer& Write(const std::filesystem::path& path);
 
 		Color& operator[](I16Vec2 pos) { handleLazyWrite(); return mData[pos.x + pos.y * mSize.x]; }
 		Color& operator[](i16 index) { handleLazyWrite(); return mData[index]; }
@@ -553,7 +553,7 @@ namespace AgeAPI::Backend::Rp
 
 		TextureLayer Flatten() const;
 
-		void FinalizeAndWrite(const std::string& path) const;
+		void FinalizeAndWrite(const std::filesystem::path& path) const;
 
 		void AddLayer(const TextureLayer& layer) { mLayers.push_back(TextureInternalLayer(layer)); }
 		void AddLayer(TextureLayer&& layer) { mLayers.push_back(std::move(layer)); }

@@ -50,8 +50,10 @@ namespace AgeAPI::Backend::Rp
 
 			}
 	}
-	TextureLayer& TextureLayer::Write(const std::string& path)
+	TextureLayer& TextureLayer::Write(const std::filesystem::path& path)
 	{
+		std::filesystem::create_directories(path.parent_path());
+
 		if (mIsLazyLoaded) // If lazy loaded we can just copy the file with no read to memory
 		{
 			std::filesystem::path sourcePath = mPath;
@@ -83,9 +85,11 @@ namespace AgeAPI::Backend::Rp
 			break;
 		}
 
-		FILE* file = fopen(path.c_str(), "wb");
+
+		FILE* file = fopen(path.string().c_str()
+			, "wb");
 		if (!file)
-			throw std::runtime_error("Failed to open file: " + path);
+			throw std::runtime_error(std::format("Failed to open file: {}", path.string()));
 
 		png_structp png = png_create_write_struct(PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
 		if (!png)
@@ -259,7 +263,7 @@ namespace AgeAPI::Backend::Rp
 		mSelectedLayer = selectedLayerCache;
 		return flattenedLayer;
 	}
-	void Texture::FinalizeAndWrite(const std::string& path) const
+	void Texture::FinalizeAndWrite(const std::filesystem::path& path) const
 	{
 		auto texture = Flatten();
 		texture.Write(path);
