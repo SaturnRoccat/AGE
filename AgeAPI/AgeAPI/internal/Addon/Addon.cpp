@@ -52,7 +52,7 @@ namespace AgeAPI
 		mBp.setManifest(behaviourManifest);
 		mRp.setManifest(resourceManifest);
 	}
-	void Addon::OutputAddon(const std::pair<std::string, std::string>& outputPath, const std::string& folderName, bool ClearOutputFolder, bool CacheManifest)
+	void Addon::OutputAddon(const std::string& folderName, const std::pair<std::string, std::string>& outputPath, bool ClearOutputFolder, bool CacheManifest)
 	{
 		std::filesystem::path outputDirBeh = outputPath.first;
 		std::filesystem::path outputDirRes = outputPath.second;
