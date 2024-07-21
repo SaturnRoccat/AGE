@@ -28,14 +28,12 @@ namespace AgeAPI::Backend::Rp
 	{
 	private:
 		SemanticVersion mFormatVersion{ 1, 1, 0 };
-		NonOwningPtr<TerrainTexture> mTerrainTexture{ nullptr };
 		std::unordered_map<Identifier, BlockJsonStorageImpl> mBlockJsonStorage;
 		friend class ResourcePack;
 	private:
 		BlockJson() = default;
-		BlockJson(NonOwningPtr<TerrainTexture> terrainTexture) : mTerrainTexture(terrainTexture) {}
 
-		ErrorString writeToFile(const std::filesystem::path& basePath);
+		ErrorString writeToFile(const std::filesystem::path& basePath) const;
 	public:
 		BlockJsonError AddBlock(const Identifier& blockID, const std::string& textureName = "", const std::string& soundID = "", bool override = false);
 		BlockJsonError AddBlock(const Identifier& blockID, const BlockJsonStorageImpl& blockJsonStorage, bool override = false);

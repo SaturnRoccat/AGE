@@ -27,7 +27,7 @@ namespace AgeAPI::Backend::Rp
 		TerrainTexture& operator=(TerrainTexture&& other) noexcept  = default;
 
 		// TODO: Implement
-		ErrorString writeTextureData(const std::filesystem::path& base) { return "Not Implemented"; };
+		ErrorString writeTextureData(const std::filesystem::path& base) const;
 	public:
 		TextureError BindBlockResourceElement(const BlockResourceElement& blkResourceElement, bool override = false);
 	};

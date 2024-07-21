@@ -1,6 +1,6 @@
 #include "ResourcePack.hpp"
 #include <fstream>
-
+#include <AgeAPI/internal/RapidJsonExtension/FileIO.hpp>
 
 namespace AgeAPI::Backend::Rp
 {
@@ -13,30 +13,37 @@ namespace AgeAPI::Backend::Rp
 		if (!Manifest)
 			return;
 
-		// Write manifest
 		auto ManifestDocumentExpected = mManifest.WriteToDocument();
 		if (!ManifestDocumentExpected.has_value())
 			throw std::runtime_error(ManifestDocumentExpected.error().GetAsString());
 		rapidjson::Document& ManifestDocument = ManifestDocumentExpected.value();
 		std::filesystem::path ManifestPath = outputDir / "manifest.json";
-		std::ofstream ManifestFile(ManifestPath);
-		if (!ManifestFile.is_open())
-			throw std::runtime_error("Failed to open manifest file for writing");
-		rapidjson::OStreamWrapper ManifestStream(ManifestFile);
-		rapidjson::Writer<rapidjson::OStreamWrapper> ManifestWriter(ManifestStream);
-		ManifestDocument.Accept(ManifestWriter);
-		ManifestStream.Flush();
-		ManifestFile.close();
+		auto err = rapidjson::WriteJsonFile(ManifestDocument, ManifestPath);
+		if (err.ContainsError())
+		{
+			std::println("Failed to write manifest: {}", err.GetAsString());
+			throw std::runtime_error("Failed to write manifest");
+		}
 
 
 	}
 	void ResourcePack::writeTerrainTextures(const std::filesystem::path& outputBase) const
 	{
-
-
+		auto err = mTerrainTextureManager.writeTextureData(outputBase);
+		if (err.ContainsError())
+		{
+			std::println("Failed to write terrain textures: {}", err.GetAsString());
+			throw std::runtime_error("Failed to write terrain textures");
+		}
 	}
 	void ResourcePack::writeBlockJson(const std::filesystem::path& outputBase) const
 	{
+		auto err = mBlockJson.writeToFile(outputBase);
+		if (err.ContainsError())
+		{
+			std::println("Failed to write block json: {}", err.GetAsString());
+			throw std::runtime_error("Failed to write block json");
+		}
 
 	}
 
