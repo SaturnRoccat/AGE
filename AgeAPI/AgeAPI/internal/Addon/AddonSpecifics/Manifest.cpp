@@ -118,8 +118,3 @@ namespace AgeAPI
 		return ErrorString();
 	}
 }
-
-struct test
-{
-	std::array<std::array<std::array<std::array<std::string, 16>, 16>, 16>, 24> blocks;
-};

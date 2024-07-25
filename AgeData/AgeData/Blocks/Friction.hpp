@@ -22,7 +22,9 @@ namespace AgeData::BlockComponents
                 mValue = friction;
         }
         float GetFriction() const { return mValue; }
-
+        BlockComponentBase* Clone() const override {
+            return new Friction(mValue);
+        }
 
 
         AgeAPI::ErrorString WriteToJson(AgeAPI::NonOwningPtr<AgeAPI::Addon> addon, AgeAPI::JsonProxy proxy, AgeAPI::NonOwningPtr<AgeAPI::Backend::Bp::BlockBehaviour> blk) const override

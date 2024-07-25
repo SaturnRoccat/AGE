@@ -16,7 +16,12 @@ namespace AgeAPI::Backend
 	public:
 		Permutation() = default;
 		Permutation(std::string_view condition) : mCondition(condition) {}
-		Permutation(const Permutation& other) = default;
+		Permutation(const Permutation& other)
+		{
+			mCondition = other.mCondition;
+			for (const auto& comp : other.mComponents)
+				mComponents[comp.first] = std::unique_ptr<Components::BlockComponentBase>(comp.second->Clone());
+		}
 		Permutation(Permutation&& other) noexcept
 		{
 			mCondition = std::move(other.mCondition);

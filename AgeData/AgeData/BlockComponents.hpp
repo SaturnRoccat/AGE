@@ -12,5 +12,6 @@
 #include <AgeData/Blocks/LightEmission.hpp>
 #include <AgeData/Blocks/MapColor.hpp>
 #include <AgeData/Blocks/Loot.hpp>
+#include <AgeData/Blocks/MaterialInstances.hpp>
 
 #endif // !AGE_DATA_BLOCK_COMPONENTS

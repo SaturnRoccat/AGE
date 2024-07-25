@@ -27,7 +27,9 @@ namespace AgeData::BlockComponents
                 mValue = val;
         }
         int GetDampening() const { return mValue; }
-
+        BlockComponentBase* Clone() const override {
+            return new LightDampening(mValue);
+        }
 
 
         AgeAPI::ErrorString WriteToJson(AgeAPI::NonOwningPtr<AgeAPI::Addon> addon, AgeAPI::JsonProxy proxy, AgeAPI::NonOwningPtr<AgeAPI::Backend::Bp::BlockBehaviour> blk) const override

@@ -17,6 +17,9 @@ namespace AgeData::BlockComponents
 
         void SetLocalisationKey(const std::string& key) { mLocalisationKey = key; }
         const std::string& GetLocalisationKey() const { return mLocalisationKey; }
+        BlockComponentBase* Clone() const override {
+            return new DisplayName(*this);
+        }
 
         AgeAPI::ErrorString WriteToJson(AgeAPI::NonOwningPtr<AgeAPI::Addon> addon, AgeAPI::JsonProxy proxy, AgeAPI::NonOwningPtr<AgeAPI::Backend::Bp::BlockBehaviour> blk) const override;
     private:

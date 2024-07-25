@@ -131,7 +131,7 @@ namespace AgeAPI
 		itemGroup_name_count
 	};
 
-	static std::array<std::string, TO_UNDERLYING(ItemGroup::itemGroup_name_count)>ItemGroupStrings
+	static std::array<std::string, ToUnderlying(ItemGroup::itemGroup_name_count)>ItemGroupStrings
 	{
 		"itemGroup.name.planks",
 		"itemGroup.name.walls",

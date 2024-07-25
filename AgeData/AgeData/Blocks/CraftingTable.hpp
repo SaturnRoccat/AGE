@@ -31,6 +31,10 @@ namespace AgeData::BlockComponents
         void AddCraftingTag(const std::string& tag) { mCraftingTags.push_back(tag); }
 
         const auto& GetCraftingTags() const { return mCraftingTags; }
+        BlockComponentBase* Clone() const override 
+        {
+            return new CraftingTable(*this);
+        }
     private:
         std::vector<std::string> mCraftingTags{};
         std::string mTableName{};

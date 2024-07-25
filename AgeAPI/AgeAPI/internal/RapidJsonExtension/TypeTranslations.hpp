@@ -56,6 +56,21 @@ namespace rapidjson
 	};
 
 	template<>
+	struct TypeTranslation<Value, InformationIndex<Value>::value>
+	{
+		static void WriteToJson(const Value& value, rapidjson::Value& jsonValue, rapidjson::Document::AllocatorType& allocator)
+		{
+			jsonValue.CopyFrom(value, allocator);
+		}
+
+		static Value ReadFromJson(const rapidjson::Value& jsonValue)
+		{
+			throw std::runtime_error("Cannot read Value from json");
+			return {};
+		}
+	};
+
+	template<>
 	struct TypeTranslation<bool, 0>
 	{
 		static void WriteToJson(const bool& value, rapidjson::Value& jsonValue, rapidjson::Document::AllocatorType& allocator)

@@ -30,7 +30,9 @@ namespace AgeData::BlockComponents
         FlammableData GetFlamability() const { return mValue.GetData(); }
         bool GetFlamabilityBool() const { return mValue.GetToggle(); }
         bool IsData() const { return !mValue.IsToggle(); }
-
+        BlockComponentBase* Clone() const override {
+            return new Flammable(*this);
+        }
 
         AgeAPI::ErrorString WriteToJson(AgeAPI::NonOwningPtr<AgeAPI::Addon> addon, AgeAPI::JsonProxy proxy, AgeAPI::NonOwningPtr<AgeAPI::Backend::Bp::BlockBehaviour> blk) const override;
     private:

@@ -2,37 +2,68 @@
 #include <AgeAPI/internal/RapidJsonExtension/TypeTranslations.hpp>
 namespace AgeData::BlockComponents
 {
-    inline AgeAPI::ErrorString MaterialInstances::WriteToJson(AgeAPI::NonOwningPtr<AgeAPI::Addon> addon, AgeAPI::JsonProxy proxy, AgeAPI::NonOwningPtr<AgeAPI::Backend::Bp::BlockBehaviour> blk) const
+    AgeAPI::ErrorString MaterialInstances::WriteToJson(AgeAPI::NonOwningPtr<AgeAPI::Addon> addon, AgeAPI::JsonProxy proxy, AgeAPI::NonOwningPtr<AgeAPI::Backend::Bp::BlockBehaviour> blk) const
     {
         auto& [json, alloc] = proxy;
         json.SetObject();
+        using namespace AgeAPI::Backend::Rp;
+        auto& materials = mInstanceData.mMaterials;
+        auto WriteMaterialToJson = [&](AgeAPI::JsonProxy jProxy, const MaterialInstance::MaterialInstanceElement& element)
+            {
+                auto& [val, allocator] = jProxy;
+                val.SetObject();
+                if (mInstanceData.mRenderMethod != RenderMethod::opaque)
+                    val.AddMember("render_method", mInstanceData.GetRenderMethodString(), allocator);
+                if (!element.mFaceDimming)
+                    val.AddMember("face_dimming", false, allocator);
+                if (element.mAmbientOcclusion)
+                    val.AddMember("ambient_occlusion", true, allocator);
+                val.AddMember("texture", element.mTextureName, allocator);
 
-        for (auto& textureInstance : this->mValue.mInstances)
+            };
+        if (materials.size() == 1)
         {
-            std::visit(
-                AgeAPI::overloaded{
-                    [&](const MaterialInstancesWithData::InstanceReference& ref)
-                    {
-                        rapidjson::ValueWriteWithKey<std::string>::WriteToJsonValue(ref.mInstanceName, ref.mReference, json, alloc);
-                    },
-                    [&](const Instance& instance)
-                    {
-                        rapidjson::Value textureInstanceJson;
-                        textureInstanceJson.SetObject();
-                        rapidjson::ValueWriteWithKey<std::string>::WriteToJsonValue("texture", instance.mTexture, textureInstanceJson, alloc);
-                        if (instance.mRenderMethod != Instance::RenderMethod::opaque)
-							rapidjson::ValueWriteWithKey<std::string>::WriteToJsonValue("render_method", instance.GetRenderMethodString(), textureInstanceJson, alloc);
-                        if (!instance.mFaceDimming)
-                            textureInstanceJson.AddMember("face_dimming", false, alloc);
-                        if (!instance.mAmbientOcclusion)
-                            textureInstanceJson.AddMember("ambient_occlusion", false, alloc);
-                        rapidjson::Value key(instance.mInstanceName, alloc);
-                        json.AddMember(key, textureInstanceJson, alloc);
-                    }
-                
-                }, textureInstance);
-
-
+            auto& side = materials[0];
+            rapidjson::Value AllSide(rapidjson::kObjectType);
+            if (side.mSide != TextureSide::ALL)
+                std::println("Warning: MaterialInstances has only one material, but it's side is not TextureSide::ALL");
+                //TODO: Switch over to a global logger for errors and warnings
+            WriteMaterialToJson({ AllSide, alloc }, side);
+            json.AddMember("*", AllSide, alloc);
+            return "";
         }
+       
+        std::list<TextureSide> unlabledSides = {
+            TextureSide::TOP,
+            TextureSide::BOTTOM,
+            TextureSide::LEFT,
+            TextureSide::RIGHT,
+            TextureSide::FRONT,
+            TextureSide::BACK
+		};
+        AgeAPI::NonOwningPtr<const MaterialInstance::MaterialInstanceElement> element = nullptr;
+        for (auto& side : materials)
+        {
+            if (side.mSide == TextureSide::ALL)
+            {
+                element = &side;
+                continue;
+            }
+            rapidjson::Value sideJson(rapidjson::kObjectType);
+            WriteMaterialToJson({ sideJson, alloc }, side);
+            rapidjson::ValueWriteWithKey<rapidjson::Value>::WriteToJsonValue(GetTextureSideAsString(side.mSide), sideJson, json, alloc);
+            unlabledSides.remove(side.mSide);
+        }
+        if (!element && !unlabledSides.empty())
+            return "MaterialInstances has no material for TextureSide::ALL and hasnt supplied enough materials for the other sides";
+
+        for (auto& side : unlabledSides)
+		{
+			rapidjson::Value sideJson(rapidjson::kObjectType);
+			WriteMaterialToJson({ sideJson, alloc }, *element);
+			rapidjson::ValueWriteWithKey<rapidjson::Value>::WriteToJsonValue(GetTextureSideAsString(side), sideJson, json, alloc);
+		}
+        return "";
+
     }
 }

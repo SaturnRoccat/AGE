@@ -58,7 +58,7 @@ namespace AgeAPI
 		std::filesystem::path outputDirRes = outputPath.second;
 
 		for (auto& block : mBlocks)
-			block->WriteToPacks(mBp, mRp);
+			block->BindToPacks(mBp, mRp);
 
 		auto bpOutput = outputDirBeh / std::format("{}Bp", folderName);
 		auto rpOutput = outputDirRes / std::format("{}Rp", folderName);

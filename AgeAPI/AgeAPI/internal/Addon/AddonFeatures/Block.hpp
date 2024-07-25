@@ -12,20 +12,21 @@ namespace AgeAPI::AddonFeatures
 	public:
 		IBlock() = default;
 		virtual ~IBlock() = default;
-		virtual ErrorString AddComponent(NonOwningPtr<Addon> addon, std::unique_ptr<Components::BlockComponentBase> component) = 0;
-		virtual void AddState(std::unique_ptr<Backend::AState> state) = 0;
+		virtual ErrorString AddBlockComponent(NonOwningPtr<Addon> addon, std::unique_ptr<Components::BlockComponentBase>& component) = 0;
 		virtual void AddPermutation(Backend::Permutation&& permutation) = 0;
-		virtual void AddPermutation(const Backend::Permutation& permutation) = 0;
-		virtual void SetResource(Backend::Rp::BlockResource&& resource) = 0;
-		virtual void WriteToPacks(Backend::Bp::BehaviourPack& behaviourPack, Backend::Rp::ResourcePack& resourcePack) = 0;
+		virtual void AddPermutation(const Backend::Permutation& permutation) {
+			auto copy = permutation;
+			AddPermutation(std::move(copy));
+		}
 		virtual void SetIdentifier(const Identifier& identifier) = 0;
 		virtual void SetCategory(const MenuCategory& category) = 0;
+		virtual void AddTexture(Backend::Rp::TextureSide side, const Backend::Rp::BlockResourceElement& element) = 0;
+		virtual void BindToPacks(Backend::Bp::BehaviourPack& bp, Backend::Rp::ResourcePack& rp) = 0;
+		virtual void SetGeo(NonOwningPtr<Addon> addon, const Backend::Rp::Geometry& geo, const Backend::Rp::MaterialInstance& mat = {}) = 0;
+		/// virtual void SetGeo(const Backend::Rp::Geometry& geo, const Backend::Rp::BlockResourceElement& texture) = 0;
+
+
 	};
 
-	class Block : public IBlock
-	{
-	private:
-
-	public:
-	};
+	
 }

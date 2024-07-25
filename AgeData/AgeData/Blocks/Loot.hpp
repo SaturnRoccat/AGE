@@ -5,10 +5,10 @@
 
 namespace AgeData::BlockComponents
 {
-    class LightEmission : public AgeAPI::Components::BlockComponentBase
+    class Loot : public AgeAPI::Components::BlockComponentBase
     {
     public:
-        LightEmission(const std::string& val = "") : AgeAPI::Components::BlockComponentBase(
+        Loot(const std::string& val = "") : AgeAPI::Components::BlockComponentBase(
             0,
             { 1, 19, 50 },
             "minecraft:loot"
@@ -21,6 +21,9 @@ namespace AgeData::BlockComponents
         AgeAPI::ErrorString WriteToJson(AgeAPI::NonOwningPtr<AgeAPI::Addon> addon, AgeAPI::JsonProxy proxy, AgeAPI::NonOwningPtr<AgeAPI::Backend::Bp::BlockBehaviour> blk) const override
         {
             proxy.mWriteLoc.SetString(mValue, proxy.mAllocator);
+        }
+        BlockComponentBase* Clone() const override {
+            return new Loot(mValue);
         }
     private:
         std::string mValue{};

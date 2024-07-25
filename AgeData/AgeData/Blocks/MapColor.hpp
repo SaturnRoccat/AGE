@@ -27,6 +27,9 @@ namespace AgeData::BlockComponents
             if (color[0] != '#') throw std::runtime_error("Invalid Color Format");
             mValue = color;
         }
+        BlockComponentBase* Clone() const override {
+            return new MapColor(*this);
+        }
 
         MapColorVec GetColor() const { return std::get<MapColorVec>(mValue); }
         std::string GetColorString() const { return std::get<std::string>(mValue); }

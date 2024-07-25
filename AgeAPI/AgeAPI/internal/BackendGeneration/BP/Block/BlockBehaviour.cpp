@@ -4,7 +4,7 @@
 
 namespace AgeAPI::Backend::Bp
 {
-    inline ErrorString BlockBehaviour::AddBlockComponent(NonOwningPtr<Addon> addon, std::unique_ptr<Components::BlockComponentBase>& component)
+    inline ErrorString BlockBehaviour::AddBlockComponentC(NonOwningPtr<Addon> addon, std::unique_ptr<Components::BlockComponentBase>& component)
     {
         /*if (component->GetFormatVersion().GetVersion() < mFormatVersion.GetVersion())
         return ErrorString("Component version is higher than the block behaviour version");*/
@@ -19,6 +19,13 @@ namespace AgeAPI::Backend::Bp
             return error;
         mBlockComponents[component->GetComponentID().GetFullNamespace()] = std::move(component);
         return ErrorString();
+    }
+    void BlockBehaviour::AddBlockComponentInternalC(NonOwningPtr<Addon> addon, std::unique_ptr<Components::BlockComponentBase>& component)
+    {
+        auto error = component->OnComponentAdded(addon, this);
+        if (error.ContainsError())
+			throw std::runtime_error(error.GetAsString());
+        mBlockComponents[component->GetComponentID().GetFullNamespace()] = std::move(component);
     }
     ErrorString BlockBehaviour::BuildBlockBehaviourJson(NonOwningPtr<Addon> addon, rapidjson::Value& location, rapidjson::Document::AllocatorType& allocator)
     {

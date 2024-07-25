@@ -70,6 +70,53 @@ namespace AgeAPI
 #endif
 			return mPtr;
 		}
+		NonOwningPtr<T> operator=(T* ptr)
+		{
+			mPtr = ptr;
+			return *this;
+		}
+		bool operator==(const NonOwningPtr<T>& other) const
+		{
+			return mPtr == other.mPtr;
+		}
+		bool operator!=(const NonOwningPtr<T>& other) const
+		{
+			return mPtr != other.mPtr;
+		}
+		bool operator==(T* ptr) const
+		{
+			return mPtr == ptr;
+		}
+		bool operator!=(T* ptr) const
+		{
+			return mPtr != ptr;
+		}
+		bool operator==(std::nullptr_t) const
+		{
+			return mPtr == nullptr;
+		}
+		bool operator!=(std::nullptr_t) const
+		{
+			return mPtr != nullptr;
+		}
+		bool operator!() const
+		{
+			return mPtr == nullptr;
+		}
+		operator bool() const
+		{
+			return mPtr != nullptr;
+		}
+		operator T& ()
+		{
+			return *mPtr;
+		}
+		operator T& () const
+		{
+			return *mPtr;
+		}
+
+
 
 		void operator delete(void* ptr) = delete;
 	private:
@@ -86,6 +133,11 @@ namespace AgeAPI
 	std::shared_ptr<T> MoveToShared(T&& data)
 	{
 		return std::make_shared<T>(std::move(data));
+	}
+	template<typename T> requires std::is_move_assignable_v<T>
+	std::unique_ptr<T> MoveToUnique(T&& data)
+	{
+		return std::make_unique<T>(std::move(data));
 	}
 
 	template <typename T, typename U>
@@ -119,6 +171,11 @@ namespace AgeAPI
 	{
 		return std::unique_ptr<T>{static_cast<T*>(p)};
 	}
+	template <typename T, typename U>
+	std::unique_ptr<T> NCUM(U&& data) requires std::is_move_assignable_v<U>
+	{
+		return std::unique_ptr<T>{static_cast<T*>(new U(std::move(data)))};
+	}
 	template<typename T, typename U, typename ...Args>
 	std::unique_ptr<T> PollyCast(Args&&... args)
 	{
@@ -136,7 +193,12 @@ namespace AgeAPI
 		auto* ptr = new U(data);
 		return std::unique_ptr<T>{static_cast<T*>(ptr)};
 	}
-
+	template<typename T> requires std::is_move_assignable_v<T>
+	std::unique_ptr<T> PC(T&& data)
+	{
+		auto* ptr = new T(std::move(data));
+		return std::unique_ptr<T>{static_cast<T*>(ptr)};
+	}
 
 	/*
 	* std::vector optimized for small sizes

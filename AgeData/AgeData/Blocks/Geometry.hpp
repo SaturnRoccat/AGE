@@ -44,7 +44,9 @@ namespace AgeData::BlockComponents
         bool IsGeometryString() const { return std::holds_alternative<std::string>(mValue); }
         std::string GetGeometry() const { return std::get<std::string>(mValue); }
         GeometryWithData GetGeometryData() const { return std::get<GeometryWithData>(mValue); }
-
+        BlockComponentBase* Clone() const override {
+            return new Geometry(*this);
+        }
 
 
         AgeAPI::ErrorString WriteToJson(AgeAPI::NonOwningPtr<AgeAPI::Addon> addon, AgeAPI::JsonProxy proxy, AgeAPI::NonOwningPtr<AgeAPI::Backend::Bp::BlockBehaviour> blk) const override;

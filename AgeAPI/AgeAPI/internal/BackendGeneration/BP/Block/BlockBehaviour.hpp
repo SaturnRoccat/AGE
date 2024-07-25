@@ -5,7 +5,10 @@
 #include <vector>
 #include <unordered_map>
 #include <AgeAPI/internal/BackendGeneration/Permutations/Permutation.hpp>
-
+namespace AgeAPI::AddonFeatures
+{
+	class IBlock;
+}
 namespace AgeAPI::Backend::Bp
 {
 
@@ -20,11 +23,21 @@ namespace AgeAPI::Backend::Bp
 			const SemanticVersion& formatVersion
 		) : mBlockIdentifier(blockIdentifier), mFormatVersion(formatVersion) {}
 
-		ErrorString AddBlockComponent(NonOwningPtr<Addon> addon, std::unique_ptr<Components::BlockComponentBase>& component);
+		ErrorString AddBlockComponentC(NonOwningPtr<Addon> addon, std::unique_ptr<Components::BlockComponentBase>& component);
+		ErrorString AddBlockComponent(NonOwningPtr<Addon> addon, std::unique_ptr<Components::BlockComponentBase> component)
+		{
+			return AddBlockComponentC(addon, component);
+		}
+		// WARNING: This is an internal function, this is not designed to be used outside of implementation of the API
+		void RemoveBlockComponent(const std::string& componentName) { mBlockComponents.erase(componentName); }
+		// WARNING: This is an internal function, this is not designed to be used outside of implementation of the API
+		// This also bypasses version checking, so be careful when implementing the API
+		void AddBlockComponentInternalC(NonOwningPtr<Addon> addon, std::unique_ptr<Components::BlockComponentBase>& component);
+		void AddBlockComponentInternal(NonOwningPtr<Addon> addon, std::unique_ptr<Components::BlockComponentBase> component) { AddBlockComponentInternalC(addon, component); }
 		void AddState(std::unique_ptr<AState> state) { mStates.emplace_back(std::move(state)); }
 		void AddPermutation(Permutation&& permutation) { mPermutations.emplace_back(std::move(permutation)); }
 		void SetIdentifier(const Identifier& identifier) { mBlockIdentifier = identifier; }
-		void SetCategory(const std::string& category) { mCategory = category; }
+		void SetCategory(const MenuCategory& category) { mCategory = category; }
 
 		const auto& GetBlockComponents() const { return mBlockComponents; }
 		const auto& GetStates() const { return mStates; }
@@ -46,7 +59,6 @@ namespace AgeAPI::Backend::Bp
 
 		Identifier mBlockIdentifier{};
 		SemanticVersion mFormatVersion{};
-
 	};
 }
  

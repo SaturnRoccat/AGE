@@ -31,6 +31,7 @@ namespace AgeAPI::Components
 
 		virtual ErrorString OnComponentAdded(NonOwningPtr<Addon> addon, NonOwningPtr<Backend::Bp::BlockBehaviour> blk) { return""; };
 
+		virtual BlockComponentBase* Clone() const = 0;
 	};
 	
 	template<typename T>

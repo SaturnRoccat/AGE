@@ -22,6 +22,7 @@ namespace AgeAPI::Components
 			mCanBeDoublePushed(canBeDoublePushed), 
 			mIsTransient(isTransient), 
 			mMaxVersion(maxVersion) {}
+		
 
 
 
@@ -39,6 +40,7 @@ namespace AgeAPI::Components
 		void SetCanBeDoublePushed(bool canBeDoublePushed) { mCanBeDoublePushed = canBeDoublePushed; }
 		void SetIsTransient(bool isTransient) { mIsTransient = isTransient; }
 		void SetMaxVersion(const SemanticVersion& version) { mMaxVersion = version; }
+
 
 	protected:
 		ExperimentalSettings mExperimentalSettings;
