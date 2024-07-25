@@ -29,6 +29,16 @@ namespace AgeAPI
 		NonOwningPtr(const NonOwningPtr<T>& other) : mPtr(other.mPtr) {}
 		NonOwningPtr(NonOwningPtr<T>&& other) noexcept : mPtr(std::move(other.mPtr)) {}
 		NonOwningPtr() = default;
+		NonOwningPtr<T>& operator=(const NonOwningPtr<T>& other)
+		{
+			mPtr = other.mPtr;
+			return *this;
+		}
+		NonOwningPtr<T>& operator=(NonOwningPtr<T>&& other) noexcept
+		{
+			mPtr = std::move(other.mPtr);
+			return *this;
+		}
 		T* operator->()
 		{
 #ifndef NDEBUG

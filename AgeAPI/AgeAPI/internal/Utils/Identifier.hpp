@@ -31,6 +31,19 @@ namespace AgeAPI
 		bool operator==(const Identifier& other) const { return mFullNamespace == other.mFullNamespace; }
 		bool operator!=(const Identifier& other) const { return mFullNamespace != other.mFullNamespace; }
 
+		bool Validate() const
+		{
+			for (char c : mFullNamespace)
+			{
+				if (c >= 0x80 && isupper(c))
+					return false;
+			}
+			if (mFullNamespace.find(' ') != std::string::npos)
+				return false;
+			return true;
+
+		}
+
 
 	private:
 		std::string mFullNamespace{};
