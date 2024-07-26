@@ -446,14 +446,14 @@ namespace AgeAPI
 		T* fetchIndex(size_t index)
 		{
 			if (IsSmall())
-				return nullptr;
+				return &smallAsPointer()[index];
 			else
 				return getVec().data() + index;
 		}
 		const T* fetchIndex(size_t index) const
 		{
 			if (IsSmall())
-				return nullptr;
+				return &smallAsPointer()[index];
 			else
 				return getVec().data() + index;
 		}
