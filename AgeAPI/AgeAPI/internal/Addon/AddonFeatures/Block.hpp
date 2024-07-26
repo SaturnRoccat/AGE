@@ -34,7 +34,7 @@ namespace AgeAPI::AddonFeatures
 		template<typename a1> requires std::is_same_v<a1, Backend::Rp::BlockResourceElement>
 		Block& SetTexture(a1&& texture)
 		{
-			for (const auto& existingText : mTextures)
+			for (auto& existingText : mTextures)
 			{
 				if (existingText.mSide == texture.mSide)
 				{
@@ -43,13 +43,24 @@ namespace AgeAPI::AddonFeatures
 				}
 			}
 			mTextures.push_back(std::forward<a1>(texture));
+			return *this;
 		}
-
+		/*
+		* Let me explain what the hell the template magic is doing here because it's a bit of a doozy.
+		* We are abusing perfect forwarding to allow the user to pass any mix of R and L values to the function without having to manually specify the type.
+		*/
 		template<typename a1, typename a2, typename a3>
-			requires std::is_constructible_v<Backend::Rp::Texture, a1&&> && std::is_constructible_v<std::string, a2&&> && std::is_constructible_v<std::string, a3&&>
+			requires std::is_constructible_v<Backend::Rp::Texture, a1>&& std::is_constructible_v<std::string, a2>&& std::is_constructible_v<std::string, a3>
 		Block& SetTexture(a1&& texture, a2&& textureAlias, a3&& pathFromBase = "", Backend::Rp::TextureSide side = Backend::Rp::TextureSide::all)
 		{
 			return SetTexture(Backend::Rp::BlockResourceElement(std::forward<a1>(texture), std::forward<a2>(textureAlias), std::forward<a3>(pathFromBase), side));
+		}
+
+		template<typename a1, typename a2>
+			requires std::is_constructible_v<Backend::Rp::Texture, a1>&& std::is_constructible_v<std::string, a2>
+		Block& SetTexture(a1&& texture, a2&& textureAlias, Backend::Rp::TextureSide side = Backend::Rp::TextureSide::all, const std::string& pathFromBase = "")
+		{
+			return SetTexture(Backend::Rp::BlockResourceElement(std::forward<a1>(texture), std::forward<a2>(textureAlias), pathFromBase, side));
 		}
 
 
