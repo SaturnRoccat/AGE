@@ -20,7 +20,8 @@
 #include <AgeAPI/internal/Utils/ItemGroup.hpp>
 #include <AgeAPI/internal/Utils/MenuCategory.hpp>
 #include <AgeAPI/internal/Utils/UUID.hpp>
-
+#include <absl/container/inlined_vector.h>
+#include <absl/container/flat_hash_map.h>
 
 
 #include <filesystem>

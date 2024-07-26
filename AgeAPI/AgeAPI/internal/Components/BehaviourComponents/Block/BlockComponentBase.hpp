@@ -24,9 +24,13 @@ namespace AgeAPI::Components
 		
 		virtual ErrorString WriteToJson(NonOwningPtr<Addon> addon, JsonProxy proxy, NonOwningPtr<AgeAPI::AddonFeatures::Block> blk) const = 0;
 
-		virtual ErrorString MergeDoublePush(NonOwningPtr<Addon> addon, NonOwningPtr<AgeAPI::AddonFeatures::Block> blk, std::unique_ptr<BlockComponentBase>& other) { return ErrorString(); };
-
-		virtual ErrorString MergeDoublePushShort(std::unique_ptr<BlockComponentBase>& other) { return ErrorString(); };
+		virtual ErrorString MergeDoublePush(
+			NonOwningPtr<Addon> addon,
+			NonOwningPtr<AgeAPI::AddonFeatures::Block> blk,
+			std::unique_ptr<BlockComponentBase>& other) 
+		{ 
+			return ErrorString();
+		};
 
 		virtual ErrorString OnComponentAdded(NonOwningPtr<Addon> addon, NonOwningPtr<AgeAPI::AddonFeatures::Block> blk) { return""; };
 

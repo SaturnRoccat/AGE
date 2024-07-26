@@ -4,6 +4,7 @@
 #include <AgeAPI/internal/BackendGeneration/RP/ResourcePack.hpp>
 #include <AgeAPI/internal/Addon/AddonFeatures/Block.hpp>
 #include <tuple>
+#include <print>
 
 
 namespace AgeAPI
@@ -25,7 +26,6 @@ namespace AgeAPI
 			Capabilities capabilities = {}
 		);
 
-
 		void OutputAddon(const std::string& folderName, const std::pair<std::string, std::string>& outputPath = 
 			{
 				GetDevelopmentBehaviourPackPath(),
@@ -35,7 +35,8 @@ namespace AgeAPI
 		template<typename T>
 		Addon& AddBlock(T&& block)
 		{
-			mBlocks.push_back(std::make_unique<T>(std::forward<T>(block)));
+			using NoRef = std::remove_reference_t<T>;
+			mBlocks.push_back(std::make_unique<NoRef>(std::forward<T>(block)));
 			return *this;
 		}
 

@@ -42,6 +42,8 @@ namespace AgeAPI::AddonFeatures
 	{
 		if (!addon)
 			addon = Addon::GetStaticInstance();
+		if (mRedirectStore)
+			return handleComponentRedirects(std::move(component), addon, override);
 
 		// FIXME: NO VERSION CHECKING HERE NEEDS TO BE ADDED
 		auto it = mComponents.find(component->GetComponentID().GetFullNamespace());
@@ -71,5 +73,27 @@ namespace AgeAPI::AddonFeatures
 		if (!err)
 			return err;
 		return *this;
+	}
+	Block& Block::setGeometryInternal(Backend::Rp::Geometry&& geo)
+	{
+		mGeo = std::move(geo);
+		// FIXME: Make it work :sob:
+		return *this;
+	}
+	ErrorString Block::handleComponentRedirects(std::unique_ptr<Components::BlockComponentBase> component, NonOwningPtr<Addon> addon, bool override)
+	{
+		// FIXME: NO VERSION CHECKING HERE NEEDS TO BE ADDED
+
+		auto it = mRedirectStore->find(component->GetComponentID().GetFullNamespace());
+		if (it != mRedirectStore->end() && !override && !component->CanBeDoublePushed())
+			return ErrorString("Component already exists and cannot be overridden");
+		else if (it != mRedirectStore->end() && component->CanBeDoublePushed())
+		{
+			auto range = mRedirectStore->equal_range(component->GetComponentID().GetFullNamespace());
+			for (auto sub_it = range.first; sub_it != range.second; ++sub_it)
+			{
+				
+			}
+		}
 	}
 }

@@ -5,10 +5,11 @@
 #include <AgeAPI/internal/BackendGeneration/RP/Block/BlockResource.hpp>
 #include <AgeAPI/internal/BackendGeneration/RP/Models/Models.hpp>
 #include <optional>
-#include <absl/container/inlined_vector.h>
+#include <unordered_map>
 
 namespace AgeAPI::AddonFeatures
 {
+
 	class Block
 	{
 	public:
@@ -103,16 +104,27 @@ namespace AgeAPI::AddonFeatures
 
 		}
 
-
+		template<typename a1> requires std::is_constructible_v<Backend::Rp::Geometry, a1>
+		Block& SetGeometry(a1&& geo) {return setGeometryInternal(std::forward<a1>(geo));}
 
 
 	private:
-		std::unordered_map<std::string, std::unique_ptr<Components::BlockComponentBase>> mComponents;
+		Block& setGeometryInternal(Backend::Rp::Geometry&& geo);
+		ErrorString handleComponentRedirects(std::unique_ptr<Components::BlockComponentBase> component, NonOwningPtr<Addon> addon, bool override);
+	private:
+		using ComponentStore = absl::flat_hash_map<std::string, std::unique_ptr<Components::BlockComponentBase>>;
+		using MultiComponentStore = std::unordered_multiset<std::string, std::unique_ptr<Components::BlockComponentBase>>;
+		ComponentStore mComponents{};
+		absl::flat_hash_map<std::string, std::unique_ptr<Backend::Permutation>> mPermutations{};
+		absl::flat_hash_map<std::string, std::unique_ptr<Backend::AState>> mStates{};
 		absl::InlinedVector<Backend::Rp::BlockResourceElement, 1> mTextures{};
 		Identifier mIdentifier{};
-		SemanticVersion mFormatVersion{};
 		MenuCategory mMenuCategory{};
+		SemanticVersion mFormatVersion{};
 		bool mShowInCommands{};
+		bool mEnableRewriteRedirection{ false };
+		NonOwningPtr<MultiComponentStore> mRedirectStore;
+		Backend::Rp::Geometry mGeo{};
 
 
 

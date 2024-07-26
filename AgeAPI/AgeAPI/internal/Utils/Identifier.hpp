@@ -2,6 +2,7 @@
 #include <string>
 #include <format>
 #include <AgeAPI/internal/Utils/BasicTypeDecls.hpp>
+#include <concepts>
 
 namespace AgeAPI
 {
@@ -15,6 +16,9 @@ namespace AgeAPI
 		Identifier(const char* fullNamespace) : mFullNamespace(fullNamespace) { mColonPos = mFullNamespace.find(':'); }
 		Identifier(const char* name, const char* namespace_) : mFullNamespace(std::format("{}:{}", name, namespace_)) { mColonPos = mFullNamespace.find(':'); }
 		Identifier(const Identifier& other) : mFullNamespace(other.mFullNamespace), mColonPos(other.mColonPos) {}
+
+		template<typename T> requires std::is_constructible_v<std::string, T>
+		Identifier(T&& ident) : mFullNamespace(std::forward<T>(ident)) { mColonPos = mFullNamespace.find(':'); }
 
 		const std::string_view GetName() const { return mFullNamespace.substr(mColonPos + 1); }
 		const std::string_view GetNamespace() const { return mFullNamespace.substr(0, mColonPos); }

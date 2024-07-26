@@ -4,23 +4,28 @@
 #include <memory>
 #include <unordered_map>
 
+namespace AgeAPI::AddonFeatures
+{
+	class Block;
+
+}
 namespace AgeAPI::Backend
 {
-	namespace Bp
-	{
-		class BlockBehaviour;
-	}
 	
 	class Permutation
 	{ 
 	public:
 		Permutation() = default;
-		Permutation(std::string_view condition) : mCondition(condition) {}
+		Permutation(const std::string& condition) : mCondition(condition) {}
 		Permutation(const Permutation& other)
 		{
 			mCondition = other.mCondition;
-			for (const auto& comp : other.mComponents)
-				mComponents[comp.first] = std::unique_ptr<Components::BlockComponentBase>(comp.second->Clone());
+			auto& otherComponents = const_cast<Permutation&>(other).mComponents;
+			for (auto& [key, value] : otherComponents)
+			{
+				auto ptr = std::unique_ptr<Components::BlockComponentBase>(value->Clone());
+				mComponents.emplace(key, std::move(ptr));
+			}
 		}
 		Permutation(Permutation&& other) noexcept
 		{
@@ -38,21 +43,12 @@ namespace AgeAPI::Backend
 
 		void SetCondition(std::string_view condition) { mCondition = condition; }
 
-		ErrorString AddComponent(std::unique_ptr<Components::BlockComponentBase>& component) 
-		{
-			auto it = mComponents.find(component->GetComponentID().GetFullNamespace());
+		ReferenceExpected<Permutation, ErrorString> AddComponent(std::unique_ptr<Components::BlockComponentBase> component);
 
-			if (it != mComponents.end() && !component->CanBeDoublePushed())
-				return ErrorString("Component already exists");
-			else if (component->CanBeDoublePushed() && it != mComponents.end())
-				return it->second->MergeDoublePushShort(component);
-			else
-				mComponents[component->GetComponentID().GetFullNamespace()] = std::move(component);
-			return ErrorString();
-		}
 	private:
 		std::string mCondition;
-		std::unordered_map<std::string, std::unique_ptr<Components::BlockComponentBase>> mComponents{};
+		std::unordered_multimap<std::string, std::unique_ptr<Components::BlockComponentBase>> mComponents{};
+		friend class AgeAPI::AddonFeatures::Block;
 	};
 
 }
