@@ -25,7 +25,7 @@ namespace AgeAPI
 		ErrorString(const char* error) : mError(error) {}
 		std::string GetAsString() override { return mError; }
 		bool ContainsError() override { return !mError.empty(); }
-		operator bool() { return !mError.empty(); }
+		operator bool() { return mError.empty(); }
 	private:
 		std::string mError{};
 	};
