@@ -31,8 +31,15 @@ namespace AgeAPI
 				GetDevelopmentBehaviourPackPath(),
 				GetDevelopmentResourcePackPath()
 			}, bool ClearExistingData = true, bool cacheManifest = true);
-		
 
+		template<typename T>
+		Addon& AddBlock(T&& block)
+		{
+			mBlocks.push_back(std::make_unique<T>(std::forward<T>(block)));
+			return *this;
+		}
+
+		
 		static const std::string& GetDevelopmentBehaviourPackPath();
 		static const std::string& GetDevelopmentResourcePackPath();
 		static NonOwningPtr<Addon> SetupStaticInstance(
@@ -51,8 +58,8 @@ namespace AgeAPI
 	private:
 
 	private:
-
 		std::vector<std::unique_ptr<AddonFeatures::Block>> mBlocks{};
+		// The reason we hold *pointers* to the blocks is we want to allow some overwriting of block stuff 
 
 	};
 }
