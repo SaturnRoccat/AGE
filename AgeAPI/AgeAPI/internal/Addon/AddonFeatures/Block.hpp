@@ -5,6 +5,7 @@
 #include <AgeAPI/internal/BackendGeneration/RP/Block/BlockResource.hpp>
 #include <AgeAPI/internal/BackendGeneration/RP/Models/Models.hpp>
 #include <optional>
+#include <absl/container/inlined_vector.h>
 
 namespace AgeAPI::AddonFeatures
 {
@@ -30,6 +31,35 @@ namespace AgeAPI::AddonFeatures
 			return AddComponent(std::make_unique<Component>(component), override, addon);
 		}
 		ReferenceExpected<Block, ErrorString> RemoveComponent(const std::string& componentName, NonOwningPtr<Addon> addon = nullptr);
+		template<typename Container> requires std::ranges::range<Container>
+		ReferenceExpected<Block, ErrorString> AddComponentsCopy(
+			const Container& components,
+			bool override = false,
+			NonOwningPtr<Addon> addon = nullptr)
+		{
+			for (auto& component : components)
+			{
+				auto ptr = std::unique_ptr<Components::BlockComponentBase>(component->Clone());
+				auto err = AddComponent(std::move(ptr), override, addon);
+				if (!err)
+					return err;
+			}
+			return *this;
+		}
+		template<typename Container> requires std::ranges::range<Container>
+		ReferenceExpected<Block, ErrorString> AddComponents(
+			Container&& components,
+			bool override = false,
+			NonOwningPtr<Addon> addon = nullptr)
+		{
+			for (auto& component : components)
+			{
+				auto err = AddComponent(std::move(component), override, addon);
+				if (!err)
+					return err;
+			}
+			return *this;
+		}
 		
 		template<typename a1> requires std::is_same_v<a1, Backend::Rp::BlockResourceElement>
 		Block& SetTexture(a1&& texture)
@@ -49,25 +79,36 @@ namespace AgeAPI::AddonFeatures
 		* Let me explain what the hell the template magic is doing here because it's a bit of a doozy.
 		* We are abusing perfect forwarding to allow the user to pass any mix of R and L values to the function without having to manually specify the type.
 		*/
-		template<typename a1, typename a2, typename a3>
-			requires std::is_constructible_v<Backend::Rp::Texture, a1>&& std::is_constructible_v<std::string, a2>&& std::is_constructible_v<std::string, a3>
+		template<typename a1, typename a2, typename a3 = a2>
+			requires std::is_constructible_v<Backend::Rp::Texture, a1>&& std::is_same_v<std::string, a2>&& std::is_constructible_v<std::string, a3>
 		Block& SetTexture(a1&& texture, a2&& textureAlias, a3&& pathFromBase = "", Backend::Rp::TextureSide side = Backend::Rp::TextureSide::all)
 		{
+			if constexpr (std::is_same_v<a3, std::string>)
+			{
+				if (pathFromBase.empty())
+					pathFromBase = a3(textureAlias);
+			}
+
 			return SetTexture(Backend::Rp::BlockResourceElement(std::forward<a1>(texture), std::forward<a2>(textureAlias), std::forward<a3>(pathFromBase), side));
 		}
 
-		template<typename a1, typename a2>
-			requires std::is_constructible_v<Backend::Rp::Texture, a1>&& std::is_constructible_v<std::string, a2>
-		Block& SetTexture(a1&& texture, a2&& textureAlias, Backend::Rp::TextureSide side = Backend::Rp::TextureSide::all, const std::string& pathFromBase = "")
+		template<typename a1> requires std::is_constructible_v<Identifier, a1>
+		ReferenceExpected<Block, ErrorString> SetIdentifier(a1&& identifier)
 		{
-			return SetTexture(Backend::Rp::BlockResourceElement(std::forward<a1>(texture), std::forward<a2>(textureAlias), pathFromBase, side));
+			Identifier temp = std::forward<a1>(identifier);
+			if (!temp.Validate())
+				return ErrorString("invalid identifier");
+			mIdentifier = std::move(temp);
+			return *this;
+
 		}
+
 
 
 
 	private:
 		std::unordered_map<std::string, std::unique_ptr<Components::BlockComponentBase>> mComponents;
-		SmallVector<Backend::Rp::BlockResourceElement> mTextures{};
+		absl::InlinedVector<Backend::Rp::BlockResourceElement, 1> mTextures{};
 		Identifier mIdentifier{};
 		SemanticVersion mFormatVersion{};
 		MenuCategory mMenuCategory{};

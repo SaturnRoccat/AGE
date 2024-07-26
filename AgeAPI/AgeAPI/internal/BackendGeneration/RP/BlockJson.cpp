@@ -33,7 +33,9 @@ namespace AgeAPI::Backend::Rp
 		for (auto& [id, texture] : mBlockJsonStorage)
 		{
 			rapidjson::Value blockTexture(rapidjson::kObjectType);
-			if (texture.mTextures.IsSmall())
+			if (texture.mTextures.size() == 0)
+				return "BlockJson::writeToFile: BlockJsonStorageImpl::mTextures is empty";
+			if (texture.mTextures.size() == 1)
 			{
 				blockTexture.AddMember("textures", texture.mTextures[0].second, allocator);
 

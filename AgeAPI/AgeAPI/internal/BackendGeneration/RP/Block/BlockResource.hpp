@@ -6,6 +6,7 @@
 #include <variant>
 #include <string>
 #include <AgeAPI/internal/RapidJsonExtension/TypeTranslations.hpp>
+#include <absl/container/inlined_vector.h>
 
 namespace AgeAPI::Backend::Rp
 {
@@ -87,13 +88,13 @@ namespace AgeAPI::Backend::Rp
 			: mRenderMethod(renderMethod), mMaterials({ element }) {}
 		MaterialInstance(MaterialInstanceElement&& element, RenderMethod renderMethod = RenderMethod::opaque)
 			: mRenderMethod(renderMethod), mMaterials({ std::move(element) }) {}
-		MaterialInstance(const SmallVector<MaterialInstanceElement, 1>& elements, RenderMethod renderMethod = RenderMethod::opaque)
+		MaterialInstance(const absl::InlinedVector<MaterialInstanceElement, 1>& elements, RenderMethod renderMethod = RenderMethod::opaque)
 			: mRenderMethod(renderMethod), mMaterials(elements) {}
-		MaterialInstance(SmallVector<MaterialInstanceElement, 1>&& elements, RenderMethod renderMethod = RenderMethod::opaque)
+		MaterialInstance(absl::InlinedVector<MaterialInstanceElement, 1>&& elements, RenderMethod renderMethod = RenderMethod::opaque)
 			: mRenderMethod(renderMethod), mMaterials(std::move(elements)) {}
 		MaterialInstance(RenderMethod renderMethod) : mRenderMethod(renderMethod) {}
 
-		SmallVector<MaterialInstanceElement, 1> mMaterials{};
+		absl::InlinedVector<MaterialInstanceElement, 1> mMaterials{};
 	};
 
 }
