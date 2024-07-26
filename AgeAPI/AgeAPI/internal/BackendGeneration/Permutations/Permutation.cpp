@@ -3,7 +3,7 @@
 
 namespace AgeAPI::Backend
 {
-	ErrorString Permutation::WriteToJson(JsonProxy proxy, NonOwningPtr<Addon> addon, NonOwningPtr<Backend::Bp::BlockBehaviour> blk) const
+	ErrorString Permutation::WriteToJson(JsonProxy proxy, NonOwningPtr<Addon> addon, NonOwningPtr<AddonFeatures::Block> blk) const
 	{
 		rapidjson::Value condition(this->mCondition, proxy.mAllocator);
 		proxy.mWriteLoc.AddMember("condition", condition, proxy.mAllocator);

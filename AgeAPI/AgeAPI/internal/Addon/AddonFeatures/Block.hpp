@@ -4,26 +4,64 @@
 #include <AgeAPI/internal/BackendGeneration/RP/ResourcePack.hpp>
 #include <AgeAPI/internal/BackendGeneration/RP/Block/BlockResource.hpp>
 #include <AgeAPI/internal/BackendGeneration/RP/Models/Models.hpp>
+#include <optional>
 
 namespace AgeAPI::AddonFeatures
 {
-	class IBlock
+	class Block
 	{
 	public:
-		IBlock() = default;
-		virtual ~IBlock() = default;
-		virtual ErrorString AddBlockComponent(NonOwningPtr<Addon> addon, std::unique_ptr<Components::BlockComponentBase>& component) = 0;
-		virtual void AddPermutation(Backend::Permutation&& permutation) = 0;
-		virtual void AddPermutation(const Backend::Permutation& permutation) {
-			auto copy = permutation;
-			AddPermutation(std::move(copy));
+		Block() = default;
+		Block(const Block& other);
+		Block(Block&& other) noexcept = default;
+		Block& operator=(const Block& other);
+		Block& operator=(Block&& other) noexcept = default;
+		~Block() = default;
+
+		static std::expected<Block, ErrorString> MakeBlock(
+			const Identifier& identifier,
+			SemanticVersion formatVersion = { 1, 21, 20 },
+			const MenuCategory& catagory = {},
+			bool showInCommands = true);
+		ReferenceExpected<Block, ErrorString> AddComponent(std::unique_ptr<Components::BlockComponentBase> component, bool override = false, NonOwningPtr<Addon> addon = nullptr);
+		template<Components::BlockComponent Component>
+		ReferenceExpected<Block, ErrorString> AddComponent(const Component& component, bool override = false, NonOwningPtr<Addon> addon = nullptr)
+		{
+			return AddComponent(std::make_unique<Component>(component), override, addon);
 		}
-		virtual void SetIdentifier(const Identifier& identifier) = 0;
-		virtual void SetCategory(const MenuCategory& category) = 0;
-		virtual void AddTexture(Backend::Rp::TextureSide side, const Backend::Rp::BlockResourceElement& element) = 0;
-		virtual void BindToPacks(Backend::Bp::BehaviourPack& bp, Backend::Rp::ResourcePack& rp) = 0;
-		virtual void SetGeo(NonOwningPtr<Addon> addon, const Backend::Rp::Geometry& geo, const Backend::Rp::MaterialInstance& mat = {}) = 0;
-		/// virtual void SetGeo(const Backend::Rp::Geometry& geo, const Backend::Rp::BlockResourceElement& texture) = 0;
+		ReferenceExpected<Block, ErrorString> RemoveComponent(const std::string& componentName, NonOwningPtr<Addon> addon = nullptr);
+		
+		template<typename a1> requires std::is_same_v<a1, Backend::Rp::BlockResourceElement>
+		Block& SetTexture(a1&& texture)
+		{
+			for (const auto& existingText : mTextures)
+			{
+				if (existingText.mSide == texture.mSide)
+				{
+					existingText = std::forward<a1>(texture);
+					return *this;
+				}
+			}
+			mTextures.push_back(std::forward<a1>(texture));
+		}
+
+		template<typename a1, typename a2, typename a3>
+			requires std::is_constructible_v<Backend::Rp::Texture, a1&&> && std::is_constructible_v<std::string, a2&&> && std::is_constructible_v<std::string, a3&&>
+		Block& SetTexture(a1&& texture, a2&& textureAlias, a3&& pathFromBase = "", Backend::Rp::TextureSide side = Backend::Rp::TextureSide::all)
+		{
+			return SetTexture(Backend::Rp::BlockResourceElement(std::forward<a1>(texture), std::forward<a2>(textureAlias), std::forward<a3>(pathFromBase), side));
+		}
+
+
+
+	private:
+		std::unordered_map<std::string, std::unique_ptr<Components::BlockComponentBase>> mComponents;
+		SmallVector<Backend::Rp::BlockResourceElement> mTextures{};
+		Identifier mIdentifier{};
+		SemanticVersion mFormatVersion{};
+		MenuCategory mMenuCategory{};
+		bool mShowInCommands{};
+
 
 
 	};

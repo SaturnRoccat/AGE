@@ -10,17 +10,17 @@ namespace AgeAPI::Backend::Rp
 			{
 				switch (side)
 				{
-				case TextureSide::TOP:
+				case TextureSide::up:
 					return "up";
-				case TextureSide::BOTTOM:
+				case TextureSide::down:
 					return "down";
-				case TextureSide::FRONT:
+				case TextureSide::north:
 					return "north";
-				case TextureSide::RIGHT:
+				case TextureSide::east:
 					return "east";
-				case TextureSide::BACK:
+				case TextureSide::south:
 					return "south";
-				case TextureSide::LEFT:
+				case TextureSide::west:
 					return "west";
 				default:
 					return "";
@@ -42,18 +42,18 @@ namespace AgeAPI::Backend::Rp
 				continue;
 			}
 			std::list<TextureSide> RemainingSides = {
-				TextureSide::TOP,
-				TextureSide::BOTTOM,
-				TextureSide::FRONT,
-				TextureSide::RIGHT,
-				TextureSide::BACK,
-				TextureSide::LEFT
+				TextureSide::up,
+				TextureSide::down,
+				TextureSide::north,
+				TextureSide::east,
+				TextureSide::south,
+				TextureSide::west
 			};
 			std::string allTextureSide{};
 			rapidjson::Value InternalTextures(rapidjson::kObjectType);
 			for (auto& [side, textureName] : texture.mTextures)
 			{
-				if (side == TextureSide::ALL)
+				if (side == TextureSide::all)
 				{
 					allTextureSide = textureName;
 					continue;
@@ -84,7 +84,7 @@ namespace AgeAPI::Backend::Rp
 		if (!override && mBlockJsonStorage.find(blockID) != mBlockJsonStorage.end())
 			return BlockJsonError::ALREADY_EXISTS;
 
-		mBlockJsonStorage[blockID] = BlockJsonStorageImpl({ {TextureSide::ALL, textureName} }, soundID);
+		mBlockJsonStorage[blockID] = BlockJsonStorageImpl({ {TextureSide::all, textureName} }, soundID);
 		return BlockJsonError::NONE;
 	}
 	BlockJsonError BlockJson::AddBlock(const Identifier& blockID, const BlockJsonStorageImpl& blockJsonStorage, bool override)

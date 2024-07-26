@@ -4,7 +4,7 @@
 
 namespace AgeData
 {
-	using namespace AgeAPI;
+	/*using namespace AgeAPI;
 	class Block : public AgeAPI::AddonFeatures::IBlock
 	{
 	public:
@@ -97,6 +97,6 @@ namespace AgeData
 
 		void SetGeo(NonOwningPtr<Addon> addon, const Backend::Rp::Geometry& geo, const Backend::Rp::MaterialInstance& mat = {}) override;
 
-	};
+	};*/
 
 }

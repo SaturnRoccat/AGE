@@ -25,6 +25,7 @@ namespace AgeAPI
 		ErrorString(const char* error) : mError(error) {}
 		std::string GetAsString() override { return mError; }
 		bool ContainsError() override { return !mError.empty(); }
+		operator bool() { return !mError.empty(); }
 	private:
 		std::string mError{};
 	};
@@ -37,6 +38,7 @@ namespace AgeAPI
 		std::string GetAsString() override { return std::to_string(mErrorCode); }
 		int GetErrorCode() { return mErrorCode; }
 		bool ContainsError() override { return mErrorCode != 0; }
+
 	private:
 		int mErrorCode{};
 	};
@@ -93,4 +95,5 @@ namespace AgeAPI
 	private:
 		std::variant<std::reference_wrapper<T>, E> mResult;
 	};
+
 }

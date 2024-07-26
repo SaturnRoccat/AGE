@@ -42,7 +42,6 @@ namespace AgeAPI::Backend::Rp
 		const Manifest& GetManifest() const { return mManifest; }
 		Manifest& GetManifest() { return mManifest; }
 
-		BlockRegistrationError BindBlockResource(const BlockResource& blkResource, bool sanityCheck = true);
 
 	};
 }

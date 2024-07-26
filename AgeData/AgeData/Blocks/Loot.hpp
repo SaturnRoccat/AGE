@@ -18,7 +18,7 @@ namespace AgeData::BlockComponents
         void SetTable(const std::string& val) { mValue = val; }
         const std::string& GetTable() const { return mValue; }
         //TODO: Implement Ctors to allow binding with the LootTable class in the future
-        AgeAPI::ErrorString WriteToJson(AgeAPI::NonOwningPtr<AgeAPI::Addon> addon, AgeAPI::JsonProxy proxy, AgeAPI::NonOwningPtr<AgeAPI::Backend::Bp::BlockBehaviour> blk) const override
+        AgeAPI::ErrorString WriteToJson(AgeAPI::NonOwningPtr<AgeAPI::Addon> addon, AgeAPI::JsonProxy proxy, AgeAPI::NonOwningPtr<AgeAPI::AddonFeatures::Block> blk) const override
         {
             proxy.mWriteLoc.SetString(mValue, proxy.mAllocator);
         }

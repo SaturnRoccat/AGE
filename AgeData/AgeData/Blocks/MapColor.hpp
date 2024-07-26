@@ -35,7 +35,7 @@ namespace AgeData::BlockComponents
         std::string GetColorString() const { return std::get<std::string>(mValue); }
         auto GetValue() const { return mValue; }
         bool IsColorVec() const { return std::holds_alternative<MapColorVec>(mValue); }
-        AgeAPI::ErrorString WriteToJson(AgeAPI::NonOwningPtr<AgeAPI::Addon> addon, AgeAPI::JsonProxy proxy, AgeAPI::NonOwningPtr<AgeAPI::Backend::Bp::BlockBehaviour> blk) const override;
+        AgeAPI::ErrorString WriteToJson(AgeAPI::NonOwningPtr<AgeAPI::Addon> addon, AgeAPI::JsonProxy proxy, AgeAPI::NonOwningPtr<AgeAPI::AddonFeatures::Block> blk) const override;
     private:
         std::variant<MapColorVec, std::string> mValue;
     };

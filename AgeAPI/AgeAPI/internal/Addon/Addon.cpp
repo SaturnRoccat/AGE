@@ -13,52 +13,16 @@ namespace AgeAPI
 		const std::vector<Dependency>& dependencies,
 		const Metadata& metadata,
 		Capabilities capabilities
-	) : mRp(name)
+	)
 	{
-		Manifest behaviourManifest{
-			minEngineVersion,
-			addonVersion,
-			name,
-			description,
-			{Module("data")},
-			dependencies,
-			metadata,
-			capabilities
-		};
 
-		for (const auto& module : extraModules)
-			behaviourManifest.AddModule(module);
-
-		Manifest resourceManifest{
-			minEngineVersion,
-			addonVersion,
-			name,
-			description,
-			{Module("resources")},
-			dependencies,
-			metadata,
-			capabilities
-		};
-
-		if (AutoRegisterBehAndResAsDeps)
-		{
-			Dependency behDep{ behaviourManifest.GetUUID(), addonVersion};
-			Dependency resDep{ resourceManifest.GetUUID(), addonVersion};
-
-			behaviourManifest.AddDependency(resDep);
-			resourceManifest.AddDependency(behDep);
-		}
-
-		mBp.setManifest(behaviourManifest);
-		mRp.setManifest(resourceManifest);
 	}
 	void Addon::OutputAddon(const std::string& folderName, const std::pair<std::string, std::string>& outputPath, bool ClearOutputFolder, bool CacheManifest)
 	{
 		std::filesystem::path outputDirBeh = outputPath.first;
 		std::filesystem::path outputDirRes = outputPath.second;
 
-		for (auto& block : mBlocks)
-			block->BindToPacks(mBp, mRp);
+		
 
 		auto bpOutput = outputDirBeh / std::format("{}Bp", folderName);
 		auto rpOutput = outputDirRes / std::format("{}Rp", folderName);
@@ -83,8 +47,6 @@ namespace AgeAPI
 
 		}
 
-		mBp.buildBehaviourPack(bpOutput, generateBehaviourManifest);
-		mRp.buildResourcePack(rpOutput, generateResourceManifest);
 	}
 
 	/*
@@ -137,5 +99,26 @@ namespace AgeAPI
 		}
 
 		return path;
+	}
+	static Addon addon; // Static instance of Addon
+	NonOwningPtr<Addon> Addon::SetupStaticInstance(const SemanticVersion& minEngineVersion, const SemanticVersion& addonVersion, const std::string& name, const std::string& description, bool AutoRegisterBehAndResAsDeps, ExperimentalSettings experimentalSettings, const std::string& basePath, const std::vector<Module>& extraModules, const std::vector<Dependency>& dependencies, const Metadata& metadata, Capabilities capabilities)
+	{
+		addon = std::move(
+			
+			Addon(minEngineVersion,
+				addonVersion,
+				name,
+				description,
+				AutoRegisterBehAndResAsDeps,
+				experimentalSettings,
+				basePath, extraModules, dependencies,
+				metadata, capabilities
+			)
+		);
+		return &addon;
+	}
+	NonOwningPtr<Addon> Addon::GetStaticInstance()
+	{
+		return &addon;
 	}
 }

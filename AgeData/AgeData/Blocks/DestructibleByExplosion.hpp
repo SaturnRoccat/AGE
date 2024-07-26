@@ -25,7 +25,7 @@ namespace AgeData::BlockComponents
         bool GetDestructibleByExplosionBool() const { return mValue; }
         bool IsData() const { return !mValue.IsToggle(); }
         BlockComponentBase* Clone() const override { return new DestructibleByExplosion(*this); }
-        AgeAPI::ErrorString WriteToJson(AgeAPI::NonOwningPtr<AgeAPI::Addon> addon, AgeAPI::JsonProxy proxy, AgeAPI::NonOwningPtr<AgeAPI::Backend::Bp::BlockBehaviour> blk) const override;
+        AgeAPI::ErrorString WriteToJson(AgeAPI::NonOwningPtr<AgeAPI::Addon> addon, AgeAPI::JsonProxy proxy, AgeAPI::NonOwningPtr<AgeAPI::AddonFeatures::Block> blk) const override;
     private:
         ToggleOrData<int, true> mValue;
     };
