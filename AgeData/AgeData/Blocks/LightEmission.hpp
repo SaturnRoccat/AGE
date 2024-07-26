@@ -35,6 +35,7 @@ namespace AgeData::BlockComponents
         AgeAPI::ErrorString WriteToJson(AgeAPI::NonOwningPtr<AgeAPI::Addon> addon, AgeAPI::JsonProxy proxy, AgeAPI::NonOwningPtr<AgeAPI::AddonFeatures::Block> blk) const override
         {
             proxy.mWriteLoc.SetInt64(mValue);
+            return "";
         }
     private:
         int mValue{};

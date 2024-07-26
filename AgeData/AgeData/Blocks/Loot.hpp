@@ -21,6 +21,7 @@ namespace AgeData::BlockComponents
         AgeAPI::ErrorString WriteToJson(AgeAPI::NonOwningPtr<AgeAPI::Addon> addon, AgeAPI::JsonProxy proxy, AgeAPI::NonOwningPtr<AgeAPI::AddonFeatures::Block> blk) const override
         {
             proxy.mWriteLoc.SetString(mValue, proxy.mAllocator);
+            return "";
         }
         BlockComponentBase* Clone() const override {
             return new Loot(mValue);

@@ -25,8 +25,8 @@ namespace AgeData::BlockComponents
         {
             auto& side = materials[0];
             rapidjson::Value AllSide(rapidjson::kObjectType);
-            if (side.mSide != TextureSide::ALL)
-                std::println("Warning: MaterialInstances has only one material, but it's side is not TextureSide::ALL");
+            if (side.mSide != TextureSide::all)
+                std::println("Warning: MaterialInstances has only one material, but it's side is not TextureSide::all");
                 //TODO: Switch over to a global logger for errors and warnings
             WriteMaterialToJson({ AllSide, alloc }, side);
             json.AddMember("*", AllSide, alloc);
@@ -34,17 +34,17 @@ namespace AgeData::BlockComponents
         }
        
         std::list<TextureSide> unlabledSides = {
-            TextureSide::TOP,
-            TextureSide::BOTTOM,
-            TextureSide::LEFT,
-            TextureSide::RIGHT,
-            TextureSide::FRONT,
-            TextureSide::BACK
+            TextureSide::up,
+            TextureSide::down,
+            TextureSide::north,
+            TextureSide::east,
+            TextureSide::south,
+            TextureSide::west
 		};
         AgeAPI::NonOwningPtr<const MaterialInstance::MaterialInstanceElement> element = nullptr;
         for (auto& side : materials)
         {
-            if (side.mSide == TextureSide::ALL)
+            if (side.mSide == TextureSide::all)
             {
                 element = &side;
                 continue;
@@ -55,7 +55,7 @@ namespace AgeData::BlockComponents
             unlabledSides.remove(side.mSide);
         }
         if (!element && !unlabledSides.empty())
-            return "MaterialInstances has no material for TextureSide::ALL and hasnt supplied enough materials for the other sides";
+            return "MaterialInstances has no material for TextureSide::all and hasnt supplied enough materials for the other sides";
 
         for (auto& side : unlabledSides)
 		{
