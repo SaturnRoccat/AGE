@@ -100,8 +100,21 @@ namespace AgeAPI
 
 		return path;
 	}
-	static Addon addon; // Static instance of Addon
-	NonOwningPtr<Addon> Addon::SetupStaticInstance(const SemanticVersion& minEngineVersion, const SemanticVersion& addonVersion, const std::string& name, const std::string& description, bool AutoRegisterBehAndResAsDeps, ExperimentalSettings experimentalSettings, const std::string& basePath, const std::vector<Module>& extraModules, const std::vector<Dependency>& dependencies, const Metadata& metadata, Capabilities capabilities)
+	static Addon addon;
+	// The reason we have a singleton is because most of the time only a singel addon will be used but there maybe rare cases where more are needed
+	// so we allow construction of multiple but the lifetime must be managed by the user
+	NonOwningPtr<Addon> Addon::SetupStaticInstance(
+		const SemanticVersion& minEngineVersion,
+		const SemanticVersion& addonVersion,
+		const std::string& name,
+		const std::string& description,
+		bool AutoRegisterBehAndResAsDeps,
+		ExperimentalSettings experimentalSettings, 
+		const std::string& basePath,
+		const std::vector<Module>& extraModules,
+		const std::vector<Dependency>& dependencies,
+		const Metadata& metadata,
+		Capabilities capabilities)
 	{
 		addon = std::move(
 			
@@ -117,6 +130,7 @@ namespace AgeAPI
 		);
 		return &addon;
 	}
+
 	NonOwningPtr<Addon> Addon::GetStaticInstance()
 	{
 		return &addon;
