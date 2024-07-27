@@ -190,6 +190,46 @@ namespace AgeAPI::AddonFeatures
 			return *this;
 		}
 #pragma endregion
+#pragma region Add States
+		ReferenceExpected<Block, ErrorString> AddState(std::unique_ptr<Backend::AState> state, bool override = false);
+		template<typename T> requires std::is_constructible_v<Backend::AState, T&&>
+		ReferenceExpected<Block, ErrorString> AddState(T&& state, bool override = false)
+		{
+			return AddState(std::make_unique<Backend::AState>(std::forward<T>(state)), override);
+		}
+		template<Backend::State State, typename... Args>
+		ReferenceExpected<Block, ErrorString> AddState(Args&&... args)
+		{
+			return AddState(State(std::forward<Args>(args)...));
+		}
+		template<typename Container> requires std::ranges::range<Container>
+		ReferenceExpected<Block, ErrorString> AddStates(
+			const Container& states,
+			bool override = false)
+		{
+			for (auto& state : states)
+			{
+				auto ptr = std::unique_ptr<Backend::AState>(state->Clone());
+				auto err = AddState(std::move(ptr), override);
+				if (!err)
+					return err;
+			}
+			return *this;
+		}
+		template<typename Container> requires std::ranges::range<Container>
+		ReferenceExpected<Block, ErrorString> AddStates(
+			Container&& states,
+			bool override = false)
+		{
+			for (auto& state : states)
+			{
+				auto err = AddState(std::move(state), override);
+				if (!err)
+					return err;
+			}
+			return *this;
+		}
+#pragma endregion
 
 
 		// WARNING: This invalidates/wipes the block this should ONLY EVER be used when used in method chaining
@@ -225,9 +265,6 @@ namespace AgeAPI::AddonFeatures
 		bool mEnableRewriteRedirection{ false };
 		NonOwningPtr<ComponentStore> mRedirectStore{nullptr};
 		Backend::Rp::Geometry mGeo{};
-
-
-
 	};
 
 	

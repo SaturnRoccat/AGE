@@ -86,7 +86,17 @@ namespace AgeAPI::AddonFeatures
 	}
 	ReferenceExpected<Block, ErrorString> Block::AddTrait(std::unique_ptr<Backend::Bp::TraitBase> trait, bool override)
 	{
-		return addTraitInternal(std::move(trait), override);
+		auto err =  addTraitInternal(std::move(trait), override);
+		if (!err)
+			return err;
+		return *this;
+	}
+	ReferenceExpected<Block, ErrorString> Block::AddState(std::unique_ptr<Backend::AState> state, bool override)
+	{
+		auto err = addStateInternal(std::move(state), override);
+		if (!err)
+			return err;
+		return *this;
 	}
 	Block& Block::setGeometryInternal(Backend::Rp::Geometry&& geo)
 	{
@@ -137,6 +147,14 @@ namespace AgeAPI::AddonFeatures
 		if (!override && mTraits.contains(trait->GetTraitId().GetFullNamespace()))
 			return ErrorString("Trait already exists and cannot be overridden. Enable the override flag if it is needed.");
 		mTraits[trait->GetTraitId().GetFullNamespace()] = std::move(trait);
+		return {};
+	}
+	ErrorString Block::addStateInternal(std::unique_ptr<Backend::AState> state, bool override)
+	{
+		DLOG(INFO) << std::format("Adding state: {}", state->GetStateId().GetFullNamespace());
+		if (!override && mStates.contains(state->GetStateId().GetFullNamespace()))
+			return ErrorString("State already exists and cannot be overridden. Enable the override flag if it is needed.");
+		mStates[state->GetStateId().GetFullNamespace()] = std::move(state);
 		return {};
 	}
 }
