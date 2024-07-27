@@ -210,5 +210,18 @@ namespace AgeAPI
 		return std::unique_ptr<T>{static_cast<T*>(ptr)};
 	}
 
-	
+	class ScopedToggle
+	{
+	public:
+		ScopedToggle(bool& toggle) : mToggle(toggle)
+		{
+			mToggle = !mToggle;
+		}
+		~ScopedToggle()
+		{
+			mToggle = !mToggle;
+		}
+	private:
+		bool& mToggle;
+	};
 }
