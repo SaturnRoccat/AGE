@@ -64,5 +64,6 @@ namespace AgeAPI::Backend
 	};
 
 
-
+	template<typename T>
+	concept State = std::is_base_of_v<AState, T>;
 }
