@@ -26,6 +26,9 @@ namespace AgeAPI::AddonFeatures
 			SemanticVersion formatVersion = { 1, 21, 20 },
 			const MenuCategory& catagory = {},
 			bool showInCommands = true);
+#pragma region Add Components
+
+
 		ReferenceExpected<Block, ErrorString> AddComponent(std::unique_ptr<Components::BlockComponentBase> component, bool override = false, NonOwningPtr<Addon> addon = nullptr);
 		template<Components::BlockComponent Component>
 		ReferenceExpected<Block, ErrorString> AddComponent(Component&& component, bool override = false, NonOwningPtr<Addon> addon = nullptr)
@@ -62,7 +65,10 @@ namespace AgeAPI::AddonFeatures
 			}
 			return *this;
 		}
-		
+#pragma endregion
+#pragma region Misc
+
+
 		template<typename a1> requires std::is_same_v<a1, Backend::Rp::BlockResourceElement>
 		Block& SetTexture(a1&& texture)
 		{
@@ -107,6 +113,9 @@ namespace AgeAPI::AddonFeatures
 
 		template<typename a1> requires std::is_constructible_v<Backend::Rp::Geometry, a1>
 		Block& SetGeometry(a1&& geo) {return setGeometryInternal(std::forward<a1>(geo));}
+#pragma endregion
+#pragma region Add Permutations
+
 
 		ReferenceExpected<Block, ErrorString> AddPermutation(std::unique_ptr<Backend::Permutation> permutation, bool override = false, NonOwningPtr<Addon> addon = nullptr);
 		template<typename T> requires std::is_constructible_v<Backend::Permutation, T&&>
@@ -143,6 +152,9 @@ namespace AgeAPI::AddonFeatures
 			}
 			return *this;
 		}
+#pragma endregion
+#pragma region AddTraits
+
 
 		ReferenceExpected<Block, ErrorString> AddTrait(std::unique_ptr<Backend::Bp::TraitBase> trait, bool override = false);
 		template<typename T> requires std::is_constructible_v<Backend::Bp::TraitBase, T&&>
@@ -177,6 +189,7 @@ namespace AgeAPI::AddonFeatures
 			}
 			return *this;
 		}
+#pragma endregion
 
 
 		// WARNING: This invalidates/wipes the block this should ONLY EVER be used when used in method chaining
@@ -192,6 +205,7 @@ namespace AgeAPI::AddonFeatures
 		ErrorString handleComponentRedirects(std::unique_ptr<Components::BlockComponentBase> component, NonOwningPtr<Addon> addon, bool override);
 		ReferenceExpected<Block, ErrorString> addPermutationInternal(std::unique_ptr<Backend::Permutation> permutation, bool override, NonOwningPtr<Addon> addon);
 		ErrorString addTraitInternal(std::unique_ptr<Backend::Bp::TraitBase> trait, bool override);
+		ErrorString addStateInternal(std::unique_ptr<Backend::AState> state, bool override);
 
 	private:
 		using ComponentStore = absl::flat_hash_map<std::string, std::unique_ptr<Components::BlockComponentBase>>;
