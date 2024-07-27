@@ -10,6 +10,24 @@
 
 namespace AgeAPI
 {
+	// Enable & for any enum
+	template<typename T, typename U>
+	constexpr std::enable_if_t<std::is_enum_v<T> && std::is_enum_v<U>, T> operator&(T lhs, U rhs)
+	{
+		using UT = std::underlying_type_t<T>;
+		using UU = std::underlying_type_t<U>;
+		return static_cast<T>(static_cast<UT>(lhs) & static_cast<UU>(rhs));
+	}
+
+	template<typename Enum, typename... Ts>
+	constexpr Enum MixEnum(Ts... ts)
+	{
+		Enum result = static_cast<Enum>(0);
+		(void(result = result | ts), ...);
+		return result;
+	}
+
+
 	using u8 = unsigned char;
 	using i8 = char;
 	using u16 = unsigned short;
@@ -41,43 +59,23 @@ namespace AgeAPI
 		}
 		T* operator->()
 		{
-#ifndef NDEBUG
-			if (!mPtr)
-				throw std::runtime_error("NonOwningPtr Destroyed While Still Being Required");
-#endif
 			return mPtr;
 		}
 		T& operator*()
 		{
-#ifndef NDEBUG
-			if (!mPtr)
-				throw std::runtime_error("NonOwningPtr Destroyed While Still Being Required");
-#endif
 			return *mPtr;
 		}
 		T* Get()
 		{
-#ifndef NDEBUG
-			if (!mPtr)
-				throw std::runtime_error("NonOwningPtr Destroyed While Still Being Required");
-#endif
 
 			return mPtr;
 		}
 		const T* Get() const
 		{
-#ifndef NDEBUG
-			if (!mPtr)
-				throw std::runtime_error("NonOwningPtr Destroyed While Still Being Required");
-#endif
 			return mPtr;
 		}
 		operator T* ()
 		{
-#ifndef NDEBUG
-			if (!mPtr)
-				throw std::runtime_error("NonOwningPtr Destroyed While Still Being Required");
-#endif
 			return mPtr;
 		}
 		NonOwningPtr<T> operator=(T* ptr)
