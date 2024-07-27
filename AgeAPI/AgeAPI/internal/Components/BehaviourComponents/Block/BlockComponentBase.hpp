@@ -26,7 +26,6 @@ namespace AgeAPI::Components
 
 		virtual ErrorString MergeDoublePush(
 			NonOwningPtr<Addon> addon,
-			NonOwningPtr<AgeAPI::AddonFeatures::Block> blk,
 			std::unique_ptr<BlockComponentBase>& other) 
 		{ 
 			return ErrorString();
