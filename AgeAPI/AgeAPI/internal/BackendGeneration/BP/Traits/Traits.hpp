@@ -8,99 +8,60 @@ namespace AgeAPI::AddonFeatures
 
 namespace AgeAPI::Backend::Bp
 {
+
 	class TraitBase
 	{
 	public:
 		virtual ~TraitBase() = default;
 		virtual ErrorString WriteToJson(JsonProxy proxy, NonOwningPtr<Addon> addon, NonOwningPtr<AddonFeatures::Block> blk) const = 0;
-
+		TraitBase(const Identifier& id) : mTraitId(id) {}
 		template<class Self>
 		auto&& GetTraitId(this Self&& self)
 		{
 			return std::forward<Self>(self).mTraitId;
 		}
 
-		ReferenceExpected<TraitBase, ErrorString> AddComponent(std::unique_ptr<Components::BlockComponentBase> component, bool override = false, NonOwningPtr<Addon> addon = nullptr);
-		template<Components::BlockComponent Component>
-		ReferenceExpected<TraitBase, ErrorString> AddComponent(const Component& component, bool override = false, NonOwningPtr<Addon> addon = nullptr)
-		{
-			return AddComponent(std::make_unique<Component>(component), override, addon);
-		}
-		ReferenceExpected<TraitBase, ErrorString> RemoveComponent(const std::string& componentName, NonOwningPtr<Addon> addon = nullptr);
-		template<typename Container> requires std::ranges::range<Container>
-		ReferenceExpected<TraitBase, ErrorString> AddComponentsCopy(
-			const Container& components,
-			bool override = false,
-			NonOwningPtr<Addon> addon = nullptr)
-		{
-			for (auto& component : components)
-			{
-				auto ptr = std::unique_ptr<Components::BlockComponentBase>(component->Clone());
-				auto err = AddComponent(std::move(ptr), override, addon);
-				if (!err)
-					return err;
-			}
-			return *this;
-		}
-		template<typename Container> requires std::ranges::range<Container>
-		ReferenceExpected<TraitBase, ErrorString> AddComponents(
-			Container&& components,
-			bool override = false,
-			NonOwningPtr<Addon> addon = nullptr)
-		{
-			for (auto& component : components)
-			{
-				auto err = AddComponent(std::move(component), override, addon);
-				if (!err)
-					return err;
-			}
-			return *this;
-		}
+	protected:
+		Identifier mTraitId;
+
+	};
+	enum class EnabledStates : u8
+	{
+		Cardinal = 1,
+		Facing = 2,
+		VerticalHalf = 4,
+		None = 0
+	};
+	class PlacementDirectionTrait : protected TraitBase
+	{
+	public:
+		PlacementDirectionTrait(
+			EnabledStates enabledStates = {EnabledStates::None},
+			u16 yRotation = 0
+		) : TraitBase("minecraft:placement_direction"), mEnabledStates(enabledStates), mYRotation(yRotation) {}
+		~PlacementDirectionTrait() override = default;
+		ErrorString WriteToJson(JsonProxy proxy, NonOwningPtr<Addon> addon, NonOwningPtr<AddonFeatures::Block> blk) const override;
+
+		bool HasCardinalDirection() const { return ToUnderlying(mEnabledStates) & ToUnderlying(EnabledStates::Cardinal); }
+		bool HasFacingDirection() const { return ToUnderlying(mEnabledStates) & ToUnderlying(EnabledStates::Facing); }
+	private:
+		EnabledStates mEnabledStates{};
+		u16 mYRotation{ 0 };
+	};
+
+	class PlacementPositionTrait : protected TraitBase
+	{
+	public:
+		PlacementPositionTrait(
+			EnabledStates enabledStates = {EnabledStates::None}
+		) : TraitBase("minecraft:placement_position"), mEnabledStates(enabledStates) {}
+		~PlacementPositionTrait() override = default;
+		ErrorString WriteToJson(JsonProxy proxy, NonOwningPtr<Addon> addon, NonOwningPtr<AddonFeatures::Block> blk) const override;
+		bool HasFacingDirection() const { return ToUnderlying(mEnabledStates) & ToUnderlying(EnabledStates::Facing); }
+		bool hasVerticalHalf() const { return ToUnderlying(mEnabledStates) & ToUnderlying(EnabledStates::VerticalHalf); }
 
 	private:
-		Identifier mTraitId;
-		absl::flat_hash_map<std::string, std::unique_ptr<Components::BlockComponentBase>> mComponents{};
-
+		EnabledStates mEnabledStates{};
 	};
 
 }
-
-/*
-* Ref
-* ReferenceExpected<Block, ErrorString> AddComponent(std::unique_ptr<Components::BlockComponentBase> component, bool override = false, NonOwningPtr<Addon> addon = nullptr);
-		template<Components::BlockComponent Component>
-		ReferenceExpected<Block, ErrorString> AddComponent(const Component& component, bool override = false, NonOwningPtr<Addon> addon = nullptr)
-		{
-			return AddComponent(std::make_unique<Component>(component), override, addon);
-		}
-		ReferenceExpected<Block, ErrorString> RemoveComponent(const std::string& componentName, NonOwningPtr<Addon> addon = nullptr);
-		template<typename Container> requires std::ranges::range<Container>
-		ReferenceExpected<Block, ErrorString> AddComponentsCopy(
-			const Container& components,
-			bool override = false,
-			NonOwningPtr<Addon> addon = nullptr)
-		{
-			for (auto& component : components)
-			{
-				auto ptr = std::unique_ptr<Components::BlockComponentBase>(component->Clone());
-				auto err = AddComponent(std::move(ptr), override, addon);
-				if (!err)
-					return err;
-			}
-			return *this;
-		}
-		template<typename Container> requires std::ranges::range<Container>
-		ReferenceExpected<Block, ErrorString> AddComponents(
-			Container&& components,
-			bool override = false,
-			NonOwningPtr<Addon> addon = nullptr)
-		{
-			for (auto& component : components)
-			{
-				auto err = AddComponent(std::move(component), override, addon);
-				if (!err)
-					return err;
-			}
-			return *this;
-		}
-*/

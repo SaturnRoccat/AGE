@@ -1,5 +1,6 @@
 #pragma once
 #include <AgeAPI/internal/BackendGeneration/BP/Block/BlockBehaviour.hpp>
+#include <AgeAPI/internal/BackendGeneration/BP/Traits/Traits.hpp>
 #include <AgeAPI/internal/BackendGeneration/BP/BehaviourPack.hpp>
 #include <AgeAPI/internal/BackendGeneration/RP/ResourcePack.hpp>
 #include <AgeAPI/internal/BackendGeneration/RP/Block/BlockResource.hpp>
@@ -27,13 +28,13 @@ namespace AgeAPI::AddonFeatures
 			bool showInCommands = true);
 		ReferenceExpected<Block, ErrorString> AddComponent(std::unique_ptr<Components::BlockComponentBase> component, bool override = false, NonOwningPtr<Addon> addon = nullptr);
 		template<Components::BlockComponent Component>
-		ReferenceExpected<Block, ErrorString> AddComponent(const Component& component, bool override = false, NonOwningPtr<Addon> addon = nullptr)
+		ReferenceExpected<Block, ErrorString> AddComponent(Component&& component, bool override = false, NonOwningPtr<Addon> addon = nullptr)
 		{
-			return AddComponent(std::make_unique<Component>(component), override, addon);
+			return AddComponent(std::make_unique<Component>(std::forward<Component>(component)), override, addon);
 		}
 		ReferenceExpected<Block, ErrorString> RemoveComponent(const std::string& componentName, NonOwningPtr<Addon> addon = nullptr);
 		template<typename Container> requires std::ranges::range<Container>
-		ReferenceExpected<Block, ErrorString> AddComponentsCopy(
+		ReferenceExpected<Block, ErrorString> AddComponents(
 			const Container& components,
 			bool override = false,
 			NonOwningPtr<Addon> addon = nullptr)
@@ -107,23 +108,108 @@ namespace AgeAPI::AddonFeatures
 		template<typename a1> requires std::is_constructible_v<Backend::Rp::Geometry, a1>
 		Block& SetGeometry(a1&& geo) {return setGeometryInternal(std::forward<a1>(geo));}
 
+		ReferenceExpected<Block, ErrorString> AddPermutation(std::unique_ptr<Backend::Permutation> permutation, bool override = false, NonOwningPtr<Addon> addon = nullptr);
+		template<typename T> requires std::is_constructible_v<Backend::Permutation, T&&>
+		ReferenceExpected<Block, ErrorString> AddPermutation(T&& permutation, bool override = false, NonOwningPtr<Addon> addon = nullptr)
+		{
+			return AddPermutation(std::make_unique<Backend::Permutation>(std::forward<T>(permutation)), override, addon);
+		}
+		template<typename Container> requires std::ranges::range<Container>
+		ReferenceExpected<Block, ErrorString> AddPermutations(
+			const Container& permutations,
+			bool override = false,
+			NonOwningPtr<Addon> addon = nullptr)
+		{
+			for (auto& permutation : permutations)
+			{
+				auto ptr = std::unique_ptr<Backend::Permutation>(permutation->Clone());
+				auto err = AddPermutation(std::move(ptr), override, addon);
+				if (!err)
+					return err;
+			}
+			return *this;
+		}
+		template<typename Container> requires std::ranges::range<Container>
+		ReferenceExpected<Block, ErrorString> AddPermutations(
+			Container&& permutations,
+			bool override = false,
+			NonOwningPtr<Addon> addon = nullptr)
+		{
+			for (auto& permutation : permutations)
+			{
+				auto err = AddPermutation(std::move(permutation), override, addon);
+				if (!err)
+					return err;
+			}
+			return *this;
+		}
+
+		ReferenceExpected<Block, ErrorString> AddTrait(std::unique_ptr<Backend::Bp::TraitBase> trait, bool override = false);
+		template<typename T> requires std::is_constructible_v<Backend::Bp::TraitBase, T&&>
+		ReferenceExpected<Block, ErrorString> AddTrait(T&& trait, bool override = false)
+		{
+			return AddTrait(std::make_unique<Backend::Bp::TraitBase>(std::forward<T>(trait)), override);
+		}
+		template<typename Container> requires std::ranges::range<Container>
+		ReferenceExpected<Block, ErrorString> AddTraits(
+			const Container& traits,
+			bool override = false)
+		{
+			for (auto& trait : traits)
+			{
+				auto ptr = std::unique_ptr<Backend::Bp::TraitBase>(trait->Clone());
+				auto err = AddTrait(std::move(ptr), override);
+				if (!err)
+					return err;
+			}
+			return *this;
+		}
+		template<typename Container> requires std::ranges::range<Container>
+		ReferenceExpected<Block, ErrorString> AddTraits(
+			Container&& traits,
+			bool override = false)
+		{
+			for (auto& trait : traits)
+			{
+				auto err = AddTrait(std::move(trait), override);
+				if (!err)
+					return err;
+			}
+			return *this;
+		}
+
+
+		// WARNING: This invalidates/wipes the block this should ONLY EVER be used when used in method chaining
+		Block Finalize() 
+		{
+			Block blk;
+			std::swap(blk, *this);
+			return blk;
+		}
 
 	private:
 		Block& setGeometryInternal(Backend::Rp::Geometry&& geo);
 		ErrorString handleComponentRedirects(std::unique_ptr<Components::BlockComponentBase> component, NonOwningPtr<Addon> addon, bool override);
+		ReferenceExpected<Block, ErrorString> addPermutationInternal(std::unique_ptr<Backend::Permutation> permutation, bool override, NonOwningPtr<Addon> addon);
+		ErrorString addTraitInternal(std::unique_ptr<Backend::Bp::TraitBase> trait, bool override);
+
 	private:
 		using ComponentStore = absl::flat_hash_map<std::string, std::unique_ptr<Components::BlockComponentBase>>;
-		using MultiComponentStore = std::unordered_multiset<std::string, std::unique_ptr<Components::BlockComponentBase>>;
+		using PermutationStore = absl::flat_hash_map<std::string, std::unique_ptr<Backend::Permutation>>;
+		using StateStore = absl::flat_hash_map<std::string, std::unique_ptr<Backend::AState>>;
+		using TraitStore = absl::flat_hash_map<std::string, std::unique_ptr<Backend::Bp::TraitBase>>;
+		using TextureStore = absl::InlinedVector<Backend::Rp::BlockResourceElement, 1>;
 		ComponentStore mComponents{};
-		absl::flat_hash_map<std::string, std::unique_ptr<Backend::Permutation>> mPermutations{};
-		absl::flat_hash_map<std::string, std::unique_ptr<Backend::AState>> mStates{};
-		absl::InlinedVector<Backend::Rp::BlockResourceElement, 1> mTextures{};
+		PermutationStore mPermutations{};
+		TraitStore mTraits{};
+		StateStore mStates{};
+		TextureStore mTextures{};
 		Identifier mIdentifier{};
 		MenuCategory mMenuCategory{};
 		SemanticVersion mFormatVersion{};
 		bool mShowInCommands{};
 		bool mEnableRewriteRedirection{ false };
-		NonOwningPtr<MultiComponentStore> mRedirectStore;
+		NonOwningPtr<ComponentStore> mRedirectStore{nullptr};
 		Backend::Rp::Geometry mGeo{};
 
 
