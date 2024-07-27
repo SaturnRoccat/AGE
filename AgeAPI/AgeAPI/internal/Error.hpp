@@ -82,6 +82,10 @@ namespace AgeAPI
 			mResult = std::move(error);
 			return *this;
 		}
+		Ty& operator*() { return value(); }
+		const Ty& operator*() const { return value(); }
+		Ty& operator->() { return value(); }
+		const Ty& operator->() const { return value(); }
 
 		bool has_value() const { return std::holds_alternative<std::reference_wrapper<Ty>>(mResult); }
 		bool has_error() const { return std::holds_alternative<E>(mResult); }

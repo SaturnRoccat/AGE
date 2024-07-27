@@ -1,4 +1,8 @@
 #include <AgeAPI/internal/Addon/Addon.hpp>
+#include <absl/log/initialize.h>
+#include <absl/log/log_sink.h>
+#include <absl/log/log_sink_registry.h>
+#include <absl/log/globals.h>
 namespace AgeAPI
 {
 	Addon::Addon(
@@ -128,6 +132,8 @@ namespace AgeAPI
 				metadata, capabilities
 			)
 		);
+		absl::InitializeLog();
+		absl::SetStderrThreshold(absl::LogSeverityAtLeast::kInfo);
 		return &addon;
 	}
 
