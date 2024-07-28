@@ -1,3 +1,4 @@
+#pragma once
 #include <AgeAPI/internal/Types.hpp>
 #include <AgeAPI/internal/Components/BehaviourComponents/Block/BlockComponentBase.hpp>
 

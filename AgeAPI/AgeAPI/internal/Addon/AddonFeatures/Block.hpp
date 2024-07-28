@@ -197,10 +197,10 @@ namespace AgeAPI::AddonFeatures
 		{
 			return AddState(std::make_unique<Backend::AState>(std::forward<T>(state)), override);
 		}
-		template<Backend::State State, typename... Args>
-		ReferenceExpected<Block, ErrorString> AddState(Args&&... args)
+		template<Backend::State State>
+		ReferenceExpected<Block, ErrorString> AddState(State&& state)
 		{
-			return AddState(State(std::forward<Args>(args)...));
+			return AddState(std::make_unique<State>(std::forward<State>(state)));
 		}
 		template<typename Container> requires std::ranges::range<Container>
 		ReferenceExpected<Block, ErrorString> AddStates(
