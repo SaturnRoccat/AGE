@@ -22,7 +22,7 @@ namespace AgeAPI
     };
 
     std::string GetDirectionAsString(AllDirections dir);
-    std::string GetDirectionAsString(SideDirections dir) 
+    static inline std::string GetDirectionAsString(SideDirections dir) 
     {
         return GetDirectionAsString(static_cast<AllDirections>(dir));
     }

@@ -22,9 +22,9 @@ namespace AgeAPI
 	template<typename Enum, typename... Ts>
 	constexpr Enum MixEnum(Ts... ts)
 	{
-		Enum result = static_cast<Enum>(0);
-		(void(result = result | ts), ...);
-		return result;
+		uint64_t result = 0;
+		(void(result = result | (uint64_t)ts), ...);
+		return static_cast<Enum>(result);
 	}
 
 

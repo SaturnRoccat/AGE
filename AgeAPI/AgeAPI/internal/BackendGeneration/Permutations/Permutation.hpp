@@ -66,14 +66,14 @@ namespace AgeAPI::Backend
 
 		void SetCondition(std::string_view condition) { mCondition = condition; }
 
-		ReferenceExpected<Permutation, ErrorString> AddComponent(std::unique_ptr<Components::BlockComponentBase> component, bool override = false, NonOwningPtr<Addon> addon = nullptr);
+		Permutation&& AddComponent(std::unique_ptr<Components::BlockComponentBase> component, bool override = false, NonOwningPtr<Addon> addon = nullptr);
 		template<Components::BlockComponent Component>
-		ReferenceExpected<Permutation, ErrorString> AddComponent(Component&& component, bool override = false, NonOwningPtr<Addon> addon = nullptr)
+		Permutation&& AddComponent(Component&& component, bool override = false, NonOwningPtr<Addon> addon = nullptr)
 		{
 			return AddComponent(std::make_unique<Component>(std::forward<Component>(component)), override, addon);
 		}
 		template<typename Container> requires std::ranges::range<Container>
-		ReferenceExpected<Permutation, ErrorString> AddComponents(
+		Permutation&& AddComponents(
 			const Container& components,
 			bool override = false,
 			NonOwningPtr<Addon> addon = nullptr)
@@ -83,23 +83,19 @@ namespace AgeAPI::Backend
 				auto ptr = std::unique_ptr<Components::BlockComponentBase>(component->Clone());
 				auto err = AddComponent(std::move(ptr), override, addon);
 				if (!err)
-					return err;
+					throw std::runtime_error(err.GetAsString());
 			}
-			return *this;
+			return std::move(*this);
 		}
 		template<typename Container> requires std::ranges::range<Container>
-		ReferenceExpected<Permutation, ErrorString> AddComponents(
+		Permutation&& AddComponents(
 			Container&& components,
 			bool override = false,
 			NonOwningPtr<Addon> addon = nullptr)
 		{
 			for (auto& component : components)
-			{
-				auto err = AddComponent(std::move(component), override, addon);
-				if (!err)
-					return err;
-			}
-			return *this;
+				AddComponent(std::move(component), override, addon);
+			return std::move(*this);
 		}
 
 	private:

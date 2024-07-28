@@ -33,7 +33,7 @@ namespace AgeAPI::Backend::Bp
 		VerticalHalf = 4,
 		None = 0
 	};
-	class PlacementDirectionTrait : protected TraitBase
+	class PlacementDirectionTrait : public TraitBase
 	{
 	public:
 		PlacementDirectionTrait(
@@ -50,7 +50,7 @@ namespace AgeAPI::Backend::Bp
 		u16 mYRotation{ 0 };
 	};
 
-	class PlacementPositionTrait : protected TraitBase
+	class PlacementPositionTrait : public TraitBase
 	{
 	public:
 		PlacementPositionTrait(
