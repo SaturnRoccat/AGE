@@ -73,47 +73,5 @@ namespace AgeAPI::Backend::Rp
 		}
 	}
 
-	BlockRegistrationError ResourcePack::BindBlockResource(const BlockResource& blkResource, bool sanityCheck)
-	{
-		if (blkResource.HasGeo())
-		{
-			if (blkResource.GetGeo().mGeometry.has_value())
-				if (mModelManager.AddModel(blkResource.GetGeo().mGeoName, blkResource.GetGeo().mGeometry.value(), !sanityCheck) != ModelError::NONE)
-					return BlockRegistrationError::MODEL_ALREADY_EXISTS;
-			if (!blkResource.mSound.empty())
-				// TODO: Add sound manager registeration
-				if (mBlockJson.AddBlock(blkResource.mBlockName, "", blkResource.mSound, !sanityCheck) != BlockJsonError::NONE)
-					return BlockRegistrationError::BLOCK_ALREADY_EXISTS;
-		}
-		else
-		{
-			if (blkResource.HoldsSingleTexture())
-			{
-				mBlockJson.AddBlock(
-					blkResource.mBlockName,
-					blkResource.mTextures.begin()->second.mTextureAlias,
-					blkResource.mSound,
-					!sanityCheck 
-				);
-			}
-			else
-			{
-				BlockJsonStorageImpl element;
-				element.mSoundID = blkResource.mSound;
-				element.mTextures.reserve(blkResource.mTextures.size());
-				for (const auto& [side, texture] : blkResource.mTextures)
-					element.mTextures.push_back({ side, texture.mTextureAlias });
-				if (mBlockJson.AddBlock(blkResource.mBlockName, element, !sanityCheck) != BlockJsonError::NONE)
-					return BlockRegistrationError::BLOCK_ALREADY_EXISTS;
-				
-			}
-		}
-
-		for (const auto& [side, texture] : blkResource.mTextures)
-			if (mTerrainTextureManager.BindBlockResourceElement(texture, !sanityCheck) != TextureError::NONE)
-			{
-				return BlockRegistrationError::TEXTURE_ALREADY_EXISTS;
-			}
-		return BlockRegistrationError::NONE;
-	}
+		
 }

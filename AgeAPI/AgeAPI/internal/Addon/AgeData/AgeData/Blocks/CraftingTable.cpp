@@ -3,7 +3,7 @@
 #include <AgeAPI/internal/RapidJsonExtension/TypeTranslations.hpp>
 namespace AgeData::BlockComponents
 {
-    AgeAPI::ErrorString CraftingTable::WriteToJson(AgeAPI::NonOwningPtr<AgeAPI::Addon> addon, AgeAPI::JsonProxy proxy, AgeAPI::NonOwningPtr<AgeAPI::Backend::Bp::BlockBehaviour> blk) const
+    AgeAPI::ErrorString CraftingTable::WriteToJson(AgeAPI::NonOwningPtr<AgeAPI::Addon> addon, AgeAPI::JsonProxy proxy, AgeAPI::NonOwningPtr<AgeAPI::AddonFeatures::Block> blk) const
     {
         auto& [value, allocator] = proxy;
 

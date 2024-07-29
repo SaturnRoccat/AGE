@@ -64,5 +64,14 @@ namespace AgeAPI::Backend
 	};
 
 
-
+	template<typename T>
+	concept State = std::is_base_of_v<AState, T>;
+	
+	template<State... States>
+	std::vector<std::unique_ptr<AState>> MakeStateStore(States&&... states)
+	{
+		std::vector<std::unique_ptr<AState>> store;
+		(store.push_back(std::make_unique<States>(std::forward<States>(states))), ...);
+		return store;
+	}
 }

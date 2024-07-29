@@ -2,7 +2,7 @@
 namespace AgeData::BlockComponents
 {
     AgeAPI::ErrorString Flammable::WriteToJson(AgeAPI::NonOwningPtr<AgeAPI::Addon> addon,
-        AgeAPI::JsonProxy proxy, AgeAPI::NonOwningPtr<AgeAPI::Backend::Bp::BlockBehaviour> blk) const
+        AgeAPI::JsonProxy proxy, AgeAPI::NonOwningPtr<AgeAPI::AddonFeatures::Block> blk) const
     {
         auto& [writeLocation, alloc] = proxy;
         if (mValue.IsToggle())

@@ -26,7 +26,7 @@ namespace AgeData::BlockComponents
 			"minecraft:crafting_table"
 		), mTableName(data.name), mCraftingTags(data.craftingTags) {}
 
-        AgeAPI::ErrorString WriteToJson(AgeAPI::NonOwningPtr<AgeAPI::Addon> addon, AgeAPI::JsonProxy proxy, AgeAPI::NonOwningPtr<AgeAPI::Backend::Bp::BlockBehaviour> blk) const override;
+        AgeAPI::ErrorString WriteToJson(AgeAPI::NonOwningPtr<AgeAPI::Addon> addon, AgeAPI::JsonProxy proxy, AgeAPI::NonOwningPtr<AgeAPI::AddonFeatures::Block> blk) const override;
         
         void AddCraftingTag(const std::string& tag) { mCraftingTags.push_back(tag); }
 

@@ -2,7 +2,7 @@
 #include <AgeAPI/internal/RapidJsonExtension/TypeTranslations.hpp>
 namespace AgeData::BlockComponents
 {
-    inline AgeAPI::ErrorString MapColor::WriteToJson(AgeAPI::NonOwningPtr<AgeAPI::Addon> addon, AgeAPI::JsonProxy proxy, AgeAPI::NonOwningPtr<AgeAPI::Backend::Bp::BlockBehaviour> blk) const
+    AgeAPI::ErrorString MapColor::WriteToJson(AgeAPI::NonOwningPtr<AgeAPI::Addon> addon, AgeAPI::JsonProxy proxy, AgeAPI::NonOwningPtr<AgeAPI::AddonFeatures::Block> blk) const
     {
         auto& [json, alloc] = proxy;
         std::visit(
@@ -18,5 +18,6 @@ namespace AgeData::BlockComponents
             },
             mValue
         );
+        return "";
     }
 }

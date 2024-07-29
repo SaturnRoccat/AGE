@@ -42,6 +42,7 @@ namespace AgeAPI::Backend::Rp
 
 	TextureError TerrainTexture::BindBlockResourceElement(const BlockResourceElement& blkResourceElement, bool override)
 	{
-		return mTextureData.AddTexture(blkResourceElement.mTextureAlias, blkResourceElement, override);
+		//return mTextureData.AddTexture(blkResourceElement.GetTexture(), blkResourceElement, override);
+		return TextureError::NONE;
 	}
 }

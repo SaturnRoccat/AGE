@@ -14,16 +14,11 @@ namespace AgeAPI::Backend::Bp
 		friend class Addon;
 	private:
 		Manifest mManifest{};
-		std::vector<BlockBehaviour> mBlockBehaviours{};
 		NonOwningPtr<Addon> mAddon{};
 	public:
 
 		void WriteManifest(Manifest&& manifest) { mManifest = std::move(manifest); }
 		const Manifest& GetManifest() const { return mManifest; }
 		Manifest& GetManifest() { return mManifest; }
-		const std::vector<BlockBehaviour>& GetBlockBehaviours() const { return mBlockBehaviours; }
-
-		BehaviourPack& AddBlockBehaviour(BlockBehaviour&& blockBehaviour) { mBlockBehaviours.push_back(std::move(blockBehaviour)); return *this; }
-		BehaviourPack& AddBlockBehaviour(BlockBehaviour& blockBehaviour) { mBlockBehaviours.push_back(std::move(blockBehaviour)); return  *this; }
 	};
 }

@@ -4,13 +4,13 @@
 
 namespace AgeData::BlockComponents
 {
-    class LightDampening : public AgeAPI::Components::BlockComponentBase
+    class LightEmission : public AgeAPI::Components::BlockComponentBase
     {
     public:
-        LightDampening(int val = 15) : AgeAPI::Components::BlockComponentBase(
+        LightEmission(int val = 15) : AgeAPI::Components::BlockComponentBase(
             0,
             { 1, 19, 50 },
-            "minecraft:light_dampening"
+            "minecraft:light_emission"
         ), mValue(val) {
             if (val > 15)
                 mValue = 15;
@@ -18,7 +18,7 @@ namespace AgeData::BlockComponents
                 mValue = 0;
         }
 
-        void SetDampening(int val) {
+        void SetEmission(int val) {
             if (val > 15)
                 mValue = 15;
             else if (val < 0)
@@ -26,15 +26,16 @@ namespace AgeData::BlockComponents
             else
                 mValue = val;
         }
-        int GetDampening() const { return mValue; }
+        int GetEmission() const { return mValue; }
+
         BlockComponentBase* Clone() const override {
-            return new LightDampening(mValue);
+            return new LightEmission(mValue);
         }
 
-
-        AgeAPI::ErrorString WriteToJson(AgeAPI::NonOwningPtr<AgeAPI::Addon> addon, AgeAPI::JsonProxy proxy, AgeAPI::NonOwningPtr<AgeAPI::Backend::Bp::BlockBehaviour> blk) const override
+        AgeAPI::ErrorString WriteToJson(AgeAPI::NonOwningPtr<AgeAPI::Addon> addon, AgeAPI::JsonProxy proxy, AgeAPI::NonOwningPtr<AgeAPI::AddonFeatures::Block> blk) const override
         {
             proxy.mWriteLoc.SetInt64(mValue);
+            return "";
         }
     private:
         int mValue{};

@@ -5,7 +5,7 @@
 namespace AgeData::BlockComponents
 {
     AgeAPI::ErrorString Geometry::WriteToJson(AgeAPI::NonOwningPtr<AgeAPI::Addon> addon,
-        AgeAPI::JsonProxy proxy, AgeAPI::NonOwningPtr<AgeAPI::Backend::Bp::BlockBehaviour> blk) const
+        AgeAPI::JsonProxy proxy, AgeAPI::NonOwningPtr<AgeAPI::AddonFeatures::Block> blk) const
     {
         auto& [writeLocation, alloc] = proxy;
         std::visit(AgeAPI::overloaded{

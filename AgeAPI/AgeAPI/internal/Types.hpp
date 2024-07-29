@@ -16,11 +16,13 @@
 #include <AgeAPI/internal/Utils/JsonProxy.hpp>
 #include <AgeAPI/internal/Utils/Color.hpp>
 #include <AgeAPI/internal/Utils/BoundingBox.hpp>
+#include <AgeAPI/internal/Utils/Direction.hpp>
 #include <AgeAPI/internal/Utils/Reference.hpp>
 #include <AgeAPI/internal/Utils/ItemGroup.hpp>
 #include <AgeAPI/internal/Utils/MenuCategory.hpp>
 #include <AgeAPI/internal/Utils/UUID.hpp>
-
+#include <absl/container/inlined_vector.h>
+#include <absl/container/flat_hash_map.h>
 
 
 #include <filesystem>

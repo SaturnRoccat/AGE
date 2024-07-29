@@ -5,16 +5,17 @@
 #include <AgeAPI/internal/RapidJsonExtension/TypeTranslations.hpp>
 #include <AgeAPI/internal/BackendGeneration/RP/TerrainTextures.hpp>
 #include <AgeAPI/internal/BackendGeneration/RP/Block/BlockResource.hpp>
+#include <absl/container/inlined_vector.h>
 #include <fstream>
 namespace AgeAPI::Backend::Rp
 {
 	struct BlockJsonStorageImpl
 	{
-		SmallVector<std::pair<TextureSide, std::string>, 1> mTextures{};
+		absl::InlinedVector<std::pair<TextureSide, std::string>, 1> mTextures{};
 
 		std::string mSoundID{""};
 		BlockJsonStorageImpl() = default;
-		BlockJsonStorageImpl(const SmallVector<std::pair<TextureSide, std::string>, 1>& textureName, const std::string& soundID) : mTextures(textureName), mSoundID(soundID) {}
+		BlockJsonStorageImpl(const absl::InlinedVector<std::pair<TextureSide, std::string>, 1>& textureName, const std::string& soundID) : mTextures(textureName), mSoundID(soundID) {}
 	};
 
 	enum class BlockJsonError

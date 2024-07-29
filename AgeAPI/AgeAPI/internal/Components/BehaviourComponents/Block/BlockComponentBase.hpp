@@ -1,10 +1,9 @@
 #pragma once
 #include <AgeAPI/internal/Components/BehaviourComponents/BehaviourComponentBase.hpp>
 
-namespace AgeAPI::Backend::Bp
+namespace AgeAPI::AddonFeatures
 {
-	class BlockBehaviour;
-
+	class Block;
 }
 namespace AgeAPI::Components
 {
@@ -23,13 +22,18 @@ namespace AgeAPI::Components
 			: BehaviourComponentBase(settings, version, identifier, canBeDoublePushed, isTransient, maxVersion) {}
 		virtual ~BlockComponentBase() = default;
 		
-		virtual ErrorString WriteToJson(NonOwningPtr<Addon> addon, JsonProxy proxy, NonOwningPtr<Backend::Bp::BlockBehaviour> blk) const = 0;
+		virtual ErrorString WriteToJson(NonOwningPtr<Addon> addon, JsonProxy proxy, NonOwningPtr<AgeAPI::AddonFeatures::Block> blk) const = 0;
 
-		virtual ErrorString MergeDoublePush(NonOwningPtr<Addon> addon, NonOwningPtr<Backend::Bp::BlockBehaviour> blk, std::unique_ptr<BlockComponentBase>& other) { return ErrorString(); };
+		virtual ErrorString MergeDoublePush(
+			NonOwningPtr<Addon> addon,
+			std::unique_ptr<BlockComponentBase>& other) 
+		{ 
+			return ErrorString();
+		};
 
-		virtual ErrorString MergeDoublePushShort(std::unique_ptr<BlockComponentBase>& other) { return ErrorString(); };
+		virtual ErrorString OnComponentAdded(NonOwningPtr<Addon> addon, NonOwningPtr<AgeAPI::AddonFeatures::Block> blk) { return""; };
 
-		virtual ErrorString OnComponentAdded(NonOwningPtr<Addon> addon, NonOwningPtr<Backend::Bp::BlockBehaviour> blk) { return""; };
+		virtual ErrorString OnComponentRemoved(NonOwningPtr<Addon> addon, NonOwningPtr<AgeAPI::AddonFeatures::Block> blk) { return""; };
 
 		virtual BlockComponentBase* Clone() const = 0;
 	};
