@@ -163,4 +163,60 @@ namespace AgeAPI::AddonFeatures
 		mStates[state->GetStateId().GetFullNamespace()] = std::move(state);
 		return {};
 	}
+
+	void Block::writeDescription(JsonProxy proxy, NonOwningPtr<Addon> addon)
+	{
+		rapidjson::Value descriptionObj(rapidjson::kObjectType);
+		auto& json = descriptionObj;
+		auto& alloc = proxy.mAllocator;
+
+		json.AddMember("identifier", mIdentifier.GetFullNamespace(), alloc);
+		mMenuCategory.WriteToJson({ json, alloc });
+
+		// Handle States
+		rapidjson::Value states(rapidjson::kObjectType);
+		for (auto& [name, state] : mStates)
+			state->WriteState(states, alloc);
+		json.AddMember("states", states, alloc);
+
+		// Handle Traits
+		rapidjson::Value traits(rapidjson::kObjectType);
+		for (auto& [name, trait] : mTraits)
+		{
+			rapidjson::Value traitObj(rapidjson::kObjectType);
+			trait->WriteToJson({ traitObj, alloc }, addon);
+			rapidjson::ValueWriteWithKey<rapidjson::Value>::WriteToJsonValue(trait->GetTraitId().GetFullNamespace(), traits, traitObj, alloc);
+		}
+		json.AddMember("traits", traits, alloc);
+
+		proxy.mWriteLoc.AddMember("description", json, alloc);
+	}
+
+	void Block::writeComponents(JsonProxy proxy, NonOwningPtr<Addon> addon)
+	{
+		rapidjson::Value componentsObj(rapidjson::kObjectType);
+		auto& json = componentsObj;
+		auto& alloc = proxy.mAllocator;
+
+
+	}
+	
+	void Block::WriteToValue(JsonProxy proxy, NonOwningPtr<Addon> addon)
+	{
+		if (!addon) [[likely]]
+			addon = Addon::GetStaticInstance();
+		auto& [json, alloc] = proxy;
+		json.AddMember("format_version", mFormatVersion.GetString(), alloc);
+		rapidjson::Value minecraftBlock(rapidjson::kObjectType);
+		writeDescription(proxy.Derive(minecraftBlock), addon);
+		writeComponents(proxy.Derive(minecraftBlock), addon);
+
+
+
+
+
+
+		json.AddMember("minecraft:block", minecraftBlock, alloc); // So i dont forget to add it
+
+	}
 }

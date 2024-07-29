@@ -124,6 +124,7 @@ namespace AgeAPI
 		const std::vector<Dependency>& GetDependencies() const { return mDependencies; }
 		const Capabilities& GetCapabilities() const { return mCapabilities; }
 
+
 		void SetFormatVersion(int formatVersion) { mFormatVersion = formatVersion; }
 		void SetMinEngineVersion(const SemanticVersion& minEngineVersion) { mMinEngineVersion = minEngineVersion; }
 		void SetAddonVersion(const SemanticVersion& addonVersion) { mAddonVersion = addonVersion; }

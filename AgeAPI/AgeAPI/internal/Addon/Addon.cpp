@@ -5,28 +5,19 @@
 #include <absl/log/globals.h>
 namespace AgeAPI
 {
-	Addon::Addon(
-		const SemanticVersion& minEngineVersion,
-		const SemanticVersion& addonVersion,
-		const std::string& name,
-		const std::string& description,
-		bool AutoRegisterBehAndResAsDeps,
-		ExperimentalSettings experimentalSettings,
-		const std::string& basePath,
-		const std::vector<Module>& extraModules,
-		const std::vector<Dependency>& dependencies,
-		const Metadata& metadata,
-		Capabilities capabilities
-	)
+	Addon::Addon(Manifest&& bpManifest, Manifest&& rpManifest, bool AutoRegisterBehAndResAsDeps) : 
+		mBehaviourPackManifest(std::move(bpManifest)), mResourcePackManifest(std::move(rpManifest)), mName(mBehaviourPackManifest.GetName())
 	{
-
+		if (AutoRegisterBehAndResAsDeps)
+		{
+			mBehaviourPackManifest.AddDependency({ mResourcePackManifest.GetUUID(), mResourcePackManifest.GetAddonVersion() });
+			mResourcePackManifest.AddDependency({ mBehaviourPackManifest.GetUUID(), mBehaviourPackManifest.GetAddonVersion() });
+		}
 	}
 	void Addon::OutputAddon(const std::string& folderName, const std::pair<std::string, std::string>& outputPath, bool ClearOutputFolder, bool CacheManifest)
 	{
 		std::filesystem::path outputDirBeh = outputPath.first;
 		std::filesystem::path outputDirRes = outputPath.second;
-
-		
 
 		auto bpOutput = outputDirBeh / std::format("{}Bp", folderName);
 		auto rpOutput = outputDirRes / std::format("{}Rp", folderName);
@@ -50,6 +41,9 @@ namespace AgeAPI
 						generateResourceManifest = false;
 
 		}
+
+		generateBehaviourPack(folderName, bpOutput.string(), !generateBehaviourManifest, CacheManifest);
+
 
 	}
 
@@ -140,5 +134,15 @@ namespace AgeAPI
 	NonOwningPtr<Addon> Addon::GetStaticInstance()
 	{
 		return &addon;
+	}
+	void Addon::generateBehaviourPack(const std::string& folderName, const std::string& outputPath, bool clearOutputFolder, bool cacheManifest)
+	{
+		Backend::Bp::BehaviourPack bp{this};
+		bp.setManifest(std::move(mBehaviourPackManifest));
+		bp.setBlocks(std::move(mBlocks));
+
+		std::filesystem::path outputBase = outputPath;
+		outputBase /= folderName;
+		bp.buildBehaviourPack(outputBase, cacheManifest);
 	}
 }

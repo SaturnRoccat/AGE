@@ -2,7 +2,7 @@
 #include <AgeAPI/internal/Addon/Addon.hpp>
 namespace AgeAPI::Backend::Bp
 {
-	ErrorString PlacementDirectionTrait::WriteToJson(JsonProxy proxy, NonOwningPtr<Addon> addon, NonOwningPtr<AddonFeatures::Block> blk) const
+	ErrorString PlacementDirectionTrait::WriteToJson(JsonProxy proxy, NonOwningPtr<Addon> addon) const
 	{
 		auto& [json, alloc] = proxy;
 		rapidjson::Value enabledStatesArray(rapidjson::kArrayType);
@@ -14,7 +14,7 @@ namespace AgeAPI::Backend::Bp
 		json.AddMember("y_rotation_offset", mYRotation, alloc);
 		return {};
 	}
-	ErrorString PlacementPositionTrait::WriteToJson(JsonProxy proxy, NonOwningPtr<Addon> addon, NonOwningPtr<AddonFeatures::Block> blk) const
+	ErrorString PlacementPositionTrait::WriteToJson(JsonProxy proxy, NonOwningPtr<Addon> addon) const
 	{
 		auto& [json, alloc] = proxy;
 		rapidjson::Value enabledStatesArray(rapidjson::kArrayType);

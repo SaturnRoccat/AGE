@@ -26,6 +26,18 @@ namespace AgeAPI::AddonFeatures
 			SemanticVersion formatVersion = { 1, 21, 20 },
 			const MenuCategory& catagory = {},
 			bool showInCommands = true);
+
+		void WriteToValue(JsonProxy proxy, NonOwningPtr<Addon> addon = nullptr);
+		rapidjson::Document WriteToDocument(NonOwningPtr<Addon> addon = nullptr)
+		{
+			rapidjson::Document doc;
+			doc.SetObject();
+			JsonProxy proxy(doc, doc.GetAllocator());
+			WriteToValue(proxy, addon);
+			return doc;
+		}
+
+
 #pragma region Add Components
 
 
@@ -224,6 +236,8 @@ namespace AgeAPI::AddonFeatures
 		Block&& addPermutationInternal(std::unique_ptr<Backend::Permutation> permutation, bool override, NonOwningPtr<Addon> addon);
 		ErrorString addTraitInternal(std::unique_ptr<Backend::Bp::TraitBase> trait, bool override);
 		ErrorString addStateInternal(std::unique_ptr<Backend::AState> state, bool override);
+		void writeDescription(JsonProxy proxy, NonOwningPtr<Addon> addon);
+		void writeComponents(JsonProxy proxy, NonOwningPtr<Addon> addon);
 
 	private:
 		using ComponentStore = absl::flat_hash_map<std::string, std::unique_ptr<Components::BlockComponentBase>>;

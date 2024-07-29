@@ -1,7 +1,7 @@
 #include <AgeAPI/internal/Structures/MCStructure.hpp>
 #include <AgeAPI/internal/Addon/Addon.hpp>
 #include <AgeData/BlockComponents.hpp>
-
+#include <absl/log/check.h>
 	
 using namespace AgeAPI;
 using namespace AgeAPI::NBT;
@@ -15,15 +15,7 @@ int main(int argc, char** argv)
 {
 	Addon::SetupStaticInstance();
 	auto addon = Addon::GetStaticInstance();
-	Block baseBlock = Block::MakeBlock("custom:base_block")
-		.value()
-		.SetTexture(Texture{ I16Vec2{16, 16} }, std::string("a"))
-		.AddComponents(
-			MakeComponentStore(
-				LightEmission{ 15 },
-				MapColor{ MapColor::MapColorVec{50, 50, 50} }
-			))
-		.value()
+	Block baseBlock = Block::MakeBlock("custom:base_block").value()
 		.AddPermutation(
 			Permutation("Condition")
 			.AddComponents(
@@ -32,9 +24,14 @@ int main(int argc, char** argv)
 					MapColor{ MapColor::MapColorVec{100, 100, 100} }
 				)
 			)
-			.value()
 		)
-		.value()
+		.AddComponents(
+			MakeComponentStore(
+				LightEmission{ 5 },
+				MapColor{ MapColor::MapColorVec{50, 50, 50} }
+			)
+		)
+		.SetTexture(Texture{ I16Vec2{16, 16} }, std::string("a"))
 		.AddStates(
 			MakeStateStore(
 				BoolState("state:is_cool"),
@@ -42,7 +39,9 @@ int main(int argc, char** argv)
 				StringState("state:owner_names", { "custom", "goober", "extra_goober" })
 			)
 		)
-		.value();
+		.AddTrait(PlacementDirectionTrait{MixEnum<EnabledStates>(EnabledStates::Facing)});
+	auto ptr = baseBlock.GetPermutation("Condition");
+	CHECK(ptr) << "Permutation not found";
 	addon->AddBlock(std::move(baseBlock));
 	return 0;
 }
