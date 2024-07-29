@@ -26,6 +26,12 @@ namespace AgeAPI::AddonFeatures
 			SemanticVersion formatVersion = { 1, 21, 20 },
 			const MenuCategory& catagory = {},
 			bool showInCommands = true);
+		
+		template<class Self>
+		auto&& GetIdentifier(this Self&& self)
+		{
+			return std::forward<Self>(self).mIdentifier;
+		}
 
 		void WriteToValue(JsonProxy proxy, NonOwningPtr<Addon> addon = nullptr);
 		rapidjson::Document WriteToDocument(NonOwningPtr<Addon> addon = nullptr)
@@ -111,7 +117,7 @@ namespace AgeAPI::AddonFeatures
 		{
 			Identifier temp = std::forward<a1>(identifier);
 			if (!temp.Validate())
-				return ErrorString("invalid identifier");
+				throw ErrorString("invalid identifier");
 			mIdentifier = std::move(temp);
 			return std::move(*this);
 
@@ -236,8 +242,10 @@ namespace AgeAPI::AddonFeatures
 		Block&& addPermutationInternal(std::unique_ptr<Backend::Permutation> permutation, bool override, NonOwningPtr<Addon> addon);
 		ErrorString addTraitInternal(std::unique_ptr<Backend::Bp::TraitBase> trait, bool override);
 		ErrorString addStateInternal(std::unique_ptr<Backend::AState> state, bool override);
+
 		void writeDescription(JsonProxy proxy, NonOwningPtr<Addon> addon);
 		void writeComponents(JsonProxy proxy, NonOwningPtr<Addon> addon);
+		void writePermutations(JsonProxy proxy, NonOwningPtr<Addon> addon);
 
 	private:
 		using ComponentStore = absl::flat_hash_map<std::string, std::unique_ptr<Components::BlockComponentBase>>;

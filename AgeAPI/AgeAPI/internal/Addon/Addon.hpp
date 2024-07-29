@@ -13,21 +13,11 @@ namespace AgeAPI
 	{
 	public:
 		Addon(
-			Manifest&& bpManifest,
-			Manifest&& rpManifest,
+			const Manifest& bpManifest = {},
+			const Manifest& rpManifest = {},
 			bool AutoRegisterBehAndResAsDeps = true
 		);
-		template<typename T> requires std::constructible_from<Manifest, T&&>
-		Addon(
-			T&& bpManifest,
-			T&& rpManifest,
-			bool AutoRegisterBehAndResAsDeps = true
-		) 
-		{
-			Addon(Manifest(std::forward<T>(bpManifest)), Manifest(std::forward<T>(rpManifest)), AutoRegisterBehAndResAsDeps);
-		}
-
-		void OutputAddon(const std::string& folderName, const std::pair<std::string, std::string>& outputPath = 
+		void OutputAddon(const std::string& folderName = "goobert", const std::pair<std::string, std::string>& outputPath =
 			{
 				GetDevelopmentBehaviourPackPath(),
 				GetDevelopmentResourcePackPath()
@@ -47,17 +37,9 @@ namespace AgeAPI
 		static const std::string& GetDevelopmentBehaviourPackPath();
 		static const std::string& GetDevelopmentResourcePackPath();
 		static NonOwningPtr<Addon> SetupStaticInstance(
-			const SemanticVersion& minEngineVersion = { 1, 21, 0 },
-			const SemanticVersion& addonVersion = { 0, 0, 0 },
-			const std::string& name = "My Addon Made With AGE",
-			const std::string& description = "This add-on was generated using the AGE API",
-			bool AutoRegisterBehAndResAsDeps = true,
-			ExperimentalSettings experimentalSettings = { 0 },
-			const std::string& basePath = GetCurrentWorkingDirectory(),
-			const std::vector<Module>& extraModules = {},
-			const std::vector<Dependency>& dependencies = {},
-			const Metadata& metadata = {},
-			Capabilities capabilities = {});
+			const Manifest& bpManifest = {},
+			const Manifest& rpManifest = {},
+			bool AutoRegisterBehAndResAsDeps = true);
 		static NonOwningPtr<Addon> GetStaticInstance();
 	private:
 		void generateBehaviourPack(const std::string& folderName, const std::string& outputPath, bool clearOutputFolder, bool cacheManifest);

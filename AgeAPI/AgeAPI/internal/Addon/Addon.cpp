@@ -1,13 +1,15 @@
 #include <AgeAPI/internal/Addon/Addon.hpp>
 #include <absl/log/initialize.h>
+#include <absl/log/log.h>
 #include <absl/log/log_sink.h>
 #include <absl/log/log_sink_registry.h>
 #include <absl/log/globals.h>
 namespace AgeAPI
 {
-	Addon::Addon(Manifest&& bpManifest, Manifest&& rpManifest, bool AutoRegisterBehAndResAsDeps) : 
-		mBehaviourPackManifest(std::move(bpManifest)), mResourcePackManifest(std::move(rpManifest)), mName(mBehaviourPackManifest.GetName())
+	Addon::Addon(const Manifest& bpManifest, const Manifest& rpManifest, bool AutoRegisterBehAndResAsDeps) : 
+		mBehaviourPackManifest(bpManifest), mResourcePackManifest(rpManifest)
 	{
+		mName = mBehaviourPackManifest.GetName();
 		if (AutoRegisterBehAndResAsDeps)
 		{
 			mBehaviourPackManifest.AddDependency({ mResourcePackManifest.GetUUID(), mResourcePackManifest.GetAddonVersion() });
@@ -41,6 +43,7 @@ namespace AgeAPI
 						generateResourceManifest = false;
 
 		}
+		LOG(INFO) << "Generating Behaviour Pack";
 
 		generateBehaviourPack(folderName, bpOutput.string(), !generateBehaviourManifest, CacheManifest);
 
@@ -99,37 +102,17 @@ namespace AgeAPI
 		return path;
 	}
 	static Addon addon;
-	// The reason we have a singleton is because most of the time only a singel addon will be used but there maybe rare cases where more are needed
-	// so we allow construction of multiple but the lifetime must be managed by the user
-	NonOwningPtr<Addon> Addon::SetupStaticInstance(
-		const SemanticVersion& minEngineVersion,
-		const SemanticVersion& addonVersion,
-		const std::string& name,
-		const std::string& description,
-		bool AutoRegisterBehAndResAsDeps,
-		ExperimentalSettings experimentalSettings, 
-		const std::string& basePath,
-		const std::vector<Module>& extraModules,
-		const std::vector<Dependency>& dependencies,
-		const Metadata& metadata,
-		Capabilities capabilities)
+	NonOwningPtr<Addon> Addon::SetupStaticInstance(const Manifest& bpManifest,const Manifest& rpManifest, bool AutoRegisterBehAndResAsDeps)
 	{
-		addon = std::move(
-			
-			Addon(minEngineVersion,
-				addonVersion,
-				name,
-				description,
-				AutoRegisterBehAndResAsDeps,
-				experimentalSettings,
-				basePath, extraModules, dependencies,
-				metadata, capabilities
-			)
-		);
+		std::println("Setting up static instance");
+		addon = Addon(bpManifest, rpManifest, AutoRegisterBehAndResAsDeps);
 		absl::InitializeLog();
 		absl::SetStderrThreshold(absl::LogSeverityAtLeast::kInfo);
 		return &addon;
 	}
+	// The reason we have a singleton is because most of the time only a singel addon will be used but there maybe rare cases where more are needed
+	// so we allow construction of multiple but the lifetime must be managed by the user
+
 
 	NonOwningPtr<Addon> Addon::GetStaticInstance()
 	{
@@ -140,9 +123,14 @@ namespace AgeAPI
 		Backend::Bp::BehaviourPack bp{this};
 		bp.setManifest(std::move(mBehaviourPackManifest));
 		bp.setBlocks(std::move(mBlocks));
+		std::filesystem::path OutputPath = outputPath;
 
-		std::filesystem::path outputBase = outputPath;
-		outputBase /= folderName;
-		bp.buildBehaviourPack(outputBase, cacheManifest);
+		if (!std::filesystem::exists(OutputPath))
+		{
+			if (!std::filesystem::create_directory(OutputPath))
+				throw std::runtime_error("Failed to create directory: " + outputPath);
+		}
+
+		bp.buildBehaviourPack(OutputPath, cacheManifest);
 	}
 }

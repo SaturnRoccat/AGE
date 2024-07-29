@@ -8,13 +8,22 @@ namespace AgeAPI::AddonFeatures
 {
 	Block::Block(const Block& other)
 	{
+		mComponents.clear();
 		for (auto& component : other.mComponents)
 			mComponents[component.first] = std::unique_ptr<Components::BlockComponentBase>(component.second->Clone());
+		for (auto& permutation : other.mPermutations)
+		{
+			auto perm = *permutation.second.get();
+			mPermutations[permutation.first] = std::make_unique<Backend::Permutation>(std::move(perm));
+		}
+		for (auto& trait : other.mTraits)
+			mTraits[trait.first] = std::unique_ptr<Backend::Bp::TraitBase>(trait.second->Clone());
+		for (auto& state : other.mStates)
+			mStates[state.first] = std::unique_ptr<Backend::AState>(state.second->Clone());
 		mIdentifier = other.mIdentifier;
 		mFormatVersion = other.mFormatVersion;
 		mFormatVersion = other.mFormatVersion;
 		mShowInCommands = other.mShowInCommands;
-		
 	}
 	Block& Block::operator=(const Block& other)
 	{
@@ -24,6 +33,15 @@ namespace AgeAPI::AddonFeatures
 		mComponents.clear();
 		for (auto& component : other.mComponents)
 			mComponents[component.first] = std::unique_ptr<Components::BlockComponentBase>(component.second->Clone());
+		for (auto& permutation : other.mPermutations)
+		{
+			auto perm = *permutation.second.get();
+			mPermutations[permutation.first] = std::make_unique<Backend::Permutation>(std::move(perm));
+		}
+		for (auto& trait : other.mTraits)
+			mTraits[trait.first] = std::unique_ptr<Backend::Bp::TraitBase>(trait.second->Clone());
+		for (auto& state : other.mStates)
+			mStates[state.first] = std::unique_ptr<Backend::AState>(state.second->Clone());
 		mIdentifier = other.mIdentifier;
 		mFormatVersion = other.mFormatVersion;
 		mFormatVersion = other.mFormatVersion;
@@ -185,7 +203,7 @@ namespace AgeAPI::AddonFeatures
 		{
 			rapidjson::Value traitObj(rapidjson::kObjectType);
 			trait->WriteToJson({ traitObj, alloc }, addon);
-			rapidjson::ValueWriteWithKey<rapidjson::Value>::WriteToJsonValue(trait->GetTraitId().GetFullNamespace(), traits, traitObj, alloc);
+			rapidjson::ValueWriteWithKey<rapidjson::Value>::WriteToJsonValue(trait->GetTraitId().GetFullNamespace(), traitObj, traits, alloc);
 		}
 		json.AddMember("traits", traits, alloc);
 
@@ -197,8 +215,36 @@ namespace AgeAPI::AddonFeatures
 		rapidjson::Value componentsObj(rapidjson::kObjectType);
 		auto& json = componentsObj;
 		auto& alloc = proxy.mAllocator;
+		for (auto& [ComponentName, Component] : mComponents)
+		{
+			rapidjson::Value componentObj(rapidjson::kObjectType);
+			auto err = Component->WriteToJson(addon, { componentObj, alloc }, this);
+			if (!err)
+				throw std::runtime_error(err.GetAsString());
+			if (Component->IsTransient()) // Transient components are not written to the final json
+				continue;
+			rapidjson::ValueWriteWithKey<rapidjson::Value>::WriteToJsonValue(ComponentName, componentObj, componentsObj, alloc);
+		}
+		proxy.mWriteLoc.AddMember("components", componentsObj, alloc);
+	}
 
-
+	void Block::writePermutations(JsonProxy proxy, NonOwningPtr<Addon> addon)
+	{
+		rapidjson::Value permutationsObj(rapidjson::kArrayType);
+		auto& json = permutationsObj;
+		auto& alloc = proxy.mAllocator;
+		for (auto& [condition, permutation] : mPermutations)
+		{
+			ScopedToggle toggle(mEnableRewriteRedirection);
+			mRedirectStore = &permutation->mComponents;
+			rapidjson::Value permutationObj(rapidjson::kObjectType);
+			auto err = permutation->WriteToJson({ permutationObj, alloc }, addon, this);
+			if (!err)
+				throw std::runtime_error(err.GetAsString());
+			permutationsObj.PushBack(permutationObj, alloc);
+		}
+		mRedirectStore = nullptr;
+		proxy.mWriteLoc.AddMember("permutations", permutationsObj, alloc);
 	}
 	
 	void Block::WriteToValue(JsonProxy proxy, NonOwningPtr<Addon> addon)
@@ -210,13 +256,7 @@ namespace AgeAPI::AddonFeatures
 		rapidjson::Value minecraftBlock(rapidjson::kObjectType);
 		writeDescription(proxy.Derive(minecraftBlock), addon);
 		writeComponents(proxy.Derive(minecraftBlock), addon);
-
-
-
-
-
-
+		writePermutations(proxy.Derive(minecraftBlock), addon);
 		json.AddMember("minecraft:block", minecraftBlock, alloc); // So i dont forget to add it
-
 	}
 }

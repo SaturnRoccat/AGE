@@ -87,13 +87,12 @@ namespace AgeAPI
 		Metadata mMetadata{};
 		Capabilities mCapabilities{};
 	public:
-		Manifest() = default;
 		Manifest(
-			const SemanticVersion& minEngineVersion,
-			const SemanticVersion& addonVersion,
-			const std::string& name,
-			const std::string& description,
-			const std::vector<Module>& modules,
+			const SemanticVersion& minEngineVersion = {1, 21, 20},
+			const SemanticVersion& addonVersion = {0, 0,0},
+			const std::string& name = "goobert",
+			const std::string& description = "goobert the second",
+			const std::vector<Module>& modules = {},
 			const std::vector<Dependency>& dependencies = {},
 			const Metadata& metadata = {},
 			const Capabilities& capabilities = {},
