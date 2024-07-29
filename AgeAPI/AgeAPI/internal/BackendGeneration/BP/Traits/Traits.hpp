@@ -16,6 +16,7 @@ namespace AgeAPI::Backend::Bp
 		virtual ~TraitBase() = default;
 		virtual ErrorString WriteToJson(JsonProxy proxy, NonOwningPtr<Addon> addon) const = 0;
 		TraitBase(const Identifier& id) : mTraitId(id) {}
+		virtual TraitBase* Clone() const = 0;
 		template<class Self>
 		auto&& GetTraitId(this Self&& self)
 		{
@@ -42,6 +43,7 @@ namespace AgeAPI::Backend::Bp
 		) : TraitBase("minecraft:placement_direction"), mEnabledStates(enabledStates), mYRotation(yRotation) {}
 		~PlacementDirectionTrait() override = default;
 		ErrorString WriteToJson(JsonProxy proxy, NonOwningPtr<Addon> addon) const override;
+		TraitBase* Clone() const override { return new PlacementDirectionTrait(*this); }
 
 		bool HasCardinalDirection() const { return ToUnderlying(mEnabledStates) & ToUnderlying(EnabledStates::Cardinal); }
 		bool HasFacingDirection() const { return ToUnderlying(mEnabledStates) & ToUnderlying(EnabledStates::Facing); }
@@ -57,6 +59,7 @@ namespace AgeAPI::Backend::Bp
 			EnabledStates enabledStates = {EnabledStates::None}
 		) : TraitBase("minecraft:placement_position"), mEnabledStates(enabledStates) {}
 		~PlacementPositionTrait() override = default;
+		TraitBase* Clone() const override { return new PlacementPositionTrait(*this); }
 		ErrorString WriteToJson(JsonProxy proxy, NonOwningPtr<Addon> addon) const override;
 		bool HasFacingDirection() const { return ToUnderlying(mEnabledStates) & ToUnderlying(EnabledStates::Facing); }
 		bool hasVerticalHalf() const { return ToUnderlying(mEnabledStates) & ToUnderlying(EnabledStates::VerticalHalf); }

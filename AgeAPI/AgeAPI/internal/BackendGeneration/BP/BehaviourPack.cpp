@@ -1,5 +1,6 @@
 #include "BehaviourPack.hpp"
 #include <filesystem>
+#include <AgeAPI/internal/RapidJsonExtension/FileIO.hpp>
 #include <fstream>
 
 namespace AgeAPI::Backend::Bp
@@ -11,6 +12,12 @@ namespace AgeAPI::Backend::Bp
 		forcePath(blocksPath);
 		for (auto& block : mBlocks)
 		{
+			auto doc = block->WriteToDocument(mAddon);
+			std::filesystem::path blockPath = blocksPath / (block->GetIdentifier().GetFullNamespaceFile() + ".json");
+			auto err = rapidjson::WriteJsonFile(doc, blockPath);
+			if (!err)
+				throw std::runtime_error("Failed to write block: " + err.GetAsString());
+
 		}
 
 	}
