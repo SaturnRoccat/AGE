@@ -218,16 +218,6 @@ namespace AgeAPI::AddonFeatures
 			return std::move(*this);
 		}
 #pragma endregion
-
-
-		// WARNING: This invalidates/wipes the block this should ONLY EVER be used when used in method chaining
-		Block Finalize() 
-		{
-			Block blk;
-			std::swap(blk, *this);
-			return blk;
-		}
-
 	private:
 		Block&& setGeometryInternal(Backend::Rp::Geometry&& geo);
 		ErrorString handleComponentRedirects(std::unique_ptr<Components::BlockComponentBase> component, NonOwningPtr<Addon> addon, bool override);
