@@ -24,7 +24,7 @@ namespace AgeAPI
 	public:
 		SemanticVersion(u8 major, u8 minor, u8 patch) : mMajor(major), mMinor(minor), mPatch(patch) {}
 		SemanticVersion(std::array<u8, 3> version) : mVersionArray(version) {}
-		SemanticVersion(u32 version = 0) : mVersion(version) {}
+		SemanticVersion(u32 version = 0xDEADC0DE) : mVersion(version) {}
 		~SemanticVersion() = default;
 		u8 GetMajor() const { return mMajor; }
 		u8 GetMinor() const { return mMinor; }
