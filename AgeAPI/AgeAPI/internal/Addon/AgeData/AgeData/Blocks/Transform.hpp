@@ -11,9 +11,9 @@ namespace AgeData::BlockComponents
     {
     public:
         Transformation(
-            IVec3 translation = {0, 0, 0},
             IVec3 rotation = {0, 0, 0},
-            FVec3 scale = {1, 1, 1}
+            IVec3 translation = {0, 0, 0},
+            FVec3 scale = {0, 0, 0}
         ) : AgeAPI::Components::BlockComponentBase(
             0,
             { 1, 19, 60 },
