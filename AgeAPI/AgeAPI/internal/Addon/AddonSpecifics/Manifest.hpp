@@ -88,7 +88,7 @@ namespace AgeAPI
 		Capabilities mCapabilities{};
 	public:
 		Manifest(
-			const SemanticVersion& minEngineVersion = {1, 21, 20},
+			const SemanticVersion& minEngineVersion = {1, 21, 2},
 			const SemanticVersion& addonVersion = {0, 0,0},
 			const std::string& name = "goobert",
 			const std::string& description = "goobert the second",

@@ -19,7 +19,7 @@ namespace AgeAPI::Backend::Rp
 	class TextureRegistry
 	{
 	private:
-		std::unordered_map<std::string, T> mTextures{};
+		absl::flat_hash_map<std::string, T> mTextures{};
 	public:
 		TextureRegistry() = default; 
 		TextureRegistry(const TextureRegistry& other) = delete;	
@@ -31,12 +31,11 @@ namespace AgeAPI::Backend::Rp
 			mTextures = std::move(other.mTextures);
 			return *this;
 		}
-
-		TextureError AddTexture(const std::string& name, const T& texture, bool override = false)
+		TextureError AddTexture(const std::string& name, T&& texture, bool override = false)
 		{
 			if (!override && mTextures.find(name) != mTextures.end())
 				return TextureError::TEXTURE_ALREADY_EXISTS;
-			mTextures[name] = texture;
+			mTextures.emplace(name, std::move(texture));
 			return TextureError::NONE;
 		}
 

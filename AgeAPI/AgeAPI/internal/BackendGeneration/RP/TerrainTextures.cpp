@@ -19,7 +19,7 @@ namespace AgeAPI::Backend::Rp
 	{
 		std::filesystem::create_directories(base / "textures");
 		for (auto& [_, Resource] : mTextureData)
-			Resource.mTexture.FinalizeAndWrite(base / "textures" / "blocks" / std::format("{}.png", Resource.mTextureAlias));
+			Resource.mTexture.value().FinalizeAndWrite(base / "textures" / "blocks" / std::format("{}.png", Resource.mTextureAlias));
 		rapidjson::Document doc;
 		doc.SetObject();
 		doc.AddMember("padding", mPadding, doc.GetAllocator());
@@ -30,7 +30,7 @@ namespace AgeAPI::Backend::Rp
 		for (auto& [name, _] : mTextureData)
 		{
 			rapidjson::Value textureInfo(rapidjson::kObjectType);
-			textureInfo.AddMember("texture", std::format("textures/blocks/{}", name), doc.GetAllocator());
+			textureInfo.AddMember("textures", std::format("textures/blocks/{}", name), doc.GetAllocator());
 			rapidjson::Value key(name, doc.GetAllocator());
 			textures.AddMember(key, textureInfo, doc.GetAllocator());
 		}
@@ -40,9 +40,8 @@ namespace AgeAPI::Backend::Rp
 		return "";
 	}
 
-	TextureError TerrainTexture::BindBlockResourceElement(const BlockResourceElement& blkResourceElement, bool override)
+	TextureError TerrainTexture::BindBlockResourceElement(BlockResourceElement&& blkResourceElement, bool override)
 	{
-		//return mTextureData.AddTexture(blkResourceElement.GetTexture(), blkResourceElement, override);
-		return TextureError::NONE;
+		return mTextureData.AddTexture(blkResourceElement.mTextureAlias, std::move(blkResourceElement), override);
 	}
 }

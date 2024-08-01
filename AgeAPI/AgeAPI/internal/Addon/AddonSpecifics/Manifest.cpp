@@ -35,7 +35,7 @@ namespace AgeAPI
 				proxy.mWriteLoc,
 				proxy.mAllocator
 			);
-		if (this->mVersion.GetVersion() != 0)
+		if (this->mVersion.GetVersion() != 0xDEADC0DE)
 			rapidjson::ValueWriteWithKey<std::array<u8, 3>>::WriteToJsonValue(
 				"version",
 				this->mVersion.GetVersionArray(),

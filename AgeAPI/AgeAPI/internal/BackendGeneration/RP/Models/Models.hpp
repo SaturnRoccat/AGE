@@ -32,7 +32,9 @@ namespace AgeAPI::Backend::Rp
 			else
 				mGeoName = std::move(geoOutputPath);
 		}
+		
 
+		Geometry(const std::string& name) : mGeoName(name) {}
 		const std::string& GetGeoCopyPath() const { return mGeoCopyPath; }
 		const std::string& GetGeoOutputPath() const { return mGeoOutputPath; }
 		const std::string& GetGeoName() const { return mGeoName; }

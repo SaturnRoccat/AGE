@@ -2,8 +2,10 @@
 #include <AgeAPI/internal/Addon/Addon.hpp>
 #include <absl/log/log.h>
 #include <absl/log/check.h>
+#include <AgeData/BlockComponents.hpp>
 #include <absl/log/flags.h>
 
+#include <ranges>
 namespace AgeAPI::AddonFeatures
 {
 	Block::Block(const Block& other)
@@ -21,6 +23,7 @@ namespace AgeAPI::AddonFeatures
 		for (auto& state : other.mStates)
 			mStates[state.first] = std::unique_ptr<Backend::AState>(state.second->Clone());
 		mIdentifier = other.mIdentifier;
+		mTextures = other.mTextures;
 		mFormatVersion = other.mFormatVersion;
 		mFormatVersion = other.mFormatVersion;
 		mShowInCommands = other.mShowInCommands;
@@ -45,6 +48,7 @@ namespace AgeAPI::AddonFeatures
 		mIdentifier = other.mIdentifier;
 		mFormatVersion = other.mFormatVersion;
 		mFormatVersion = other.mFormatVersion;
+		mTextures = other.mTextures;
 		mShowInCommands = other.mShowInCommands;
 		return *this;
 	}
@@ -109,7 +113,7 @@ namespace AgeAPI::AddonFeatures
 	}
 	Block&& Block::AddTrait(std::unique_ptr<Backend::Bp::TraitBase> trait, bool override)
 	{
-		auto err =  addTraitInternal(std::move(trait), override);
+		auto err = addTraitInternal(std::move(trait), override);
 		if (!err)
 			throw std::runtime_error(err.GetAsString());
 		return std::move(*this);
@@ -215,6 +219,28 @@ namespace AgeAPI::AddonFeatures
 		rapidjson::Value componentsObj(rapidjson::kObjectType);
 		auto& json = componentsObj;
 		auto& alloc = proxy.mAllocator;
+
+		if (!mComponents.contains("minecraft:geometry"))
+		{
+			AddComponent(
+				AgeData::BlockComponents::Geometry{ mGeo.GetGeoName() }
+			);
+
+		}
+		if (!mComponents.contains("minecraft:material_instances"))
+		{
+			AddComponent(
+				AgeData::BlockComponents::MaterialInstances
+				{
+				mTextures
+					|
+					std::views::transform([](const Backend::Rp::BlockResourceElement& element) {
+						return Backend::Rp::MaterialInstance::MaterialInstanceElement{element.mTextureAlias};
+					 })
+					| std::ranges::to<absl::InlinedVector<Backend::Rp::MaterialInstance::MaterialInstanceElement, 1>>()
+				}
+			);
+		}
 		for (auto& [ComponentName, Component] : mComponents)
 		{
 			rapidjson::Value componentObj(rapidjson::kObjectType);
@@ -246,7 +272,7 @@ namespace AgeAPI::AddonFeatures
 		mRedirectStore = nullptr;
 		proxy.mWriteLoc.AddMember("permutations", permutationsObj, alloc);
 	}
-	
+
 	void Block::WriteToValue(JsonProxy proxy, NonOwningPtr<Addon> addon)
 	{
 		if (!addon) [[likely]]

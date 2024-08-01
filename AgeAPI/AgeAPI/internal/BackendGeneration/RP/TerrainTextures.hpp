@@ -17,6 +17,7 @@ namespace AgeAPI::Backend::Rp
 		std::string mResourcePackName{};
 		TextureRegistry<BlockResourceElement> mTextureData{};
 		friend class ResourcePack;
+		friend class Addon;
 	private:
 		TerrainTexture() = default;
 		TerrainTexture(const std::string& atlasName, const std::string& resourcePackName)
@@ -25,10 +26,10 @@ namespace AgeAPI::Backend::Rp
 		TerrainTexture(TerrainTexture&& other) noexcept;
 		TerrainTexture& operator=(const TerrainTexture& other) = delete;
 		TerrainTexture& operator=(TerrainTexture&& other) noexcept  = default;
-
+		void setResourcePackName(const std::string& name) { mResourcePackName = name; }
 		// TODO: Implement
 		ErrorString writeTextureData(const std::filesystem::path& base) const;
 	public:
-		TextureError BindBlockResourceElement(const BlockResourceElement& blkResourceElement, bool override = false);
+		TextureError BindBlockResourceElement(BlockResourceElement&& blkResourceElement, bool override = false);
 	};
 }

@@ -1,12 +1,15 @@
 #pragma once
 #include <AgeAPI/internal/BackendGeneration/BP/Block/BlockBehaviour.hpp>
 #include <AgeAPI/internal/BackendGeneration/BP/Traits/Traits.hpp>
-#include <AgeAPI/internal/BackendGeneration/BP/BehaviourPack.hpp>
-#include <AgeAPI/internal/BackendGeneration/RP/ResourcePack.hpp>
 #include <AgeAPI/internal/BackendGeneration/RP/Block/BlockResource.hpp>
 #include <AgeAPI/internal/BackendGeneration/RP/Models/Models.hpp>
 #include <optional>
 #include <unordered_map>
+
+namespace AgeAPI::Backend::Rp
+{
+	class ResourcePack;
+}
 
 namespace AgeAPI::AddonFeatures
 {
@@ -23,7 +26,7 @@ namespace AgeAPI::AddonFeatures
 
 		static std::expected<Block, ErrorString> MakeBlock(
 			const Identifier& identifier,
-			SemanticVersion formatVersion = { 1, 21, 20 },
+			SemanticVersion formatVersion = { 1, 21, 2 },
 			const MenuCategory& catagory = {},
 			bool showInCommands = true);
 		
@@ -100,7 +103,7 @@ namespace AgeAPI::AddonFeatures
 		* We are abusing perfect forwarding to allow the user to pass any mix of R and L values to the function without having to manually specify the type.
 		*/
 		template<typename a1, typename a2, typename a3 = a2>
-			requires std::is_constructible_v<Backend::Rp::Texture, a1>&& std::is_same_v<std::string, a2>&& std::is_constructible_v<std::string, a3>
+			requires std::is_constructible_v<Backend::Rp::Texture, a1>&& std::is_constructible_v<std::string, a2>&& std::is_constructible_v<std::string, a3>
 		Block&& SetTexture(a1&& texture, a2&& textureAlias, a3&& pathFromBase = "", Backend::Rp::TextureSide side = Backend::Rp::TextureSide::all)
 		{
 			if constexpr (std::is_same_v<a3, std::string>)
@@ -110,6 +113,19 @@ namespace AgeAPI::AddonFeatures
 			}
 
 			return SetTexture(Backend::Rp::BlockResourceElement(std::forward<a1>(texture), std::forward<a2>(textureAlias), std::forward<a3>(pathFromBase), side));
+		}
+
+		template<typename a1, typename a2 = a1>
+			requires std::is_constructible_v<std::string, a1&&>&& std::is_constructible_v<std::string, a2&&>
+		Block&& SetTexture(a1&& textureAlias, a2&& pathFromBase = "", Backend::Rp::TextureSide side = Backend::Rp::TextureSide::all)
+		{
+			if constexpr (std::is_same_v<a2, std::string>)
+			{
+				if (pathFromBase.empty())
+					pathFromBase = a2(textureAlias);
+			}
+
+			return SetTexture(Backend::Rp::BlockResourceElement(std::forward<a1>(textureAlias), std::forward<a2>(pathFromBase), side));
 		}
 
 		template<typename a1> requires std::is_constructible_v<Identifier, a1>
@@ -155,18 +171,8 @@ namespace AgeAPI::AddonFeatures
 			NonOwningPtr<Addon> addon = nullptr)
 		{
 			for (auto& permutation : permutations)
-			{
 				AddPermutation(std::move(permutation), override, addon);
-			}
 			return std::move(*this);
-		}
-		NonOwningPtr<Backend::Permutation> GetPermutation(const std::string& name) 
-		{
-			auto it = mPermutations.find(name);
-			if (it == mPermutations.end())
-				return nullptr;
-			return it->second.get();
-		
 		}
 #pragma endregion
 #pragma region AddTraits
@@ -264,7 +270,9 @@ namespace AgeAPI::AddonFeatures
 		bool mShowInCommands{};
 		bool mEnableRewriteRedirection{ false };
 		NonOwningPtr<ComponentStore> mRedirectStore{nullptr};
-		Backend::Rp::Geometry mGeo{};
+		Backend::Rp::Geometry mGeo{"minecraft:geometry.full_block"};
+		friend class Backend::Rp::ResourcePack;
+		friend class Addon;
 	};
 
 	

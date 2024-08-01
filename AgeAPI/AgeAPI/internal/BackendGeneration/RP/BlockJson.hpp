@@ -39,8 +39,5 @@ namespace AgeAPI::Backend::Rp
 		BlockJsonError AddBlock(const Identifier& blockID, const std::string& textureName = "", const std::string& soundID = "", bool override = false);
 		BlockJsonError AddBlock(const Identifier& blockID, const BlockJsonStorageImpl& blockJsonStorage, bool override = false);
 		BlockJsonError RemoveBlock(const Identifier& blockID);
-
-		// WARNING: This function probably should not be used by the user
-		void SetFormatVersion(const SemanticVersion& version) { mFormatVersion = version; } 
 	};
 }
