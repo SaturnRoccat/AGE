@@ -172,8 +172,12 @@ namespace AgeAPI::AddonFeatures
 	ErrorString Block::addTraitInternal(std::unique_ptr<Backend::Bp::TraitBase> trait, bool override)
 	{
 		DLOG(INFO) << std::format("Adding trait: {}", trait->GetTraitId().GetFullNamespace());
-		if (!override && mTraits.contains(trait->GetTraitId().GetFullNamespace()))
-			throw ErrorString("Trait already exists and cannot be overridden. Enable the override flag if it is needed.");
+		auto it = mTraits.find(trait->GetTraitId().GetFullNamespace());
+		if (!override && it != mTraits.end())
+		{
+			it->second->Merge(*trait);
+			return {};
+		}
 		mTraits[trait->GetTraitId().GetFullNamespace()] = std::move(trait);
 		return {};
 	}

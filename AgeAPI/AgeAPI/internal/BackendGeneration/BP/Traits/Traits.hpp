@@ -17,6 +17,7 @@ namespace AgeAPI::Backend::Bp
 		virtual ErrorString WriteToJson(JsonProxy proxy, NonOwningPtr<Addon> addon) const = 0;
 		TraitBase(const Identifier& id) : mTraitId(id) {}
 		virtual TraitBase* Clone() const = 0;
+		virtual void Merge(TraitBase& other) = 0;
 		template<class Self>
 		auto&& GetTraitId(this Self&& self)
 		{
@@ -44,6 +45,11 @@ namespace AgeAPI::Backend::Bp
 		~PlacementDirectionTrait() override = default;
 		ErrorString WriteToJson(JsonProxy proxy, NonOwningPtr<Addon> addon) const override;
 		TraitBase* Clone() const override { return new PlacementDirectionTrait(*this); }
+		void Merge(TraitBase& other) override
+		{
+			auto& otherTrait = static_cast<PlacementDirectionTrait&>(other);
+			mEnabledStates = MixEnum<EnabledStates>(mEnabledStates, otherTrait.mEnabledStates);
+		}
 
 		bool HasCardinalDirection() const { return ToUnderlying(mEnabledStates) & ToUnderlying(EnabledStates::Cardinal); }
 		bool HasFacingDirection() const { return ToUnderlying(mEnabledStates) & ToUnderlying(EnabledStates::Facing); }
@@ -60,6 +66,11 @@ namespace AgeAPI::Backend::Bp
 		) : TraitBase("minecraft:placement_position"), mEnabledStates(enabledStates) {}
 		~PlacementPositionTrait() override = default;
 		TraitBase* Clone() const override { return new PlacementPositionTrait(*this); }
+		void Merge(TraitBase& other) override
+		{
+			auto& otherTrait = static_cast<PlacementPositionTrait&>(other);
+			mEnabledStates = MixEnum<EnabledStates>(mEnabledStates, otherTrait.mEnabledStates);
+		}
 		ErrorString WriteToJson(JsonProxy proxy, NonOwningPtr<Addon> addon) const override;
 		bool HasFacingDirection() const { return ToUnderlying(mEnabledStates) & ToUnderlying(EnabledStates::Facing); }
 		bool hasVerticalHalf() const { return ToUnderlying(mEnabledStates) & ToUnderlying(EnabledStates::VerticalHalf); }
