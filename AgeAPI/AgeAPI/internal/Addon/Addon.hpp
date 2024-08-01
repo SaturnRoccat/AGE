@@ -49,6 +49,8 @@ namespace AgeAPI
 		
 		static const std::string& GetDevelopmentBehaviourPackPath();
 		static const std::string& GetDevelopmentResourcePackPath();
+		static const std::string& GetPreviewDevelopmentBehaviourPackPath();
+		static const std::string& GetPreviewDevelopmentResourcePackPath();
 		static NonOwningPtr<Addon> SetupStaticInstance(
 			const Manifest& bpManifest = {},
 			const Manifest& rpManifest = {},

@@ -109,6 +109,46 @@ namespace AgeAPI
 
 		return path;
 	}
+	const std::string& Addon::GetPreviewDevelopmentBehaviourPackPath()
+	{
+		static std::string path;
+		if (path.empty())
+		{
+			std::filesystem::path localAppData = std::getenv("LOCALAPPDATA");
+			std::filesystem::path minecraftPath = localAppData / "Packages" / "Microsoft.MinecraftWindowsBeta_8wekyb3d8bbwe" / "LocalState" / "games" / "com.mojang";
+			std::filesystem::path devBehPath = minecraftPath / "development_behavior_packs";
+
+			if (!std::filesystem::exists(devBehPath))
+			{
+				if (!std::filesystem::create_directory(devBehPath))
+					return path;
+			}
+
+			path = devBehPath.string();
+		}
+
+		return path;
+	}
+	const std::string& Addon::GetPreviewDevelopmentResourcePackPath()
+	{
+		static std::string path;
+		if (path.empty())
+		{
+			std::filesystem::path localAppData = std::getenv("LOCALAPPDATA");
+			std::filesystem::path minecraftPath = localAppData / "Packages" / "Microsoft.MinecraftWindowsBeta_8wekyb3d8bbwe" / "LocalState" / "games" / "com.mojang";
+			std::filesystem::path devResPath = minecraftPath / "development_resource_packs";
+
+			if (!std::filesystem::exists(devResPath))
+			{
+				if (!std::filesystem::create_directory(devResPath))
+					return path;
+			}
+
+			path = devResPath.string();
+		}
+
+		return path;
+	}
 	static Addon addon;
 	NonOwningPtr<Addon> Addon::SetupStaticInstance(const Manifest& bpManifest,const Manifest& rpManifest, bool AutoRegisterBehAndResAsDeps)
 	{
