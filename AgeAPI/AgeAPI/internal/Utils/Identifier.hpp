@@ -23,6 +23,15 @@ namespace AgeAPI
 		const std::string_view GetName() const { return mFullNamespace.substr(mColonPos + 1); }
 		const std::string_view GetNamespace() const { return mFullNamespace.substr(0, mColonPos); }
 		const std::string& GetFullNamespace() const { return mFullNamespace; }
+		std::string GetFullNamespaceFile() const {
+			std::string str = mFullNamespace;
+			for (char& c : str)
+			{
+				if (c == ':')
+					c = '_';
+			}
+			return str;
+		}
 
 		void SetName(const std::string& name) { mFullNamespace = std::format("{}:{}", GetNamespace(), name); }
 		void SetNamespace(const std::string& namespace_) { mFullNamespace = std::format("{}:{}", namespace_, GetName()); }

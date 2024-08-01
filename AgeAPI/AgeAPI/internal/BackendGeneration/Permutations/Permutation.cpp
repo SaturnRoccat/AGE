@@ -3,9 +3,25 @@
 #include <AgeAPI/internal/Addon/Addon.hpp>
 namespace AgeAPI::Backend
 {
-	ErrorString Permutation::WriteToJson(JsonProxy proxy, NonOwningPtr<Addon> addon, NonOwningPtr<AddonFeatures::Block> blk) const
+	ErrorString Permutation::WriteToJson(JsonProxy proxy, NonOwningPtr<Addon> addon, NonOwningPtr<AddonFeatures::Block> blk)
 	{
-		return ErrorString();
+		auto& [value, allocator] = proxy;
+		value.SetObject();
+		value.AddMember("condition", mCondition, allocator);
+		rapidjson::Value componentsObj(rapidjson::kObjectType);
+
+		for (auto& [name, component] : mComponents)
+		{
+			rapidjson::Value componentValue(rapidjson::kObjectType);
+			auto err = component->WriteToJson(addon, { componentValue, allocator }, blk);
+			if (!err)
+				return err;
+			if (component->IsTransient())
+				continue;
+			rapidjson::ValueWriteWithKey<rapidjson::Value>::WriteToJsonValue(name, componentValue, componentsObj, allocator);
+		}
+		value.AddMember("components", componentsObj, allocator);
+		return "";
 	}
 	Permutation&& Permutation::AddComponent(std::unique_ptr<Components::BlockComponentBase> component, bool override, NonOwningPtr<Addon> addon)
 	{

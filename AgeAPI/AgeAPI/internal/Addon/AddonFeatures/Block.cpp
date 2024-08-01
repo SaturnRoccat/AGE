@@ -2,19 +2,31 @@
 #include <AgeAPI/internal/Addon/Addon.hpp>
 #include <absl/log/log.h>
 #include <absl/log/check.h>
+#include <AgeData/BlockComponents.hpp>
 #include <absl/log/flags.h>
 
+#include <ranges>
 namespace AgeAPI::AddonFeatures
 {
 	Block::Block(const Block& other)
 	{
+		mComponents.clear();
 		for (auto& component : other.mComponents)
 			mComponents[component.first] = std::unique_ptr<Components::BlockComponentBase>(component.second->Clone());
+		for (auto& permutation : other.mPermutations)
+		{
+			auto perm = *permutation.second.get();
+			mPermutations[permutation.first] = std::make_unique<Backend::Permutation>(std::move(perm));
+		}
+		for (auto& trait : other.mTraits)
+			mTraits[trait.first] = std::unique_ptr<Backend::Bp::TraitBase>(trait.second->Clone());
+		for (auto& state : other.mStates)
+			mStates[state.first] = std::unique_ptr<Backend::AState>(state.second->Clone());
 		mIdentifier = other.mIdentifier;
+		mTextures = other.mTextures;
 		mFormatVersion = other.mFormatVersion;
 		mFormatVersion = other.mFormatVersion;
 		mShowInCommands = other.mShowInCommands;
-		
 	}
 	Block& Block::operator=(const Block& other)
 	{
@@ -24,9 +36,19 @@ namespace AgeAPI::AddonFeatures
 		mComponents.clear();
 		for (auto& component : other.mComponents)
 			mComponents[component.first] = std::unique_ptr<Components::BlockComponentBase>(component.second->Clone());
+		for (auto& permutation : other.mPermutations)
+		{
+			auto perm = *permutation.second.get();
+			mPermutations[permutation.first] = std::make_unique<Backend::Permutation>(std::move(perm));
+		}
+		for (auto& trait : other.mTraits)
+			mTraits[trait.first] = std::unique_ptr<Backend::Bp::TraitBase>(trait.second->Clone());
+		for (auto& state : other.mStates)
+			mStates[state.first] = std::unique_ptr<Backend::AState>(state.second->Clone());
 		mIdentifier = other.mIdentifier;
 		mFormatVersion = other.mFormatVersion;
 		mFormatVersion = other.mFormatVersion;
+		mTextures = other.mTextures;
 		mShowInCommands = other.mShowInCommands;
 		return *this;
 	}
@@ -91,7 +113,7 @@ namespace AgeAPI::AddonFeatures
 	}
 	Block&& Block::AddTrait(std::unique_ptr<Backend::Bp::TraitBase> trait, bool override)
 	{
-		auto err =  addTraitInternal(std::move(trait), override);
+		auto err = addTraitInternal(std::move(trait), override);
 		if (!err)
 			throw std::runtime_error(err.GetAsString());
 		return std::move(*this);
@@ -162,5 +184,105 @@ namespace AgeAPI::AddonFeatures
 			throw ErrorString("State already exists and cannot be overridden. Enable the override flag if it is needed.");
 		mStates[state->GetStateId().GetFullNamespace()] = std::move(state);
 		return {};
+	}
+
+	void Block::writeDescription(JsonProxy proxy, NonOwningPtr<Addon> addon)
+	{
+		rapidjson::Value descriptionObj(rapidjson::kObjectType);
+		auto& json = descriptionObj;
+		auto& alloc = proxy.mAllocator;
+
+		json.AddMember("identifier", mIdentifier.GetFullNamespace(), alloc);
+		mMenuCategory.WriteToJson({ json, alloc });
+
+		// Handle States
+		rapidjson::Value states(rapidjson::kObjectType);
+		for (auto& [name, state] : mStates)
+			state->WriteState(states, alloc);
+		json.AddMember("states", states, alloc);
+
+		// Handle Traits
+		rapidjson::Value traits(rapidjson::kObjectType);
+		for (auto& [name, trait] : mTraits)
+		{
+			rapidjson::Value traitObj(rapidjson::kObjectType);
+			trait->WriteToJson({ traitObj, alloc }, addon);
+			rapidjson::ValueWriteWithKey<rapidjson::Value>::WriteToJsonValue(trait->GetTraitId().GetFullNamespace(), traitObj, traits, alloc);
+		}
+		json.AddMember("traits", traits, alloc);
+
+		proxy.mWriteLoc.AddMember("description", json, alloc);
+	}
+
+	void Block::writeComponents(JsonProxy proxy, NonOwningPtr<Addon> addon)
+	{
+		rapidjson::Value componentsObj(rapidjson::kObjectType);
+		auto& json = componentsObj;
+		auto& alloc = proxy.mAllocator;
+
+		if (!mComponents.contains("minecraft:geometry"))
+		{
+			AddComponent(
+				AgeData::BlockComponents::Geometry{ mGeo.GetGeoName() }
+			);
+
+		}
+		if (!mComponents.contains("minecraft:material_instances"))
+		{
+			AddComponent(
+				AgeData::BlockComponents::MaterialInstances
+				{
+				mTextures
+					|
+					std::views::transform([](const Backend::Rp::BlockResourceElement& element) {
+						return Backend::Rp::MaterialInstance::MaterialInstanceElement{element.mTextureAlias};
+					 })
+					| std::ranges::to<absl::InlinedVector<Backend::Rp::MaterialInstance::MaterialInstanceElement, 1>>()
+				}
+			);
+		}
+		for (auto& [ComponentName, Component] : mComponents)
+		{
+			rapidjson::Value componentObj(rapidjson::kObjectType);
+			auto err = Component->WriteToJson(addon, { componentObj, alloc }, this);
+			if (!err)
+				throw std::runtime_error(err.GetAsString());
+			if (Component->IsTransient()) // Transient components are not written to the final json
+				continue;
+			rapidjson::ValueWriteWithKey<rapidjson::Value>::WriteToJsonValue(ComponentName, componentObj, componentsObj, alloc);
+		}
+		proxy.mWriteLoc.AddMember("components", componentsObj, alloc);
+	}
+
+	void Block::writePermutations(JsonProxy proxy, NonOwningPtr<Addon> addon)
+	{
+		rapidjson::Value permutationsObj(rapidjson::kArrayType);
+		auto& json = permutationsObj;
+		auto& alloc = proxy.mAllocator;
+		for (auto& [condition, permutation] : mPermutations)
+		{
+			ScopedToggle toggle(mEnableRewriteRedirection);
+			mRedirectStore = &permutation->mComponents;
+			rapidjson::Value permutationObj(rapidjson::kObjectType);
+			auto err = permutation->WriteToJson({ permutationObj, alloc }, addon, this);
+			if (!err)
+				throw std::runtime_error(err.GetAsString());
+			permutationsObj.PushBack(permutationObj, alloc);
+		}
+		mRedirectStore = nullptr;
+		proxy.mWriteLoc.AddMember("permutations", permutationsObj, alloc);
+	}
+
+	void Block::WriteToValue(JsonProxy proxy, NonOwningPtr<Addon> addon)
+	{
+		if (!addon) [[likely]]
+			addon = Addon::GetStaticInstance();
+		auto& [json, alloc] = proxy;
+		json.AddMember("format_version", mFormatVersion.GetString(), alloc);
+		rapidjson::Value minecraftBlock(rapidjson::kObjectType);
+		writeDescription(proxy.Derive(minecraftBlock), addon);
+		writeComponents(proxy.Derive(minecraftBlock), addon);
+		writePermutations(proxy.Derive(minecraftBlock), addon);
+		json.AddMember("minecraft:block", minecraftBlock, alloc); // So i dont forget to add it
 	}
 }

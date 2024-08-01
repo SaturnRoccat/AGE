@@ -14,7 +14,7 @@ namespace AgeAPI::Backend
 		virtual ~AState() = default;
 
 		const Identifier& GetStateId() const { return mStateId; }
-
+		virtual AState* Clone() const = 0;
 		virtual void WriteState(rapidjson::Value& value, rapidjson::Document::AllocatorType& allocator) const = 0;
 	protected:
 		Identifier mStateId{};
@@ -25,6 +25,7 @@ namespace AgeAPI::Backend
 	public:
 		BoolState() = default;
 		BoolState(const Identifier& stateId) : AState(stateId) {}
+		AState* Clone() const override { return new BoolState(*this); }
 		void WriteState(rapidjson::Value& value, rapidjson::Document::AllocatorType& allocator) const override;
 	};
 
@@ -38,8 +39,10 @@ namespace AgeAPI::Backend
 			for (int i = min; i <= max; i++)
 				mValues.push_back(i);
 		}
-
+		
+		AState* Clone() const override { return new IntState(*this); }
 		void AddValue(int value) { mValues.push_back(value); }
+
 
 		void WriteState(rapidjson::Value& value, rapidjson::Document::AllocatorType& allocator) const override;
 
@@ -55,6 +58,7 @@ namespace AgeAPI::Backend
 		StringState(const Identifier& stateId, const std::vector<std::string>& values) : AState(stateId), mValues(values) {}
 
 		void AddValue(const std::string& value) { mValues.push_back(value); }
+		AState* Clone() const override { return new StringState(*this); }
 
 		void WriteState(rapidjson::Value& value, rapidjson::Document::AllocatorType& allocator) const override;
 

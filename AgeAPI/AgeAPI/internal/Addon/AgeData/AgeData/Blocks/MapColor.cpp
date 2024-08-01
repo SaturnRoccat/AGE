@@ -9,7 +9,7 @@ namespace AgeData::BlockComponents
             AgeAPI::overloaded{
                 [&](const MapColor::MapColorVec& color)
                 {
-                    rapidjson::TypeTranslation<AgeAPI::Vec3T<u8>, 3>::WriteToJson(color, json, alloc);
+                    rapidjson::TypeTranslation<std::array<u8, 3>>::WriteToJson(color.ToArray(), json, alloc);
                 },
                 [&](const std::string& color)
                 {

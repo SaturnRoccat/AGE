@@ -171,13 +171,13 @@ namespace rapidjson
 	template<typename T>
 	struct ValueWriteWithKey
 	{
-		static void WriteToJsonValue(const std::string& key, const T& value, rapidjson::Value& jsonValue, rapidjson::Document::AllocatorType& allocator)
+		static void WriteToJsonValue(const std::string& key, const T& value, rapidjson::Value& WroteLocation, rapidjson::Document::AllocatorType& allocator)
 		{
 			rapidjson::Value jv;
 			TypeTranslation<T>::WriteToJson(value, jv, allocator);
 			rapidjson::Value keyName;
 			TypeTranslation<std::string>::WriteToJson(key, keyName, allocator);
-			jsonValue.AddMember(keyName, jv, allocator);
+			WroteLocation.AddMember(keyName, jv, allocator);
 		}
 
 		static void WriteToJsonValue(const std::string& key, const T& value, rapidjson::Value& jsonValue, rapidjson::Document::AllocatorType& allocator, 

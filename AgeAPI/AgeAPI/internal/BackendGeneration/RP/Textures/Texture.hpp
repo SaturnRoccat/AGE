@@ -516,7 +516,7 @@ namespace AgeAPI::Backend::Rp
 			I16Vec2 size,
 			u8 bitDepth = 8,
 			u8 colorType = PNG_COLOR_TYPE_RGBA,
-			Color fillColor = { 0.f, 0.f, 0.f, 0.f }
+			Color fillColor = { .5f, .5f, .5f, 1.f }
 		) : mSize(size), mBitDepth(bitDepth), mColorType(colorType)
 		{
 			mLayers.reserve(4); // Reserve 4 layers for the user

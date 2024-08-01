@@ -1,32 +1,40 @@
 #include <AgeAPI/internal/Addon/Addon.hpp>
 #include <absl/log/initialize.h>
+#include <absl/log/log.h>
 #include <absl/log/log_sink.h>
 #include <absl/log/log_sink_registry.h>
+#include <AgeAPI/internal/RapidJsonExtension/FileIO.hpp>
 #include <absl/log/globals.h>
 namespace AgeAPI
 {
-	Addon::Addon(
-		const SemanticVersion& minEngineVersion,
-		const SemanticVersion& addonVersion,
-		const std::string& name,
-		const std::string& description,
-		bool AutoRegisterBehAndResAsDeps,
-		ExperimentalSettings experimentalSettings,
-		const std::string& basePath,
-		const std::vector<Module>& extraModules,
-		const std::vector<Dependency>& dependencies,
-		const Metadata& metadata,
-		Capabilities capabilities
-	)
+	Addon::Addon(const Manifest& bpManifest, const Manifest& rpManifest, bool AutoRegisterBehAndResAsDeps) : 
+		mBehaviourPackManifest(bpManifest), mResourcePackManifest(rpManifest)
 	{
+		mName = mBehaviourPackManifest.GetName();
+		if (AutoRegisterBehAndResAsDeps)
+		{
+			mBehaviourPackManifest.AddDependency({ mResourcePackManifest.GetUUID(), mResourcePackManifest.GetAddonVersion() });
+			mResourcePackManifest.AddDependency({ mBehaviourPackManifest.GetUUID(), mBehaviourPackManifest.GetAddonVersion() });
+		}
+		mBehaviourPackManifest.AddModule(Module{
+			"data",
+			mBehaviourPackManifest.GetDescription(),
+			mBehaviourPackManifest.GetAddonVersion(),
+			GetUUIDString(),
+			});
+		mResourcePackManifest.AddModule(Module{
+			"resources",
+			mResourcePackManifest.GetDescription(),
+			mResourcePackManifest.GetAddonVersion(),
+			GetUUIDString(),
+			});
+
 
 	}
-	void Addon::OutputAddon(const std::string& folderName, const std::pair<std::string, std::string>& outputPath, bool ClearOutputFolder, bool CacheManifest)
+	void Addon::OutputAddon(bool CacheManifest, const std::string& folderName, const std::pair<std::string, std::string>& outputPath, bool ClearOutputFolder)
 	{
 		std::filesystem::path outputDirBeh = outputPath.first;
 		std::filesystem::path outputDirRes = outputPath.second;
-
-		
 
 		auto bpOutput = outputDirBeh / std::format("{}Bp", folderName);
 		auto rpOutput = outputDirRes / std::format("{}Rp", folderName);
@@ -50,19 +58,16 @@ namespace AgeAPI
 						generateResourceManifest = false;
 
 		}
+		LOG(INFO) << "Generating Behaviour Pack";
+		generateBehaviourPack(bpOutput, !generateBehaviourManifest, CacheManifest);
+		LOG(INFO) << "Generating Resource Pack";
+		generateResourcePack(rpOutput, !generateResourceManifest, CacheManifest);
+		LOG(INFO) << "Outputted Addon: " << mName;
+
+
 
 	}
 
-	/*
-	* Steps to get the path to the development behaviour pack:
-	* 1. Fetch %localappdata%/Packages/Microsoft.MinecraftUWP_8wekyb3d8bbwe/LocalState/games/com.mojang/
-	* 2. Check if the folder contains a folder named "development_behavior_packs"
-	* 3. If it does, return the path to the folder
-	* 4. If it doesn't, create the folder and return the path to the folder
-	* 5. If the folder can't be created, return an empty string
-	* 
-	* Same steps for resource packs, but with "development_resource_packs" instead of "development_behavior_packs"
-	*/
 
 	const std::string& Addon::GetDevelopmentBehaviourPackPath()
 	{
@@ -105,40 +110,117 @@ namespace AgeAPI
 		return path;
 	}
 	static Addon addon;
-	// The reason we have a singleton is because most of the time only a singel addon will be used but there maybe rare cases where more are needed
-	// so we allow construction of multiple but the lifetime must be managed by the user
-	NonOwningPtr<Addon> Addon::SetupStaticInstance(
-		const SemanticVersion& minEngineVersion,
-		const SemanticVersion& addonVersion,
-		const std::string& name,
-		const std::string& description,
-		bool AutoRegisterBehAndResAsDeps,
-		ExperimentalSettings experimentalSettings, 
-		const std::string& basePath,
-		const std::vector<Module>& extraModules,
-		const std::vector<Dependency>& dependencies,
-		const Metadata& metadata,
-		Capabilities capabilities)
+	NonOwningPtr<Addon> Addon::SetupStaticInstance(const Manifest& bpManifest,const Manifest& rpManifest, bool AutoRegisterBehAndResAsDeps)
 	{
-		addon = std::move(
-			
-			Addon(minEngineVersion,
-				addonVersion,
-				name,
-				description,
-				AutoRegisterBehAndResAsDeps,
-				experimentalSettings,
-				basePath, extraModules, dependencies,
-				metadata, capabilities
-			)
-		);
+		std::println("Setting up static instance");
+		addon = Addon(bpManifest, rpManifest, AutoRegisterBehAndResAsDeps);
 		absl::InitializeLog();
 		absl::SetStderrThreshold(absl::LogSeverityAtLeast::kInfo);
 		return &addon;
 	}
+	// The reason we have a singleton is because most of the time only a singel addon will be used but there maybe rare cases where more are needed
+	// so we allow construction of multiple but the lifetime must be managed by the user
+
 
 	NonOwningPtr<Addon> Addon::GetStaticInstance()
 	{
 		return &addon;
+	}
+	void Addon::generateBehaviourPack(const std::filesystem::path& outputPath, bool clearOutputFolder, bool cacheManifest)
+	{
+		std::filesystem::path path(outputPath);
+
+		if (!std::filesystem::exists(path))
+		{
+			if (!std::filesystem::create_directory(path))
+				throw std::runtime_error(std::format("Failed to create directory: {}",  outputPath.string()));
+		}
+		LOG(INFO) << "Writing blocks";
+		writeBlocks(path);
+
+		if (cacheManifest)
+			return;
+		LOG(INFO) << "Writing manifest";
+		auto doc = mBehaviourPackManifest.WriteToDocument().value();
+		std::filesystem::path manifestPath = path / "manifest.json";
+		auto err = rapidjson::WriteJsonFile(doc, manifestPath);
+		if (!err)
+			throw std::runtime_error("Failed to write manifest: " + err.GetAsString());
+
+	}
+	void Addon::writeBlocks(const std::filesystem::path& outputBase)
+	{
+		std::filesystem::path blocksPath = outputBase;
+		blocksPath /= "blocks";
+		rapidjson::ForcePath(blocksPath);
+		for (auto& block : mBlocks)
+		{
+			auto doc = block->WriteToDocument(this);
+			std::filesystem::path blockPath = blocksPath / (block->GetIdentifier().GetFullNamespaceFile() + ".json");
+			auto err = rapidjson::WriteJsonFile(doc, blockPath);
+			if (!err)
+				throw std::runtime_error("Failed to write block: " + err.GetAsString());
+		}
+	}
+
+	void Addon::bindResource()
+	{
+		bindBlocks();
+	}
+
+	void Addon::bindBlocks()
+	{
+		for (auto& block : mBlocks)
+		{
+			bool hasBindableGeo = block->mGeo.GetGeoName() != "minecraft:geometry.full_block";
+			if (block->mTextures.empty() && !hasBindableGeo)
+				LOG(WARNING) << std::format("Block: {} does not have any textures", block->mIdentifier.GetFullNamespace());
+			for (int i = 0; i < block->mTextures.size(); i++)
+			{
+				auto texture = std::move(block->mTextures[i]);
+				if (texture.mTexture.has_value())
+				{
+					auto err = mTerrainTextureManager.BindBlockResourceElement(std::move(texture));
+					if (err != Backend::Rp::TextureError::NONE)
+						throw GetTextureErrorString(err);
+				}
+			}
+			block->mTextures.clear();
+			if (hasBindableGeo)
+				mModelManager.AddModel(block->mGeo.GetGeoName(), block->mGeo);
+		}
+	}
+	void Addon::generateResourcePack(const std::filesystem::path& outputPath, bool clearOutputFolder, bool cacheManifest)
+	{
+		LOG(INFO) << "Binding resources";
+		bindResource();
+		LOG(INFO) << "Bound resources";
+
+		std::filesystem::create_directories(outputPath);
+		LOG(INFO) << "Writing terrain textures";
+		mTerrainTextureManager.setResourcePackName(mResourcePackManifest.GetName());
+		writeTerrainTextures(outputPath);
+		LOG(INFO) << "Writing models";
+		writeModels(outputPath);
+		if (cacheManifest)
+			return;
+		LOG(INFO) << "Writing manifest";
+		auto doc = mResourcePackManifest.WriteToDocument().value();
+		std::filesystem::path manifestPath = outputPath / "manifest.json";
+		auto err = rapidjson::WriteJsonFile(doc, manifestPath);
+		if (!err)
+			throw std::runtime_error("Failed to write manifest: " + err.GetAsString());
+	}
+	void Addon::writeTerrainTextures(const std::filesystem::path& outputBase)
+	{
+		auto err = mTerrainTextureManager.writeTextureData(outputBase);
+		if (err.ContainsError())
+		{
+			std::println("Failed to write terrain textures: {}", err.GetAsString());
+			throw std::runtime_error("Failed to write terrain textures");
+		}
+	}
+	void Addon::writeModels(const std::filesystem::path& outputBase)
+	{
 	}
 }

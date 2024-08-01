@@ -18,6 +18,7 @@ namespace AgeAPI::Backend::Rp
 	private:
 		std::unordered_map<std::string, Geometry> mModels{};
 		friend class ResourcePack;
+		friend class Addon;
 	private:
 		ModelManager() = default;
 		ModelManager(const ModelManager& other) = delete;

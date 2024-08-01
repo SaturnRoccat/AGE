@@ -127,7 +127,7 @@ namespace AgeAPI
 				  (T)z + (T)(((float)other.z - (float)z) * t));
 		  }
 
-		std::array<T, 3> const ToArray() {return {x, y, z};}
+		std::array<T, 3> ToArray() const {return {x, y, z};}
 
 	};
 

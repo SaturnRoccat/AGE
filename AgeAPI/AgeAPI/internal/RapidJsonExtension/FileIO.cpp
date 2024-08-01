@@ -15,3 +15,13 @@ AgeAPI::ErrorString rapidjson::WriteJsonFile(const rapidjson::Value& value, cons
 	file.close();
 	return "";
 }
+
+AgeAPI::ErrorString rapidjson::ForcePath(const std::filesystem::path& outputDir)
+{
+	if (!std::filesystem::exists(outputDir))
+	{
+		if (!std::filesystem::create_directory(outputDir))
+			return std::format("Failed to create directory: {}", outputDir.string());
+	}
+	return "";
+}

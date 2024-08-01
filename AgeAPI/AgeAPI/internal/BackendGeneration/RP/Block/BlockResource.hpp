@@ -22,20 +22,31 @@ namespace AgeAPI::Backend::Rp
 	};
 	struct BlockResourceElement
 	{
-		Texture mTexture{};
+		std::optional<Texture> mTexture{};
 		std::string mTextureAlias{};
 		std::string mPathFromBase{};
 		TextureSide mSide{};
 		BlockResourceElement() = default;
 
-		template<typename a1, typename a2, typename a3> 
-			requires std::is_constructible_v<Texture, a1&&> && std::is_constructible_v<std::string, a2&&> && std::is_constructible_v<std::string, a3&&>
+		template<typename a1, typename a2, typename a3 = a2>
+			requires std::is_constructible_v<Texture, a1&&>&& std::is_constructible_v<std::string, a2&&>&& std::is_constructible_v<std::string, a3&&>
 		BlockResourceElement(
 			a1&& texture,
 			a2&& textureAlias,
 			a3&& pathFromBase = "",
 			TextureSide side = TextureSide::all
-		) : mTexture(std::forward<a1>(texture)), mTextureAlias(std::forward<a2>(textureAlias)), mPathFromBase(std::forward<a3>(pathFromBase)), mSide(side) 
+		) : mTexture(std::forward<a1>(texture)), mTextureAlias(std::forward<a2>(textureAlias)), mPathFromBase(std::forward<a3>(pathFromBase)), mSide(side)
+		{
+			if (mPathFromBase.empty())
+				mPathFromBase = mTextureAlias;
+		}
+		template<typename a1, typename a2>
+			requires std::is_constructible_v<std::string, a1&&>&& std::is_constructible_v<std::string, a2&&>
+		BlockResourceElement(
+			a1&& textureAlias,
+			a2&& pathFromBase = "",
+			TextureSide side = TextureSide::all
+		) : mTextureAlias(std::forward<a1>(textureAlias)), mPathFromBase(std::forward<a2>(pathFromBase)), mSide(side)
 		{
 			if (mPathFromBase.empty())
 				mPathFromBase = mTextureAlias;
