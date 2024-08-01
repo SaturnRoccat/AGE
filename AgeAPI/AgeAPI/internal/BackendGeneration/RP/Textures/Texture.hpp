@@ -4,6 +4,7 @@
 #include <AgeAPI/internal/Math/BresenhamLine.hpp>
 #include <algorithm>
 #include <print>
+#include <span>
 namespace AgeAPI::Backend::Rp
 {
 
@@ -73,7 +74,17 @@ namespace AgeAPI::Backend::Rp
 		
 		TextureLayer& GrayScale() { handleLazyWrite(); std::transform(mData.begin(), mData.end(), mData.begin(), [](Color c) { return c.GrayScale(); }); return *this; }
 
-
+		TextureLayer& Roate90()
+		{
+			handleLazyWrite();
+			for (i16 y = 0; y < mSize.y; y++)
+			{
+				auto row = std::span<Color>(&mData[y * mSize.x], mSize.x);
+				std::reverse(row.begin(), row.end());
+			}
+			return *this;
+		}
+			
 		TextureLayer& Multiply(Color color)
 		{ 
 			handleLazyWrite();
@@ -553,8 +564,12 @@ namespace AgeAPI::Backend::Rp
 
 		TextureLayer Flatten() const;
 
+		Texture&& Rotate90() { 
+			for (auto& layer : mLayers) 
+				layer.TL.Roate90();
+			return std::move(*this); 
+		}
 		void FinalizeAndWrite(const std::filesystem::path& path) const;
-
 		void AddLayer(const TextureLayer& layer) { mLayers.push_back(TextureInternalLayer(layer)); }
 		void AddLayer(TextureLayer&& layer) { mLayers.push_back(std::move(layer)); }
 		void AddLayer() { mLayers.push_back(TextureLayer(mSize, mBitDepth, { 0.f, 0.f, 0.f, 0.f }, mColorType, mInterlacing, mFilterType, mCompressionType)); }

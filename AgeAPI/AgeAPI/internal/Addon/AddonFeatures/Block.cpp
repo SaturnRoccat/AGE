@@ -233,16 +233,19 @@ namespace AgeAPI::AddonFeatures
 		}
 		if (!mComponents.contains("minecraft:material_instances"))
 		{
+			using namespace Backend::Rp;
+			absl::InlinedVector<MaterialInstance::MaterialInstanceElement, 1> materials;
+			for (auto& texture : mTextures)
+			{
+				materials.push_back(
+					MaterialInstance::MaterialInstanceElement{
+						texture.mTextureAlias,
+						texture.mSide,
+					}
+					);
+			}
 			AddComponent(
-				AgeData::BlockComponents::MaterialInstances
-				{
-				mTextures
-					|
-					std::views::transform([](const Backend::Rp::BlockResourceElement& element) {
-						return Backend::Rp::MaterialInstance::MaterialInstanceElement{element.mTextureAlias};
-					 })
-					| std::ranges::to<absl::InlinedVector<Backend::Rp::MaterialInstance::MaterialInstanceElement, 1>>()
-				}
+				AgeData::BlockComponents::MaterialInstances{std::move(materials)}
 			);
 		}
 		for (auto& [ComponentName, Component] : mComponents)

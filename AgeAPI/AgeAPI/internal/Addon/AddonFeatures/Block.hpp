@@ -104,7 +104,7 @@ namespace AgeAPI::AddonFeatures
 		*/
 		template<typename a1, typename a2, typename a3 = a2>
 			requires std::is_constructible_v<Backend::Rp::Texture, a1>&& std::is_constructible_v<std::string, a2>&& std::is_constructible_v<std::string, a3>
-		Block&& SetTexture(a1&& texture, a2&& textureAlias, a3&& pathFromBase = "", Backend::Rp::TextureSide side = Backend::Rp::TextureSide::all)
+		Block&& SetTexture(a1&& texture, a2&& textureAlias, Backend::Rp::TextureSide side = Backend::Rp::TextureSide::all, a3&& pathFromBase = "")
 		{
 			if constexpr (std::is_same_v<a3, std::string>)
 			{
@@ -117,7 +117,7 @@ namespace AgeAPI::AddonFeatures
 
 		template<typename a1, typename a2 = a1>
 			requires std::is_constructible_v<std::string, a1&&>&& std::is_constructible_v<std::string, a2&&>
-		Block&& SetTexture(a1&& textureAlias, a2&& pathFromBase = "", Backend::Rp::TextureSide side = Backend::Rp::TextureSide::all)
+		Block&& SetTexture(a1&& textureAlias, Backend::Rp::TextureSide side = Backend::Rp::TextureSide::all, a2&& pathFromBase = "")
 		{
 			if constexpr (std::is_same_v<a2, std::string>)
 			{
