@@ -16,6 +16,7 @@
 #include <AgeData/Blocks/MaterialInstances.hpp>
 #include <AgeData/Blocks/Transform.hpp>
 #include <AgeData/Blocks/Rotatable.hpp>
+#include <AgeData/Blocks/Tags.hpp>
 
 namespace AgeData::BlockComponents
 {
