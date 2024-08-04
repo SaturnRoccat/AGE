@@ -17,6 +17,7 @@ namespace AgeAPI::Backend
 	public:
 		Permutation() = default;
 		Permutation(const std::string& condition) : mCondition(condition) {}
+		static Permutation MakePermutation(const std::string& condition) { return Permutation(condition); }
 		Permutation(const Permutation& other)
 		{
 			mCondition = other.mCondition;
