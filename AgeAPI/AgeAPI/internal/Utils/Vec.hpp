@@ -14,48 +14,48 @@ namespace AgeAPI
 		using Vec = Vec2T<T>;
 		T x, y;
 	public:
-		Vec2T() : x(0), y(0) {}
-		Vec2T(T x, T y) : x(x), y(y) {}
-		Vec2T(const Vec2T<T>& other) : x(other.x), y(other.y) {}
-		Vec2T(Vec2T<T>&& other) noexcept : x(std::move(other.x)), y(std::move(other.y)) {}
+		constexpr Vec2T() : x(0), y(0) {}
+		constexpr Vec2T(T x, T y) : x(x), y(y) {}
+		constexpr Vec2T(const Vec2T<T>& other) : x(other.x), y(other.y) {}
+		constexpr Vec2T(Vec2T<T>&& other) noexcept : x(std::move(other.x)), y(std::move(other.y)) {}
 
-		Vec2T<T>& operator=(const Vec2T<T>& other) { x = other.x; y = other.y; return *this; }
-		Vec2T<T>& operator=(Vec2T<T>&& other) noexcept { x = std::move(other.x); y = std::move(other.y); return *this; }
+		constexpr Vec2T<T>& operator=(const Vec2T<T>& other) { x = other.x; y = other.y; return *this; }
+		constexpr Vec2T<T>& operator=(Vec2T<T>&& other) noexcept { x = std::move(other.x); y = std::move(other.y); return *this; }
 
-		Vec2T<T> operator+(const Vec2T<T>& other) const { return Vec2T<T>(x + other.x, y + other.y); }
-		Vec2T<T> operator-(const Vec2T<T>& other) const { return Vec2T<T>(x - other.x, y - other.y); }
-		Vec2T<T> operator*(const Vec2T<T>& other) const { return Vec2T<T>(x * other.x, y * other.y); }
-		Vec2T<T> operator/(const Vec2T<T>& other) const { return Vec2T<T>(x / other.x, y / other.y); }
+		constexpr Vec2T<T> operator+(const Vec2T<T>& other) const { return Vec2T<T>(x + other.x, y + other.y); }
+		constexpr Vec2T<T> operator-(const Vec2T<T>& other) const { return Vec2T<T>(x - other.x, y - other.y); }
+		constexpr Vec2T<T> operator*(const Vec2T<T>& other) const { return Vec2T<T>(x * other.x, y * other.y); }
+		constexpr Vec2T<T> operator/(const Vec2T<T>& other) const { return Vec2T<T>(x / other.x, y / other.y); }
 
-		Vec2T<T> operator+(T scalar) const { return Vec2T<T>(x + scalar, y + scalar); }
-		Vec2T<T> operator-(T scalar) const { return Vec2T<T>(x - scalar, y - scalar); }
-		Vec2T<T> operator*(T scalar) const { return Vec2T<T>(x * scalar, y * scalar); }
-		Vec2T<T> operator/(T scalar) const { return Vec2T<T>(x / scalar, y / scalar); }
+		constexpr Vec2T<T> operator+(T scalar) const { return Vec2T<T>(x + scalar, y + scalar); }
+		constexpr Vec2T<T> operator-(T scalar) const { return Vec2T<T>(x - scalar, y - scalar); }
+		constexpr Vec2T<T> operator*(T scalar) const { return Vec2T<T>(x * scalar, y * scalar); }
+		constexpr Vec2T<T> operator/(T scalar) const { return Vec2T<T>(x / scalar, y / scalar); }
 
-		Vec2T<T>& operator+=(const Vec2T<T>& other) { x += other.x; y += other.y; return *this; }
-		Vec2T<T>& operator-=(const Vec2T<T>& other) { x -= other.x; y -= other.y; return *this; }
-		Vec2T<T>& operator*=(const Vec2T<T>& other) { x *= other.x; y *= other.y; return *this; }
-		Vec2T<T>& operator/=(const Vec2T<T>& other) { x /= other.x; y /= other.y; return *this; }
+		constexpr Vec2T<T>& operator+=(const Vec2T<T>& other) { x += other.x; y += other.y; return *this; }
+		constexpr Vec2T<T>& operator-=(const Vec2T<T>& other) { x -= other.x; y -= other.y; return *this; }
+		constexpr Vec2T<T>& operator*=(const Vec2T<T>& other) { x *= other.x; y *= other.y; return *this; }
+		constexpr Vec2T<T>& operator/=(const Vec2T<T>& other) { x /= other.x; y /= other.y; return *this; }
 
-		Vec2T<T>& operator+=(T scalar) { x += scalar; y += scalar; return *this; }
-		Vec2T<T>& operator-=(T scalar) { x -= scalar; y -= scalar; return *this; }
-		Vec2T<T>& operator*=(T scalar) { x *= scalar; y *= scalar; return *this; }
-		Vec2T<T>& operator/=(T scalar) { x /= scalar; y /= scalar; return *this; }
+		constexpr Vec2T<T>& operator+=(T scalar) { x += scalar; y += scalar; return *this; }
+		constexpr Vec2T<T>& operator-=(T scalar) { x -= scalar; y -= scalar; return *this; }
+		constexpr Vec2T<T>& operator*=(T scalar) { x *= scalar; y *= scalar; return *this; }
+		constexpr Vec2T<T>& operator/=(T scalar) { x /= scalar; y /= scalar; return *this; }
 
-		bool operator==(const Vec2T<T>& other) const { return x == other.x && y == other.y; }
-		bool operator!=(const Vec2T<T>& other) const { return x != other.x || y != other.y; }
-		bool operator<(const Vec2T<T>& other) const { return x < other.x && y < other.y; }
-		bool operator>(const Vec2T<T>& other) const { return x > other.x && y > other.y; }
-		bool operator<=(const Vec2T<T>& other) const { return x <= other.x && y <= other.y; }
-		bool operator>=(const Vec2T<T>& other) const { return x >= other.x && y >= other.y; }
+		constexpr bool operator==(const Vec2T<T>& other) const { return x == other.x && y == other.y; }
+		constexpr bool operator!=(const Vec2T<T>& other) const { return x != other.x || y != other.y; }
+		constexpr bool operator<(const Vec2T<T>& other) const { return x < other.x && y < other.y; }
+		constexpr bool operator>(const Vec2T<T>& other) const { return x > other.x && y > other.y; }
+		constexpr bool operator<=(const Vec2T<T>& other) const { return x <= other.x && y <= other.y; }
+		constexpr bool operator>=(const Vec2T<T>& other) const { return x >= other.x && y >= other.y; }
 
-		T Dot(const Vec2T<T>& other) const { return x * other.x + y * other.y; }
-		T Cross(const Vec2T<T>& other) const { return x * other.y - y * other.x; }
-		T Magnitude() const { return std::sqrt(x * x + y * y); }
-		T MagnitudeSquared() const { return x * x + y * y; }
-		Vec Abs() const { return Vec2T<T>(std::abs(x), std::abs(y)); }
-		Vec Sign() const { return Vec2T<T>(x < 0 ? -1 : 1, y < 0 ? -1 : 1); }
-		Vec Lerp(const Vec& other, float t) const {
+		constexpr T Dot(const Vec2T<T>& other) const { return x * other.x + y * other.y; }
+		constexpr T Cross(const Vec2T<T>& other) const { return x * other.y - y * other.x; }
+		constexpr T Magnitude() const { return std::sqrt(x * x + y * y); }
+		constexpr T MagnitudeSquared() const { return x * x + y * y; }
+		constexpr Vec Abs() const { return Vec2T<T>(std::abs(x), std::abs(y)); }
+		constexpr Vec Sign() const { return Vec2T<T>(x < 0 ? -1 : 1, y < 0 ? -1 : 1); }
+		constexpr Vec Lerp(const Vec& other, float t) const {
 			return Vec(
 				(T)x + (T)(((float)other.x - (float)x) * t),
 				(T)y + (T)(((float)other.y - (float)y) * t));
@@ -86,48 +86,48 @@ namespace AgeAPI
 		using Vec = Vec3T<T>;
 		T x, y, z;
 	public:        
-		Vec3T() : x(0), y(0), z(0) {}
-		Vec3T(T x) : x(x), y(x), z(x) {}
-		Vec3T(T x, T y, T z) : x(x), y(y), z(z) {}
-		Vec3T(const Vec3T<T>& other) : x(other.x), y(other.y), z(other.z) {}
-		Vec3T(Vec3T<T>&& other) noexcept : x(std::move(other.x)), y(std::move(other.y)), z(std::move(other.z)) {}
-		Vec3T<T>& operator=(const Vec3T<T>& other) { x = other.x; y = other.y; z = other.z; return *this; }
-		Vec3T<T>& operator=(Vec3T<T>&& other) noexcept { x = std::move(other.x); y = std::move(other.y); z = std::move(other.z); return *this; }
-		Vec3T<T> operator+(const Vec3T<T>& other) const { return Vec3T<T>(x + other.x, y + other.y, z + other.z); }
-		Vec3T<T> operator-(const Vec3T<T>& other) const { return Vec3T<T>(x - other.x, y - other.y, z - other.z); }
-		Vec3T<T> operator*(const Vec3T<T>& other) const { return Vec3T<T>(x * other.x, y * other.y, z * other.z); }
-		Vec3T<T> operator/(const Vec3T<T>& other) const { return Vec3T<T>(x / other.x, y / other.y, z / other.z); }
-		Vec3T<T> operator+(T scalar) const { return Vec3T<T>(x + scalar, y + scalar, z + scalar); }
-		Vec3T<T> operator-(T scalar) const { return Vec3T<T>(x - scalar, y - scalar, z - scalar); }
-		Vec3T<T> operator*(T scalar) const { return Vec3T<T>(x * scalar, y * scalar, z * scalar); }
-		Vec3T<T> operator/(T scalar) const { return Vec3T<T>(x / scalar, y / scalar, z / scalar); }
-		Vec3T<T>& operator+=(const Vec3T<T>& other) { x += other.x; y += other.y; z += other.z; return *this; }
-		Vec3T<T>& operator-=(const Vec3T<T>& other) { x -= other.x; y -= other.y; z -= other.z; return *this; }
-		Vec3T<T>& operator*=(const Vec3T<T>& other) { x *= other.x; y *= other.y; z *= other.z; return *this; }
-		Vec3T<T>& operator/=(const Vec3T<T>& other) { x /= other.x; y /= other.y; z /= other.z; return *this; }
-		Vec3T<T>& operator+=(T scalar) { x += scalar; y += scalar; z += scalar; return *this; }
-		Vec3T<T>& operator-=(T scalar) { x -= scalar; y -= scalar; z -= scalar; return *this; }
-		Vec3T<T>& operator*=(T scalar) { x *= scalar; y *= scalar; z *= scalar; return *this; }
-		Vec3T<T>& operator/=(T scalar) { x /= scalar; y /= scalar; z /= scalar; return *this; }
-		bool operator==(const Vec3T<T>& other) const { return x == other.x && y == other.y && z == other.z; }
-		bool operator!=(const Vec3T<T>& other) const { return x != other.x || y != other.y || z != other.z; }
-		bool operator<(const Vec3T<T>& other) const { return x < other.x && y < other.y && z < other.z; }
-		bool operator>(const Vec3T<T>& other) const { return x > other.x && y > other.y && z > other.z; }
-		bool operator<=(const Vec3T<T>& other) const { return x <= other.x && y <= other.y && z <= other.z; }
-		bool operator>=(const Vec3T<T>& other) const { return x >= other.x && y >= other.y && z >= other.z; }
-		T Dot(const Vec3T<T>& other) const { return x * other.x + y * other.y + z * other.z; }
-		T Magnitude() const { return std::sqrt(x * x + y * y + z * z); }
-		T MagnitudeSquared() const { return x * x + y * y + z * z; }
-		Vec Abs() const { return Vec3T<T>(std::abs(x), std::abs(y), std::abs(z)); }
-		Vec Cross(const Vec3T<T>& other) const { return Vec3T<T>(y * other.z - z * other.y, z * other.x - x * other.z, x * other.y - y * other.x); }
-		Vec Lerp(const Vec& other, float t) const {
+		constexpr Vec3T() : x(0), y(0), z(0) {}
+		constexpr Vec3T(T x) : x(x), y(x), z(x) {}
+		constexpr Vec3T(T x, T y, T z) : x(x), y(y), z(z) {}
+		constexpr Vec3T(const Vec3T<T>& other) : x(other.x), y(other.y), z(other.z) {}
+		constexpr Vec3T(Vec3T<T>&& other) noexcept : x(std::move(other.x)), y(std::move(other.y)), z(std::move(other.z)) {}
+		constexpr Vec3T<T>& operator=(const Vec3T<T>& other) { x = other.x; y = other.y; z = other.z; return *this; }
+		constexpr Vec3T<T>& operator=(Vec3T<T>&& other) noexcept { x = std::move(other.x); y = std::move(other.y); z = std::move(other.z); return *this; }
+		constexpr Vec3T<T> operator+(const Vec3T<T>& other) const { return Vec3T<T>(x + other.x, y + other.y, z + other.z); }
+		constexpr Vec3T<T> operator-(const Vec3T<T>& other) const { return Vec3T<T>(x - other.x, y - other.y, z - other.z); }
+		constexpr Vec3T<T> operator*(const Vec3T<T>& other) const { return Vec3T<T>(x * other.x, y * other.y, z * other.z); }
+		constexpr Vec3T<T> operator/(const Vec3T<T>& other) const { return Vec3T<T>(x / other.x, y / other.y, z / other.z); }
+		constexpr Vec3T<T> operator+(T scalar) const { return Vec3T<T>(x + scalar, y + scalar, z + scalar); }
+		constexpr Vec3T<T> operator-(T scalar) const { return Vec3T<T>(x - scalar, y - scalar, z - scalar); }
+		constexpr Vec3T<T> operator*(T scalar) const { return Vec3T<T>(x * scalar, y * scalar, z * scalar); }
+		constexpr Vec3T<T> operator/(T scalar) const { return Vec3T<T>(x / scalar, y / scalar, z / scalar); }
+		constexpr Vec3T<T>& operator+=(const Vec3T<T>& other) { x += other.x; y += other.y; z += other.z; return *this; }
+		constexpr Vec3T<T>& operator-=(const Vec3T<T>& other) { x -= other.x; y -= other.y; z -= other.z; return *this; }
+		constexpr Vec3T<T>& operator*=(const Vec3T<T>& other) { x *= other.x; y *= other.y; z *= other.z; return *this; }
+		constexpr Vec3T<T>& operator/=(const Vec3T<T>& other) { x /= other.x; y /= other.y; z /= other.z; return *this; }
+		constexpr Vec3T<T>& operator+=(T scalar) { x += scalar; y += scalar; z += scalar; return *this; }
+		constexpr Vec3T<T>& operator-=(T scalar) { x -= scalar; y -= scalar; z -= scalar; return *this; }
+		constexpr Vec3T<T>& operator*=(T scalar) { x *= scalar; y *= scalar; z *= scalar; return *this; }
+		constexpr Vec3T<T>& operator/=(T scalar) { x /= scalar; y /= scalar; z /= scalar; return *this; }
+		constexpr bool operator==(const Vec3T<T>& other) const { return x == other.x && y == other.y && z == other.z; }
+		constexpr bool operator!=(const Vec3T<T>& other) const { return x != other.x || y != other.y || z != other.z; }
+		constexpr bool operator<(const Vec3T<T>& other) const { return x < other.x && y < other.y && z < other.z; }
+		constexpr bool operator>(const Vec3T<T>& other) const { return x > other.x && y > other.y && z > other.z; }
+		constexpr bool operator<=(const Vec3T<T>& other) const { return x <= other.x && y <= other.y && z <= other.z; }
+		constexpr bool operator>=(const Vec3T<T>& other) const { return x >= other.x && y >= other.y && z >= other.z; }
+		constexpr T Dot(const Vec3T<T>& other) const { return x * other.x + y * other.y + z * other.z; }
+		constexpr T Magnitude() const { return std::sqrt(x * x + y * y + z * z); }
+		constexpr T MagnitudeSquared() const { return x * x + y * y + z * z; }
+		constexpr Vec Abs() const { return Vec3T<T>(std::abs(x), std::abs(y), std::abs(z)); }
+		constexpr Vec Cross(const Vec3T<T>& other) const { return Vec3T<T>(y * other.z - z * other.y, z * other.x - x * other.z, x * other.y - y * other.x); }
+		constexpr Vec Lerp(const Vec& other, float t) const {
 			  return Vec(
 				  (T)x + (T)(((float)other.x - (float)x) * t),
 				  (T)y + (T)(((float)other.y - (float)y) * t),
 				  (T)z + (T)(((float)other.z - (float)z) * t));
 		  }
 
-		std::array<T, 3> ToArray() const {return {x, y, z};}
+		constexpr std::array<T, 3> ToArray() const {return {x, y, z};}
 
 	};
 
@@ -139,40 +139,39 @@ namespace AgeAPI
 		using Vec = Vec4T<T>;
 		T x, y, z, w;
 	public:
-		Vec4T() : x(0), y(0), z(0), w(0) {}
-		Vec4T(T x, T y, T z, T w) : x(x), y(y), z(z), w(w) {}
-		Vec4T(const Vec&& other) noexcept : x(std::move(other.x)), y(std::move(other.y)), z(std::move(other.z)), w(std::move(other.w)) {}
-		Vec4T(const Vec& other) : x(other.x), y(other.y), z(other.z), w(other.w) {}
+		constexpr Vec4T() : x(0), y(0), z(0), w(0) {}
+		constexpr Vec4T(T x, T y, T z, T w) : x(x), y(y), z(z), w(w) {}
+		constexpr Vec4T(const Vec&& other) noexcept : x(std::move(other.x)), y(std::move(other.y)), z(std::move(other.z)), w(std::move(other.w)) {}
+		constexpr Vec4T(const Vec& other) : x(other.x), y(other.y), z(other.z), w(other.w) {}
 
-		Vec& operator=(const Vec& other) { x = other.x; y = other.y; z = other.z; w = other.w; return *this; }
-		Vec& operator=(Vec&& other) noexcept { x = std::move(other.x); y = std::move(other.y); z = std::move(other.z); w = std::move(other.w); return *this; }
-		Vec operator+(const Vec& other) const { return Vec(x + other.x, y + other.y, z + other.z, w + other.w); }
-		Vec operator-(const Vec& other) const { return Vec(x - other.x, y - other.y, z - other.z, w - other.w); }
-		Vec operator*(const Vec& other) const { return Vec(x * other.x, y * other.y, z * other.z, w * other.w); }
-		Vec operator/(const Vec& other) const { return Vec(x / other.x, y / other.y, z / other.z, w / other.w); }
-		Vec operator+(T scalar) const { return Vec(x + scalar, y + scalar, z + scalar, w + scalar); }
-		Vec operator-(T scalar) const { return Vec(x - scalar, y - scalar, z - scalar, w - scalar); }
-		Vec operator*(T scalar) const { return Vec(x * scalar, y * scalar, z * scalar, w * scalar); }
-		Vec operator/(T scalar) const { return Vec(x / scalar, y / scalar, z / scalar, w / scalar); }
-		Vec& operator+=(const Vec& other) { x += other.x; y += other.y; z += other.z; w += other.w; return *this; }
-		Vec& operator-=(const Vec& other) { x -= other.x; y -= other.y; z -= other.z; w -= other.w; return *this; }
-		Vec& operator*=(const Vec& other) { x *= other.x; y *= other.y; z *= other.z; w *= other.w; return *this; }
-		Vec& operator/=(const Vec& other) { x /= other.x; y /= other.y; z /= other.z; w /= other.w; return *this; }
-		Vec& operator+=(T scalar) { x += scalar; y += scalar; z += scalar; w += scalar; return *this; }
-		Vec& operator-=(T scalar) { x -= scalar; y -= scalar; z -= scalar; w -= scalar; return *this; }
-		Vec& operator*=(T scalar) { x *= scalar; y *= scalar; z *= scalar; w *= scalar; return *this; }
-		Vec& operator/=(T scalar) { x /= scalar; y /= scalar; z /= scalar; w /= scalar; return *this; }
-		bool operator==(const Vec& other) const { return x == other.x && y == other.y && z == other.z && w == other.w; }
-		bool operator!=(const Vec& other) const { return x != other.x || y != other.y || z != other.z || w != other.w; }
-		bool operator<(const Vec& other) const { return x < other.x && y < other.y && z < other.z && w < other.w; }
-		bool operator>(const Vec& other) const { return x > other.x && y > other.y && z > other.z && w > other.w; }
-
-		T Dot(const Vec& other) const { return x * other.x + y * other.y + z * other.z + w * other.w; }
-		T Flatten() const { return x + y + z + w; }
-		T Magnitude() const { return std::sqrt(x * x + y * y + z * z + w * w); }
-		T MagnitudeSquared() const { return x * x + y * y + z * z + w * w; }
-		Vec Abs() const { return Vec4T<T>(std::abs(x), std::abs(y), std::abs(z), std::abs(w)); }
-		Vec Lerp(const Vec& other, const float t) const {
+		constexpr Vec& operator=(const Vec& other) { x = other.x; y = other.y; z = other.z; w = other.w; return *this; }
+		constexpr Vec& operator=(Vec&& other) noexcept { x = std::move(other.x); y = std::move(other.y); z = std::move(other.z); w = std::move(other.w); return *this; }
+		constexpr Vec operator+(const Vec& other) const { return Vec(x + other.x, y + other.y, z + other.z, w + other.w); }
+		constexpr Vec operator-(const Vec& other) const { return Vec(x - other.x, y - other.y, z - other.z, w - other.w); }
+		constexpr Vec operator*(const Vec& other) const { return Vec(x * other.x, y * other.y, z * other.z, w * other.w); }
+		constexpr Vec operator/(const Vec& other) const { return Vec(x / other.x, y / other.y, z / other.z, w / other.w); }
+		constexpr Vec operator+(T scalar) const { return Vec(x + scalar, y + scalar, z + scalar, w + scalar); }
+		constexpr Vec operator-(T scalar) const { return Vec(x - scalar, y - scalar, z - scalar, w - scalar); }
+		constexpr Vec operator*(T scalar) const { return Vec(x * scalar, y * scalar, z * scalar, w * scalar); }
+		constexpr Vec operator/(T scalar) const { return Vec(x / scalar, y / scalar, z / scalar, w / scalar); }
+		constexpr Vec& operator+=(const Vec& other) { x += other.x; y += other.y; z += other.z; w += other.w; return *this; }
+		constexpr Vec& operator-=(const Vec& other) { x -= other.x; y -= other.y; z -= other.z; w -= other.w; return *this; }
+		constexpr Vec& operator*=(const Vec& other) { x *= other.x; y *= other.y; z *= other.z; w *= other.w; return *this; }
+		constexpr Vec& operator/=(const Vec& other) { x /= other.x; y /= other.y; z /= other.z; w /= other.w; return *this; }
+		constexpr Vec& operator+=(T scalar) { x += scalar; y += scalar; z += scalar; w += scalar; return *this; }
+		constexpr Vec& operator-=(T scalar) { x -= scalar; y -= scalar; z -= scalar; w -= scalar; return *this; }
+		constexpr Vec& operator*=(T scalar) { x *= scalar; y *= scalar; z *= scalar; w *= scalar; return *this; }
+		constexpr Vec& operator/=(T scalar) { x /= scalar; y /= scalar; z /= scalar; w /= scalar; return *this; }
+		constexpr bool operator==(const Vec& other) const { return x == other.x && y == other.y && z == other.z && w == other.w; }
+		constexpr bool operator!=(const Vec& other) const { return x != other.x || y != other.y || z != other.z || w != other.w; }
+		constexpr bool operator<(const Vec& other) const { return x < other.x && y < other.y && z < other.z && w < other.w; }
+		constexpr bool operator>(const Vec& other) const { return x > other.x && y > other.y && z > other.z && w > other.w; } 
+		constexpr T Dot(const Vec& other) const { return x * other.x + y * other.y + z * other.z + w * other.w; }
+		constexpr T Flatten() const { return x + y + z + w; }
+		constexpr T Magnitude() const { return std::sqrt(x * x + y * y + z * z + w * w); }
+		constexpr T MagnitudeSquared() const { return x * x + y * y + z * z + w * w; }
+		constexpr Vec Abs() const { return Vec4T<T>(std::abs(x), std::abs(y), std::abs(z), std::abs(w)); }
+		constexpr Vec Lerp(const Vec& other, const float t) const {
 			// FIXME: Replace C-style casts with dynamic cast
 			return Vec(
 				(T)x + (T)(((float)other.x - (float)x) * t),
@@ -180,9 +179,9 @@ namespace AgeAPI
 				(T)z + (T)(((float)other.z - (float)z) * t),
 				(T)w + (T)(((float)other.w - (float)w) * t));
 		}
-		T Length() const { return std::sqrt(x * x + y * y + z * z + w * w); }
+		constexpr T Length() const { return std::sqrt(x * x + y * y + z * z + w * w); }
 
-		std::array<T, 4> const ToArray() {return {x, y, z, w};}
+		constexpr std::array<T, 4> const ToArray() {return {x, y, z, w};}
 	};
 
 	using IVec2 = Vec2T<i32>;
