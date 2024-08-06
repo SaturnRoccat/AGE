@@ -31,4 +31,29 @@ namespace AgeData::BlockComponents
     private:
         bool mAllowRotation{ false };
     };
+
+    class LogRotation : public AgeAPI::Components::BlockComponentBase
+    {
+    public:
+        LogRotation() : AgeAPI::Components::BlockComponentBase(
+            0,
+            { 1, 19, 60 },
+            "age_api:log_rotatable",
+            false,
+            true
+        )
+        {}
+
+        BlockComponentBase* Clone() const override {
+            return new LogRotation(*this);
+        }
+
+        AgeAPI::ErrorString WriteToJson(AgeAPI::NonOwningPtr<AgeAPI::Addon> addon, AgeAPI::JsonProxy proxy, AgeAPI::NonOwningPtr<AgeAPI::AddonFeatures::Block> blk) const override
+        {
+            return "";
+        }
+
+        AgeAPI::ErrorString OnComponentAdded(AgeAPI::NonOwningPtr<AgeAPI::Addon> addon, AgeAPI::NonOwningPtr<AgeAPI::AddonFeatures::Block> blk) override;
+    private:
+    };
 }

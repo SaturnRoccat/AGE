@@ -46,6 +46,35 @@ namespace AgeAPI::AddonFeatures
 			return doc;
 		}
 
+		
+
+		std::optional<std::unique_ptr<Components::BlockComponentBase>> GetComponent(const std::string& componentId)
+		{
+			auto it = mComponents.find(componentId);
+			if (it == mComponents.end())
+				return std::nullopt;
+			return std::move(it->second);
+		}
+
+		Block&& PreAddInstanceData(bool AmbientOcclusion = true, bool FaceDimming = true);
+
+		template<Components::BlockComponent Component>
+		std::optional<std::unique_ptr<Component>> GetComponent(const std::string& componentId)
+		{
+			auto it = mComponents.find(componentId);
+			if (it == mComponents.end())
+				return std::nullopt;
+#ifndef NDEBUG
+			Component* component = dynamic_cast<Component*>(it->second.release());
+			if (!component)
+				return std::nullopt;
+			return std::unique_ptr<Component>(component);
+#else
+			Component* component = static_cast<Component*>(it->second.release());
+			return std::unique_ptr<Component>(component);
+#endif
+		}
+
 
 #pragma region Add Components
 

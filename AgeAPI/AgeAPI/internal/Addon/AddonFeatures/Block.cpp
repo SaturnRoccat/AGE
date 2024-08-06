@@ -66,7 +66,6 @@ namespace AgeAPI::AddonFeatures
 	Block&& Block::AddComponent(std::unique_ptr<Components::BlockComponentBase> component, bool override, NonOwningPtr<Addon> addon)
 	{
 		DLOG(INFO) << std::format("Adding component to {}: {}", this->mIdentifier.GetFullNamespace(), component->GetComponentID().GetFullNamespace());
-		DLOG_IF(INFO, addon) << std::format("Using user privided addon!");
 		if (!addon)
 			addon = Addon::GetStaticInstance();
 		if (mRedirectStore)
@@ -231,23 +230,7 @@ namespace AgeAPI::AddonFeatures
 			);
 
 		}
-		if (!mComponents.contains("minecraft:material_instances"))
-		{
-			using namespace Backend::Rp;
-			absl::InlinedVector<MaterialInstance::MaterialInstanceElement, 1> materials;
-			for (auto& texture : mTextures)
-			{
-				materials.push_back(
-					MaterialInstance::MaterialInstanceElement{
-						texture.mTextureAlias,
-						texture.mSide,
-					}
-					);
-			}
-			AddComponent(
-				AgeData::BlockComponents::MaterialInstances{std::move(materials)}
-			);
-		}
+		PreAddInstanceData();
 		for (auto& [ComponentName, Component] : mComponents)
 		{
 			rapidjson::Value componentObj(rapidjson::kObjectType);
@@ -291,5 +274,29 @@ namespace AgeAPI::AddonFeatures
 		writeComponents(proxy.Derive(minecraftBlock), addon);
 		writePermutations(proxy.Derive(minecraftBlock), addon);
 		json.AddMember("minecraft:block", minecraftBlock, alloc); // So i dont forget to add it
+	}
+	Block&& Block::PreAddInstanceData(bool AmbientOcclusion, bool FaceDimming)
+	{
+
+		if (!mComponents.contains("minecraft:material_instances"))
+		{
+			using namespace Backend::Rp;
+			absl::InlinedVector<MaterialInstance::MaterialInstanceElement, 1> materials;
+			for (auto& texture : mTextures)
+			{
+				materials.push_back(
+					MaterialInstance::MaterialInstanceElement{
+						texture.mTextureAlias,
+						texture.mSide,
+						FaceDimming,
+						AmbientOcclusion
+					}
+					);
+			}
+			AddComponent(
+				AgeData::BlockComponents::MaterialInstances{ std::move(materials) }
+			);
+		}
+		return std::move(*this);
 	}
 }

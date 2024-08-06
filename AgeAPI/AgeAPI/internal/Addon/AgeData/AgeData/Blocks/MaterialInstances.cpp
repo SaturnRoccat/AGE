@@ -16,8 +16,8 @@ namespace AgeData::BlockComponents
                     val.AddMember("render_method", mInstanceData.GetRenderMethodString(), allocator);
                 if (!element.mFaceDimming)
                     val.AddMember("face_dimming", false, allocator);
-                if (element.mAmbientOcclusion)
-                    val.AddMember("ambient_occlusion", true, allocator);
+                if (!element.mAmbientOcclusion)
+                    val.AddMember("ambient_occlusion", false, allocator);
                 val.AddMember("texture", element.mTextureName, allocator);
 
             };

@@ -25,10 +25,19 @@ namespace AgeAPI
 			}, bool ClearExistingData = true);
 
 		template<typename T>
-		Addon& AddBlock(T&& block)
+		Addon& AddBlock(T&& block, bool override = false)
 		{
 			using NoRef = std::remove_reference_t<T>;
-			mBlocks.push_back(std::make_unique<NoRef>(std::forward<T>(block)));
+			const std::string& nspc = block.GetIdentifier().GetFullNamespace();
+			auto it = mBlocks.find(nspc);
+			if (!override && it != mBlocks.end())
+				throw std::runtime_error("Failed to add block due to override not being specified");
+			else if (override && it != mBlocks.end())
+			{
+				it->second = PC<AddonFeatures::Block, NoRef>(std::forward<T>(block));
+			}
+			else
+				mBlocks.insert({ nspc, PC<AddonFeatures::Block, NoRef>(std::forward<T>(block)) });
 			return *this;
 		}
 
@@ -66,7 +75,7 @@ namespace AgeAPI
 		void writeModels(const std::filesystem::path& outputBase);
 
 	private:
-		std::vector<std::unique_ptr<AddonFeatures::Block>> mBlocks{};
+		absl::flat_hash_map<std::string, std::unique_ptr<AddonFeatures::Block>> mBlocks{};
 		absl::flat_hash_map<std::string, Backend::Rp::BlockResourceElement> mStandaloneResources{};
 		std::string mName{};
 		// The reason we hold *pointers* to the blocks is we want to allow some overwriting of block stuff 

@@ -178,7 +178,7 @@ namespace AgeAPI
 		LOG(INFO) << "Writing blocks";
 		writeBlocks(path);
 
-		if (cacheManifest)
+		if (cacheManifest && std::filesystem::exists(path / "manifest.json"))
 			return;
 		LOG(INFO) << "Writing manifest";
 		auto doc = mBehaviourPackManifest.WriteToDocument().value();
@@ -193,7 +193,7 @@ namespace AgeAPI
 		std::filesystem::path blocksPath = outputBase;
 		blocksPath /= "blocks";
 		rapidjson::ForcePath(blocksPath);
-		for (auto& block : mBlocks)
+		for (auto& [id, block] :mBlocks)
 		{
 			auto doc = block->WriteToDocument(this);
 			std::filesystem::path blockPath = blocksPath / (block->GetIdentifier().GetFullNamespaceFile() + ".json");
@@ -210,7 +210,7 @@ namespace AgeAPI
 
 	void Addon::bindBlocks()
 	{
-		for (auto& block : mBlocks)
+		for (auto& [id, block] : mBlocks)
 		{
 			bool hasBindableGeo = block->mGeo.GetGeoName() != "minecraft:geometry.full_block";
 			if (block->mTextures.empty() && !hasBindableGeo)
@@ -242,7 +242,7 @@ namespace AgeAPI
 		writeTerrainTextures(outputPath);
 		LOG(INFO) << "Writing models";
 		writeModels(outputPath);
-		if (cacheManifest)
+		if (cacheManifest && std::filesystem::exists(outputPath / "manifest.json"))
 			return;
 		LOG(INFO) << "Writing manifest";
 		auto doc = mResourcePackManifest.WriteToDocument().value();

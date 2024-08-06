@@ -30,13 +30,13 @@ namespace AgeData::BlockComponents
 			}
 		);
 
-		std::array<std::pair<std::string, IVec3>, 2> topDir = 
-		{ 
+		std::array<std::pair<std::string, IVec3>, 2> topDir =
+		{
 			std::make_pair("up", IVec3(90, 0, 0)),
-			std::make_pair("down", IVec3(270, 0, 0)) 
+			std::make_pair("down", IVec3(270, 0, 0))
 		};
-		constexpr static std::array<std::pair<std::string, IVec3>, 4> sideDir = 
-		{ 
+		constexpr static std::array<std::pair<std::string, IVec3>, 4> sideDir =
+		{
 			std::make_pair("north", IVec3(0, 180, 0)),
 			std::make_pair("south", IVec3(0, 0, 0)),
 			std::make_pair("east", IVec3(0, 90, 0)),
@@ -51,10 +51,32 @@ namespace AgeData::BlockComponents
 						"q.block_state('minecraft:cardinal_direction') == '{}' && q.block_state('minecraft:facing_direction') == '{}'", side, dir
 					)
 				)
-				.AddComponent(Transformation{ rot + rot2 });
+					.AddComponent(Transformation{ rot + rot2 });
 				blk->AddPermutation(p);
 			}
 		}
+		return {};
+	}
+	AgeAPI::ErrorString LogRotation::OnComponentAdded(AgeAPI::NonOwningPtr<AgeAPI::Addon> addon, AgeAPI::NonOwningPtr<AgeAPI::AddonFeatures::Block> blk)
+	{
+		blk->AddTrait(
+			PlacementPositionTrait{
+				EnabledStates::Facing
+			}
+		);
+		std::array<Permutation, 6> permutations = {
+			Permutation::MakePermutation("q.block_state('minecraft:block_face') == 'south'").AddComponent(Transformation{{90, 0, 0}}),
+			Permutation::MakePermutation("q.block_state('minecraft:block_face') == 'north'").AddComponent(Transformation{{90, 0, 0}}),
+			Permutation::MakePermutation("q.block_state('minecraft:block_face') == 'east'").AddComponent(Transformation{{90, 90, 0}}),
+			Permutation::MakePermutation("q.block_state('minecraft:block_face') == 'west'").AddComponent(Transformation{{90, 270, 0}}),
+			Permutation::MakePermutation("q.block_state('minecraft:block_face') == 'up'").AddComponent(Transformation{{0, 0, 0}}),
+			Permutation::MakePermutation("q.block_state('minecraft:block_face') == 'down'").AddComponent(Transformation{{0, 0, 0}})
+		};
+		blk->AddPermutations(
+			std::move(permutations),
+			true,
+			addon
+		);
 		return {};
 	}
 }
